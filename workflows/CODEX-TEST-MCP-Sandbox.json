@@ -1,0 +1,75 @@
+{
+  "name": "CODEX TEST — MCP Sandbox",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2a8ab39c-2a7c-4294-84ce-1489be7a7a9a",
+      "name": "When chat message received",
+      "webhookId": "83543a11-3ab4-46d6-8b39-2c4ee1947c45"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e913ac1-c6d2-40c4-a896-6d575885b72a",
+              "name": "message",
+              "value": "Hello from the n8n MCP sandbox",
+              "type": "string"
+            },
+            {
+              "id": "ae7f2cbd-8928-4c69-9662-8a499d3b4927",
+              "name": "source",
+              "value": "Created through Codex MCP",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "513a9c37-c29d-4fc6-8afa-d9bcc5abd533",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "active": true,
+  "tags": [],
+  "versionId": "d33b752c-963f-4796-b1c5-102b7aab6fb5",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}
