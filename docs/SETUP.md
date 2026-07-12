@@ -17,6 +17,20 @@ export N8N_MCP_TOKEN='YOUR_TOKEN'
 codex mcp list
 ```
 
+The repository startup script starts n8n and a repository-managed Ollama
+server on port `11888`:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+scripts/start.sh
+curl -fsS http://127.0.0.1:11888/api/tags | jq
+```
+
+It is safe to run `scripts/start.sh` again when Ollama is already healthy. The
+matching `scripts/stop.sh` stops only the Ollama PID started and recorded by
+this repository, then stops n8n. Logs and the PID file are stored under the
+Git-ignored `tmp/` directory.
+
 ## Stage 1 agent service
 
 Install the isolated development environment:

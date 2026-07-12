@@ -30,3 +30,7 @@
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 
 - Stage 4 workflow state: inactive and unpublished
+
+- Ollama host URL: http://127.0.0.1:11888
+
+- Planned Stage 6 Ollama model: `gemma4:31b`
