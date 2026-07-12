@@ -24,6 +24,12 @@ review, records approval or rejection, and reports approved artifact metadata.
 It remains unpublished, is unavailable through MCP, and performs no real model
 calls.
 
+Stage 5 is the operational-verification checkpoint. It verifies safety flags,
+host/container connectivity, idempotent create and review requests, terminal
+rejection without artifact creation, durable SQLite retrieval, and restart
+persistence. The procedure is documented in `docs/STAGE-5-VERIFICATION.md`.
+Stage 5 does not publish the workflow or introduce a model provider.
+
 ## Example files
 
 - Brief: `examples/strategy-brief.synthetic.json`
@@ -219,3 +225,14 @@ and generation time without executing template expressions. Rendering rules:
 - Rich document formats such as DOCX, PDF, or slides
 - Automatic publication or external distribution of artifacts
 - Use of real company, customer, employee, or confidential strategy data
+
+## n8n form availability
+
+The editor's `/form-test/...` URL is temporary and works only while a manual
+test execution is listening. A person taking too long to complete that form
+may see a submission error even though n8n, FastAPI, and SQLite are healthy.
+
+A stable `/form/...` URL requires an active/published workflow. Activation is
+an explicit operational decision outside Stage 5. Structured JSON ingestion
+can be added later, but YAML or JSON files are not required to solve the test
+listener expiry.

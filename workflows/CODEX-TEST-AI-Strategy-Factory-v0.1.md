@@ -38,6 +38,11 @@ adapt the checked-in synthetic example brief.
 The required fields contain synthetic defaults so the initial test can be
 submitted immediately before n8n's temporary test listener expires.
 
+The `/form-test/...` URL is tied to the current manual test execution. If the
+listener expires while the form is being completed, n8n displays a submission
+error. Start a new test execution and use its newly opened form. This behavior
+does not indicate a FastAPI or SQLite failure.
+
 Review the complete structured JSON on the second form page. Select `approved`
 or `rejected`, enter a synthetic reviewer label, and include a comment when
 rejecting.
@@ -52,3 +57,4 @@ artifact was created.
 - Production form URLs are unavailable until publication; publication is out of
   scope and requires explicit approval.
 - Generated artifacts remain local and ignored by Git.
+- File-based JSON or YAML brief ingestion is not implemented in v0.1.

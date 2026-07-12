@@ -77,5 +77,25 @@ Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json` into n8n as an
 inactive workflow. Use the editor's test form URL for synthetic manual testing.
 Do not activate or publish the workflow without explicit approval.
 
+## Stage 5 operational verification
+
+With Docker Desktop, n8n, and the Mac-local agent service running, execute:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+scripts/verify-stage5.sh
+```
+
+The script verifies Stage 4 safety/connectivity plus create and review
+idempotency, rejection semantics, durable retrieval, and the absence of an
+artifact for a rejected synthetic run. Follow the restart-persistence procedure
+in `docs/STAGE-5-VERIFICATION.md` to confirm the same run remains available
+after restarting FastAPI.
+
+The n8n `/form-test/...` URL is temporary. If it expires during manual entry,
+click **Execute workflow** again and use the newly opened form. Do not publish
+the workflow merely to avoid the test-listener timeout without making that
+separate operational decision explicitly.
+
 The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
 will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.
