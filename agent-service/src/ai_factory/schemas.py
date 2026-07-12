@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .statuses import RunStatus
 
@@ -96,6 +96,33 @@ class StrategyResponse(StrictModel):
     provider: Literal["fake", "openai"]
 
 
+class ReviewRequest(StrictModel):
+    decision: Literal["approved", "rejected"]
+    reviewer: str = Field(min_length=1, max_length=200)
+    comment: str | None = Field(default=None, max_length=2000)
+
+    @model_validator(mode="after")
+    def rejection_requires_comment(self) -> "ReviewRequest":
+        if self.decision == "rejected" and not self.comment:
+            raise ValueError("comment is required when decision is rejected")
+        return self
+
+
+class ReviewRecord(StrictModel):
+    decision: Literal["approved", "rejected"]
+    reviewer: str
+    comment: str | None
+    decided_at: datetime
+    draft_checksum: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+
+
+class ArtifactMetadata(StrictModel):
+    filename: str = Field(pattern=r"^strategy-[0-9a-f-]{36}\.md$")
+    media_type: Literal["text/markdown"] = "text/markdown"
+    checksum: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    created_at: datetime
+
+
 class HealthResponse(StrictModel):
     status: Literal["ok"] = "ok"
     service: Literal["ai-strategy-factory"] = "ai-strategy-factory"
@@ -115,8 +142,8 @@ class ReadRunData(StrictModel):
     status: RunStatus
     brief: StrategyBrief
     strategy: StrategyResponse | None
-    review: None = None
-    artifact: None = None
+    review: ReviewRecord | None = None
+    artifact: ArtifactMetadata | None = None
     error_code: str | None = None
     error_message: str | None = None
     created_at: datetime
@@ -135,4 +162,16 @@ class CreateRunResponse(StrictModel):
 
 class ReadRunResponse(StrictModel):
     data: ReadRunData
+    meta: ResponseMeta
+
+
+class ReviewRunData(StrictModel):
+    run_id: UUID
+    status: RunStatus
+    review: ReviewRecord
+    artifact: ArtifactMetadata | None
+
+
+class ReviewRunResponse(StrictModel):
+    data: ReviewRunData
     meta: ResponseMeta

@@ -9,7 +9,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from .database import connect
-from .schemas import StrategyBrief, StrategyResponse
+from .schemas import ArtifactMetadata, ReviewRecord, StrategyBrief, StrategyResponse
 from .statuses import RunStatus, validate_transition
 
 
@@ -23,6 +23,8 @@ class RunRecord:
     status: RunStatus
     brief: dict[str, object]
     strategy: dict[str, object] | None
+    review: dict[str, object] | None
+    artifact: dict[str, object] | None
     error_code: str | None
     error_message: str | None
     created_at: str
@@ -65,6 +67,12 @@ class RunRepository:
             row = connection.execute(
                 "SELECT * FROM strategy_runs WHERE run_id = ?", (str(run_id),)
             ).fetchone()
+            review_row = connection.execute(
+                "SELECT * FROM run_reviews WHERE run_id = ?", (str(run_id),)
+            ).fetchone()
+            artifact_row = connection.execute(
+                "SELECT * FROM run_artifacts WHERE run_id = ?", (str(run_id),)
+            ).fetchone()
         if row is None:
             raise RunNotFound(str(run_id))
         return RunRecord(
@@ -74,6 +82,27 @@ class RunRepository:
             strategy=(
                 json.loads(row["strategy_json"])
                 if row["strategy_json"] is not None
+                else None
+            ),
+            review=(
+                {
+                    "decision": review_row["decision"],
+                    "reviewer": review_row["reviewer"],
+                    "comment": review_row["comment"],
+                    "decided_at": review_row["decided_at"],
+                    "draft_checksum": review_row["draft_checksum"],
+                }
+                if review_row is not None
+                else None
+            ),
+            artifact=(
+                {
+                    "filename": artifact_row["filename"],
+                    "media_type": artifact_row["media_type"],
+                    "checksum": artifact_row["checksum"],
+                    "created_at": artifact_row["created_at"],
+                }
+                if artifact_row is not None
                 else None
             ),
             error_code=row["error_code"],
@@ -94,6 +123,91 @@ class RunRepository:
                 WHERE run_id = ? AND status = ?
                 """,
                 (target.value, timestamp, str(run_id), current.status.value),
+            )
+            if result.rowcount != 1:
+                raise RuntimeError("run status changed concurrently")
+        return self.get(run_id)
+
+    def record_review(self, run_id: UUID, review: ReviewRecord) -> RunRecord:
+        target = (
+            RunStatus.APPROVED
+            if review.decision == "approved"
+            else RunStatus.REJECTED
+        )
+        timestamp = utc_now()
+        with connect(self.database_path) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT status FROM strategy_runs WHERE run_id = ?", (str(run_id),)
+            ).fetchone()
+            if row is None:
+                raise RunNotFound(str(run_id))
+            current = RunStatus(row["status"])
+            validate_transition(current, target)
+            connection.execute(
+                """
+                INSERT INTO run_reviews (
+                    run_id, decision, reviewer, comment, decided_at, draft_checksum
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(run_id),
+                    review.decision,
+                    review.reviewer,
+                    review.comment,
+                    review.decided_at.isoformat().replace("+00:00", "Z"),
+                    review.draft_checksum,
+                ),
+            )
+            result = connection.execute(
+                """
+                UPDATE strategy_runs SET status = ?, updated_at = ?
+                WHERE run_id = ? AND status = ?
+                """,
+                (target.value, timestamp, str(run_id), current.value),
+            )
+            if result.rowcount != 1:
+                raise RuntimeError("run status changed concurrently")
+        return self.get(run_id)
+
+    def record_artifact(
+        self, run_id: UUID, artifact: ArtifactMetadata
+    ) -> RunRecord:
+        timestamp = utc_now()
+        with connect(self.database_path) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT status FROM strategy_runs WHERE run_id = ?", (str(run_id),)
+            ).fetchone()
+            if row is None:
+                raise RunNotFound(str(run_id))
+            current = RunStatus(row["status"])
+            validate_transition(current, RunStatus.ARTIFACT_CREATED)
+            connection.execute(
+                """
+                INSERT INTO run_artifacts (
+                    run_id, filename, media_type, checksum, created_at
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    str(run_id),
+                    artifact.filename,
+                    artifact.media_type,
+                    artifact.checksum,
+                    artifact.created_at.isoformat().replace("+00:00", "Z"),
+                ),
+            )
+            result = connection.execute(
+                """
+                UPDATE strategy_runs SET status = ?, updated_at = ?
+                WHERE run_id = ? AND status = ?
+                """,
+                (
+                    RunStatus.ARTIFACT_CREATED.value,
+                    timestamp,
+                    str(run_id),
+                    RunStatus.APPROVED.value,
+                ),
             )
             if result.rowcount != 1:
                 raise RuntimeError("run status changed concurrently")

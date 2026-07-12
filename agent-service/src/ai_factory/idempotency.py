@@ -118,3 +118,15 @@ class IdempotencyRepository:
             )
             if result.rowcount != 1:
                 raise RuntimeError("idempotency reservation could not be completed")
+
+    def release(self, operation: str, key: str, request_hash: str) -> None:
+        """Release only an unfinished reservation so an exact retry may resume."""
+        with connect(self.database_path) as connection:
+            connection.execute(
+                """
+                DELETE FROM idempotency_requests
+                WHERE operation = ? AND idempotency_key = ?
+                    AND request_hash = ? AND state = 'pending'
+                """,
+                (operation, key, request_hash),
+            )

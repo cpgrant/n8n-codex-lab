@@ -2,9 +2,10 @@
 
 ## Status
 
-Stage 2 implements `GET /health`, `POST /v1/strategy-runs`, and
-`GET /v1/strategy-runs/{run_id}`. Review and artifact endpoints remain design
-contracts for later stages.
+Stage 3 implements `GET /health`, `POST /v1/strategy-runs`,
+`GET /v1/strategy-runs/{run_id}`,
+`POST /v1/strategy-runs/{run_id}/review`, and
+`GET /v1/strategy-runs/{run_id}/artifact`.
 
 Base URLs:
 
@@ -169,6 +170,9 @@ strategy content.
 Returns `200 text/markdown` only for `artifact_created`. Returns `409
 ARTIFACT_NOT_READY` for a valid run without an approved artifact and `404
 RUN_NOT_FOUND` for an unknown run.
+
+The service verifies the stored SHA-256 checksum before returning the artifact
+and supplies a service-owned `Content-Disposition` filename.
 
 ## Success envelope
 

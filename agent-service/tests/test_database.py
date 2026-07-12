@@ -19,5 +19,10 @@ def test_schema_v2_is_initialized_and_repeatable(tmp_path):
                 "SELECT name FROM sqlite_master WHERE type = 'table'"
             )
         }
-    assert versions == [(1,), (SCHEMA_VERSION,)]
-    assert {"strategy_runs", "idempotency_requests"} <= tables
+    assert versions == [(version,) for version in range(1, SCHEMA_VERSION + 1)]
+    assert {
+        "strategy_runs",
+        "idempotency_requests",
+        "run_reviews",
+        "run_artifacts",
+    } <= tables

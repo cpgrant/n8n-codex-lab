@@ -55,5 +55,13 @@ cd ~/Development/codex/n8n-codex-lab
 scripts/agent-smoke-stage2.sh
 ```
 
+Verify Stage 3 approval, durable review state, Markdown generation, and artifact
+retrieval using only synthetic data:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+scripts/agent-smoke-stage3.sh
+```
+
 The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
 will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.

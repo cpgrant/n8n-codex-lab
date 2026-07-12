@@ -17,11 +17,11 @@ Human -> n8n (Docker) -> agent service (macOS) -> strategy provider
                          approved Markdown artifact
 ```
 
-Stage 2 implements synchronous create/read run endpoints using the deterministic
-`FakeStrategyProvider`, structured-output validation, durable success/failure
-records, request correlation, and SQLite-backed idempotency. It does not yet
-expose review endpoints, perform real model calls, render artifacts, or create
-an n8n workflow.
+Stage 3 implements synchronous create/read run endpoints using the deterministic
+`FakeStrategyProvider`, explicit approval/rejection, immutable review records,
+approved Markdown rendering and retrieval, artifact integrity checks, and
+SQLite-backed idempotency. It does not perform real model calls or create an
+n8n workflow.
 
 ## Example files
 
@@ -183,7 +183,7 @@ Rules:
 | `AI_FACTORY_N8N_URL` | `http://host.docker.internal:8000` | URL used by n8n inside Docker Desktop |
 | `AI_FACTORY_PROVIDER` | `fake` | Provider selection; v0.1 starts with `fake` |
 | `AI_FACTORY_DATA_DIR` | repository `data/` | Local SQLite directory |
-| `AI_FACTORY_ARTIFACT_DIR` | repository `artifacts/` | Future generated artifact directory |
+| `AI_FACTORY_ARTIFACT_DIR` | repository `artifacts/` | Generated approved artifact directory |
 | `OPENAI_API_KEY` | unset secret | Reserved for the later OpenAI provider |
 
 Secrets must never be committed or embedded in workflow exports. The two URLs
@@ -192,8 +192,9 @@ container, not to the Mac.
 
 ## Approved Markdown artifact
 
-The template preserves the eight strategy sections, approval metadata, run ID,
-and generation time. Rendering rules:
+The checked-in template is the human-readable reference layout. The service
+renderer preserves the same eight strategy sections, approval metadata, run ID,
+and generation time without executing template expressions. Rendering rules:
 
 - escape or safely render untrusted Markdown content;
 - include no secrets, hidden prompts, or provider credentials;
@@ -205,7 +206,7 @@ and generation time. Rendering rules:
 ## v0.1 non-goals
 
 - Production use or production data
-- Live n8n workflow creation, activation, or publication during Stages 0-2
+- Live n8n workflow creation, activation, or publication during Stages 0-3
 - PostgreSQL, Redis, vector databases, embeddings, or retrieval-augmented generation
 - LangChain, LangGraph, or the OpenAI Agents SDK
 - Multi-agent orchestration or autonomous tool use

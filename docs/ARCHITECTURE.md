@@ -14,6 +14,7 @@ Codex -> MCP -> n8n (Docker)
          FastAPI service (macOS) -> SQLite
 ```
 
-Stage 2 exposes health and synchronous strategy-run create/read endpoints. It
-uses `FakeStrategyProvider` and SQLite. Review, artifact creation, real model
-calls, and the n8n factory workflow are later stages.
+Stage 3 exposes health, synchronous strategy-run create/read, explicit human
+approval/rejection, and approved Markdown retrieval. It uses
+`FakeStrategyProvider`, SQLite, and repository-local ignored artifact storage.
+Real model calls and the n8n factory workflow are later stages.

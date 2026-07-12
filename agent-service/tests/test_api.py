@@ -123,3 +123,90 @@ def test_failed_generation_is_safe_durable_and_replayable(tmp_path, brief_payloa
     assert replay.json()["meta"]["idempotent_replay"] is True
     assert run.json()["data"]["status"] == "failed"
     assert run.json()["data"]["error_code"] == "PROVIDER_ERROR"
+
+
+def test_approval_creates_replayable_retrievable_markdown(tmp_path, brief_payload):
+    client, _ = client_for(tmp_path)
+    approval = {
+        "decision": "approved",
+        "reviewer": "synthetic-reviewer",
+        "comment": "Approved for the fictional planning exercise.",
+    }
+
+    with client:
+        created = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Idempotency-Key": "synthetic-create-review-001"},
+        )
+        run_id = created.json()["data"]["run_id"]
+        not_ready = client.get(f"/v1/strategy-runs/{run_id}/artifact")
+        reviewed = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json=approval,
+            headers={"Idempotency-Key": "synthetic-approval-001"},
+        )
+        replay = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json=approval,
+            headers={"Idempotency-Key": "synthetic-approval-001"},
+        )
+        fetched = client.get(f"/v1/strategy-runs/{run_id}")
+        artifact = client.get(f"/v1/strategy-runs/{run_id}/artifact")
+
+    assert not_ready.status_code == 409
+    assert not_ready.json()["error"]["code"] == "ARTIFACT_NOT_READY"
+    assert reviewed.status_code == 200
+    assert reviewed.json()["data"]["status"] == "artifact_created"
+    assert reviewed.json()["data"]["review"]["decision"] == "approved"
+    assert reviewed.json()["data"]["artifact"]["media_type"] == "text/markdown"
+    assert replay.status_code == 200
+    assert replay.json()["data"] == reviewed.json()["data"]
+    assert replay.json()["meta"]["idempotent_replay"] is True
+    assert fetched.json()["data"]["review"] == reviewed.json()["data"]["review"]
+    assert fetched.json()["data"]["artifact"] == reviewed.json()["data"]["artifact"]
+    assert artifact.status_code == 200
+    assert artifact.headers["content-type"].startswith("text/markdown")
+    assert "## Executive summary" in artifact.text
+    assert "Approved AI Strategy Factory v0.1 artifact" in artifact.text
+
+
+def test_rejection_requires_comment_and_is_final(tmp_path, brief_payload):
+    client, _ = client_for(tmp_path)
+
+    with client:
+        created = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Idempotency-Key": "synthetic-create-review-002"},
+        )
+        run_id = created.json()["data"]["run_id"]
+        invalid = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json={"decision": "rejected", "reviewer": "synthetic-reviewer"},
+            headers={"Idempotency-Key": "synthetic-rejection-invalid"},
+        )
+        rejected = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json={
+                "decision": "rejected",
+                "reviewer": "synthetic-reviewer",
+                "comment": "Revise the fictional sequencing.",
+            },
+            headers={"Idempotency-Key": "synthetic-rejection-001"},
+        )
+        later_approval = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json={"decision": "approved", "reviewer": "synthetic-reviewer"},
+            headers={"Idempotency-Key": "synthetic-approval-too-late"},
+        )
+        artifact = client.get(f"/v1/strategy-runs/{run_id}/artifact")
+
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert rejected.status_code == 200
+    assert rejected.json()["data"]["status"] == "rejected"
+    assert rejected.json()["data"]["artifact"] is None
+    assert later_approval.status_code == 409
+    assert later_approval.json()["error"]["code"] == "INVALID_STATE_TRANSITION"
+    assert artifact.status_code == 409

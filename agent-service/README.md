@@ -1,9 +1,9 @@
 # AI Strategy Factory service
 
-Stage 2 provides the local FastAPI and SQLite strategy-generation slice. It
-exposes health plus create/read run endpoints backed by the deterministic fake
-provider. Review, artifacts, real model calls, and n8n integration are later
-stages.
+Stage 3 provides the local FastAPI and SQLite strategy-generation and human
+review slice. It exposes health, create/read runs, approval/rejection, and
+approved Markdown retrieval. Generation remains backed by the deterministic
+fake provider. Real model calls and n8n integration are later stages.
 
 ## Setup on macOS
 
@@ -36,6 +36,12 @@ With the service running, execute the synthetic Stage 2 API smoke test:
 
 ```bash
 scripts/agent-smoke-stage2.sh
+```
+
+Execute the synthetic Stage 3 approval and artifact smoke test:
+
+```bash
+scripts/agent-smoke-stage3.sh
 ```
 
 Runtime SQLite files are written beneath `AI_FACTORY_DATA_DIR` and ignored by

@@ -49,3 +49,14 @@ def test_idempotency_key_validation():
     with pytest.raises(FactoryError) as missing:
         validate_idempotency_key(None)
     assert missing.value.code == "IDEMPOTENCY_KEY_REQUIRED"
+
+
+def test_pending_reservation_can_be_released_for_safe_retry(tmp_path):
+    database_path = tmp_path / "runs.db"
+    initialize_database(database_path)
+    repository = IdempotencyRepository(database_path)
+    repository.reserve("review", "synthetic-key", "hash")
+
+    repository.release("review", "synthetic-key", "hash")
+
+    assert repository.reserve("review", "synthetic-key", "hash") is None
