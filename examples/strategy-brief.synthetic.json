@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1",
+  "title": "Improve volunteer onboarding for a fictional community garden network",
+  "organization": {
+    "name": "Northstar Community Gardens",
+    "type": "fictional nonprofit network",
+    "context": "A synthetic organization coordinating five imaginary neighborhood gardens."
+  },
+  "decision_horizon": "Next 12 months",
+  "challenge": "New volunteers often attend one orientation but do not complete a first garden shift, limiting the network's ability to staff weekend activities.",
+  "desired_outcomes": [
+    "Increase the share of oriented volunteers who complete a first shift.",
+    "Make onboarding consistent across all five fictional gardens.",
+    "Reduce coordination effort for volunteer garden leads."
+  ],
+  "constraints": [
+    "Use only existing fictional staff and volunteer roles.",
+    "Do not introduce paid software during the first six months.",
+    "Keep the onboarding process accessible from a mobile phone."
+  ],
+  "available_evidence": [
+    "Synthetic baseline: 120 people attended orientation last season.",
+    "Synthetic baseline: 42 of those people completed a first shift.",
+    "Synthetic interview theme: volunteers were unsure which shift suited beginners."
+  ],
+  "stakeholders": [
+    "Volunteer coordinator",
+    "Garden leads",
+    "New volunteers",
+    "Fictional board sponsor"
+  ],
+  "requested_by": "synthetic-lab-user",
+  "supersedes_run_id": null
+}

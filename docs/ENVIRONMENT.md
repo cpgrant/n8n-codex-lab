@@ -17,3 +17,12 @@
 
 - Codex lab directory: ~/Development/codex/n8n-codex-lab
 
+- Python: 3.11+
+
+- Python project runner: uv
+
+- AI Factory host URL: http://127.0.0.1:8000
+
+- AI Factory URL from n8n Docker: http://host.docker.internal:8000
+
+- AI Factory persistence: local SQLite under `data/`

@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1",
+  "run_id": "4a3fd768-726a-4d7c-a722-5215d87511e4",
+  "status": "awaiting_review",
+  "executive_summary": "Northstar Community Gardens should focus on converting orientation interest into a clearly scheduled first shift. A common beginner pathway, named shift hosts, and a small measurement loop can improve conversion without adding paid software or staff.",
+  "current_situation": {
+    "summary": "The fictional network attracts volunteers but loses momentum between orientation and the first practical shift. Local variation and unclear beginner options increase friction for volunteers and garden leads.",
+    "evidence": [
+      "The synthetic orientation-to-first-shift conversion is 35% (42 of 120).",
+      "Synthetic interviews indicate uncertainty about beginner-friendly shifts.",
+      "Five fictional gardens currently coordinate onboarding independently."
+    ]
+  },
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Raise the synthetic orientation-to-first-shift conversion rate from 35% to at least 60%.",
+      "time_horizon": "Within 12 months"
+    },
+    {
+      "id": "OBJ-2",
+      "statement": "Adopt one minimum onboarding pathway across all five fictional gardens.",
+      "time_horizon": "Within 6 months"
+    },
+    {
+      "id": "OBJ-3",
+      "statement": "Reduce routine onboarding coordination effort for garden leads.",
+      "time_horizon": "Within 9 months"
+    }
+  ],
+  "strategic_choices": [
+    {
+      "id": "CHO-1",
+      "choice": "Prioritize the first completed shift as the main onboarding outcome.",
+      "rationale": "It is the clearest observable step between initial interest and active volunteering.",
+      "trade_offs": "Other engagement activities receive less attention during the initial six-month pilot."
+    },
+    {
+      "id": "CHO-2",
+      "choice": "Standardize a minimum pathway while allowing gardens to retain local details.",
+      "rationale": "A common core reduces confusion without removing useful local flexibility.",
+      "trade_offs": "Garden leads must align on a small set of shared practices."
+    }
+  ],
+  "recommended_initiatives": [
+    {
+      "id": "INIT-1",
+      "name": "Beginner shift pathway",
+      "description": "Publish a mobile-friendly list of recurring beginner shifts and let each oriented volunteer select one before leaving orientation.",
+      "owner_role": "Volunteer coordinator",
+      "timeframe": "Months 1-2",
+      "supports_objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
+    },
+    {
+      "id": "INIT-2",
+      "name": "Named first-shift hosts",
+      "description": "Assign a trained fictional host to welcome beginners at each listed shift and use a short common checklist.",
+      "owner_role": "Garden leads",
+      "timeframe": "Months 2-4",
+      "supports_objectives": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3"
+      ]
+    },
+    {
+      "id": "INIT-3",
+      "name": "Monthly conversion review",
+      "description": "Review a minimal synthetic funnel by garden and resolve the largest point of volunteer drop-off.",
+      "owner_role": "Volunteer coordinator",
+      "timeframe": "Months 3-12",
+      "supports_objectives": [
+        "OBJ-1",
+        "OBJ-3"
+      ]
+    }
+  ],
+  "risks_and_assumptions": {
+    "risks": [
+      "Volunteer hosts may be unavailable for some weekend shifts.",
+      "Local variation may weaken adoption of the common pathway.",
+      "Synthetic tracking may be incomplete during the pilot."
+    ],
+    "assumptions": [
+      "The fictional gardens can publish a shared mobile-friendly schedule using existing tools.",
+      "At least one volunteer host can be identified per garden.",
+      "Completing a first shift is a useful early indicator of continued participation."
+    ]
+  },
+  "success_measures": [
+    {
+      "id": "MET-1",
+      "measure": "Orientation-to-first-shift conversion rate",
+      "target": "At least 60%",
+      "review_frequency": "Monthly"
+    },
+    {
+      "id": "MET-2",
+      "measure": "Gardens using the minimum onboarding pathway",
+      "target": "5 of 5",
+      "review_frequency": "Quarterly"
+    },
+    {
+      "id": "MET-3",
+      "measure": "Median days from orientation to first shift",
+      "target": "7 days or fewer",
+      "review_frequency": "Monthly"
+    }
+  ],
+  "next_steps": [
+    {
+      "order": 1,
+      "action": "Agree on the definition of a completed first shift and the synthetic baseline.",
+      "owner_role": "Volunteer coordinator"
+    },
+    {
+      "order": 2,
+      "action": "Design the minimum beginner pathway with representatives from the five fictional gardens.",
+      "owner_role": "Garden leads"
+    },
+    {
+      "order": 3,
+      "action": "Run a two-garden synthetic pilot before network-wide adoption.",
+      "owner_role": "Fictional board sponsor"
+    }
+  ],
+  "generated_at": "2026-07-12T10:00:01Z",
+  "provider": "fake"
+}

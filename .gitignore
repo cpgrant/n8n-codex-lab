@@ -16,6 +16,26 @@
 *.swp
 *.bak
 
+# Python service
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# AI Factory local runtime state
+data/*
+!data/.gitkeep
+artifacts/*
+!artifacts/.gitkeep
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
 # Workflow test output
 output/
 tmp/
