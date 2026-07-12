@@ -60,6 +60,13 @@ def test_ollama_provider_sends_schema_and_injects_service_metadata(
     assert captured["payload"]["think"] is False
     assert captured["payload"]["options"] == {"temperature": 0}
     assert captured["payload"]["format"]["type"] == "object"
+    prompt = " ".join(
+        message["content"] for message in captured["payload"]["messages"]
+    )
+    assert "measurable numeric targets" in prompt
+    assert "desired end-state number" in prompt
+    assert "Use stakeholder labels" in prompt
+    assert "sequential IDs without gaps" in prompt
     assert result["run_id"] == str(run_id)
     assert result["provider"] == "ollama"
     assert result["status"] == "awaiting_review"

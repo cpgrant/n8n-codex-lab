@@ -11,67 +11,70 @@
             {
               "fieldLabel": "Strategy title",
               "fieldName": "title",
-              "defaultValue": "Synthetic volunteer onboarding strategy",
+              "defaultValue": "Improve volunteer onboarding for a fictional community garden network",
               "requiredField": true
             },
             {
               "fieldLabel": "Organization name",
               "fieldName": "organization_name",
-              "defaultValue": "Northstar Gardens",
+              "defaultValue": "Northstar Community Gardens",
               "requiredField": true
             },
             {
               "fieldLabel": "Organization type",
               "fieldName": "organization_type",
-              "defaultValue": "Fictional nonprofit",
+              "defaultValue": "fictional nonprofit network",
               "requiredField": true
             },
             {
               "fieldLabel": "Organization context",
               "fieldName": "organization_context",
               "fieldType": "textarea",
-              "defaultValue": "Synthetic local community garden network",
+              "defaultValue": "A synthetic organization coordinating five imaginary neighborhood gardens.",
               "requiredField": true
             },
             {
               "fieldLabel": "Decision horizon",
               "fieldName": "decision_horizon",
-              "defaultValue": "12 months",
+              "defaultValue": "Next 12 months",
               "requiredField": true
             },
             {
               "fieldLabel": "Strategic challenge",
               "fieldName": "challenge",
               "fieldType": "textarea",
-              "defaultValue": "Improve conversion from orientation to first volunteer shift",
+              "defaultValue": "New volunteers often attend one orientation but do not complete a first garden shift, limiting the network's ability to staff weekend activities.",
               "requiredField": true
             },
             {
               "fieldLabel": "Desired outcomes (one per line)",
               "fieldName": "desired_outcomes",
               "fieldType": "textarea",
-              "defaultValue": "Increase first-shift completion",
+              "defaultValue": "Increase the share of oriented volunteers who complete a first shift.\nMake onboarding consistent across all five fictional gardens.\nReduce coordination effort for volunteer garden leads.",
               "requiredField": true
             },
             {
               "fieldLabel": "Constraints (one per line)",
               "fieldName": "constraints",
-              "fieldType": "textarea"
+              "fieldType": "textarea",
+              "defaultValue": "Use only existing fictional staff and volunteer roles.\nDo not introduce paid software during the first six months.\nKeep the onboarding process accessible from a mobile phone."
             },
             {
               "fieldLabel": "Available evidence (one per line)",
               "fieldName": "available_evidence",
-              "fieldType": "textarea"
+              "fieldType": "textarea",
+              "defaultValue": "Synthetic baseline: 120 people attended orientation last season.\nSynthetic baseline: 42 of those people completed a first shift.\nSynthetic interview theme: volunteers were unsure which shift suited beginners."
             },
             {
               "fieldLabel": "Stakeholders (one per line)",
               "fieldName": "stakeholders",
-              "fieldType": "textarea"
+              "fieldType": "textarea",
+              "defaultValue": "Volunteer coordinator\nGarden leads\nNew volunteers\nFictional board sponsor"
             },
             {
               "fieldLabel": "Requested by",
               "fieldName": "requested_by",
-              "defaultValue": "synthetic-n8n-reviewer",
+              "defaultValue": "synthetic-lab-user",
               "requiredField": true
             }
           ]

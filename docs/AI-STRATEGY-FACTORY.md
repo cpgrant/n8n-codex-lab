@@ -245,6 +245,26 @@ retryable `502 PROVIDER_ERROR`. Malformed or schema-invalid model content
 produces a non-retryable `422 PROVIDER_OUTPUT_INVALID`. Raw model errors and
 prompts are not returned to n8n.
 
+## Stage 6.1 generation quality contract
+
+Stage 6.1 strengthens valid strategy content without adding another model or
+service. A reviewable strategy requires:
+
+- 2-4 sequentially identified objectives;
+- 2-4 sequentially identified strategic choices with explicit trade-offs;
+- 3-5 sequentially identified initiatives referencing only existing objective
+  IDs;
+- 1-6 risks and 1-6 assumptions;
+- 2-4 sequentially identified success measures;
+- 3-6 next steps ordered sequentially from 1.
+
+The Ollama prompt also requires grounding in supplied evidence and stakeholder
+labels, measurable numeric targets when supported by numeric evidence, and
+explicit treatment of material constraints. Structural depth and cross-field
+references are enforced by Pydantic before a run can reach `awaiting_review`.
+Human review remains mandatory because structural validity does not guarantee
+strategic quality.
+
 ## n8n form availability
 
 The editor's `/form-test/...` URL is temporary and works only while a manual

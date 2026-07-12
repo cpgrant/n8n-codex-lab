@@ -91,17 +91,32 @@ class OllamaStrategyProvider:
                 {
                     "role": "system",
                     "content": (
-                        "You are AI Strategy Factory v0.1. Create a modest, "
-                        "decision-oriented strategy using only the supplied synthetic "
-                        "brief. Do not invent real people, organizations, evidence, "
-                        "credentials, URLs, or confidential facts. Return only JSON "
-                        "that satisfies the supplied schema."
+                        "You are AI Strategy Factory v0.1. Create a concise but "
+                        "decision-ready strategy using only the supplied synthetic "
+                        "brief. Ground every factual claim in the brief. Do not invent "
+                        "people, organizations, evidence, credentials, URLs, software, "
+                        "budgets, or confidential facts. Use stakeholder labels from "
+                        "the brief as owner roles when stakeholders are supplied. "
+                        "Reflect every material constraint in the choices or "
+                        "initiatives. Preserve numeric baselines and use measurable "
+                        "numeric targets when the evidence supports them. A target "
+                        "must state a desired end-state number; never use vague targets "
+                        "such as 'higher', 'increase', or 'improve' without that number. "
+                        "If no "
+                        "evidence is supplied, return an empty evidence list rather "
+                        "than fabricating evidence. Return only JSON that satisfies "
+                        "the supplied schema."
                     ),
                 },
                 {
                     "role": "user",
                     "content": (
-                        "Generate the eight-section strategy for this synthetic brief.\n\n"
+                        "Generate the eight-section strategy for this synthetic brief. "
+                        "Make each objective distinct, each strategic choice a real "
+                        "decision with an explicit trade-off, and each initiative "
+                        "specific enough to execute. Use sequential IDs without gaps, "
+                        "reference only objective IDs that exist, and order next steps "
+                        "sequentially from 1.\n\n"
                         f"BRIEF:\n{brief_json}\n\nJSON SCHEMA:\n{schema_json}"
                     ),
                 },

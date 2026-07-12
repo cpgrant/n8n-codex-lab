@@ -63,8 +63,8 @@ class RecommendedInitiative(StrictModel):
 
 
 class RisksAndAssumptions(StrictModel):
-    risks: list[str]
-    assumptions: list[str]
+    risks: list[str] = Field(min_length=1, max_length=6)
+    assumptions: list[str] = Field(min_length=1, max_length=6)
 
 
 class SuccessMeasure(StrictModel):
@@ -83,12 +83,58 @@ class NextStep(StrictModel):
 class StrategyContent(StrictModel):
     executive_summary: str = Field(min_length=1)
     current_situation: CurrentSituation
-    objectives: list[Objective] = Field(min_length=1)
-    strategic_choices: list[StrategicChoice] = Field(min_length=1)
-    recommended_initiatives: list[RecommendedInitiative] = Field(min_length=1)
+    objectives: list[Objective] = Field(min_length=2, max_length=4)
+    strategic_choices: list[StrategicChoice] = Field(min_length=2, max_length=4)
+    recommended_initiatives: list[RecommendedInitiative] = Field(
+        min_length=3, max_length=5
+    )
     risks_and_assumptions: RisksAndAssumptions
-    success_measures: list[SuccessMeasure] = Field(min_length=1)
-    next_steps: list[NextStep] = Field(min_length=1)
+    success_measures: list[SuccessMeasure] = Field(min_length=2, max_length=4)
+    next_steps: list[NextStep] = Field(min_length=3, max_length=6)
+
+    @model_validator(mode="after")
+    def validate_strategy_references(self) -> "StrategyContent":
+        expected_ids = {
+            "objectives": [f"OBJ-{index}" for index in range(1, len(self.objectives) + 1)],
+            "strategic_choices": [
+                f"CHO-{index}" for index in range(1, len(self.strategic_choices) + 1)
+            ],
+            "recommended_initiatives": [
+                f"INIT-{index}"
+                for index in range(1, len(self.recommended_initiatives) + 1)
+            ],
+            "success_measures": [
+                f"MET-{index}" for index in range(1, len(self.success_measures) + 1)
+            ],
+        }
+        actual_ids = {
+            "objectives": [item.id for item in self.objectives],
+            "strategic_choices": [item.id for item in self.strategic_choices],
+            "recommended_initiatives": [
+                item.id for item in self.recommended_initiatives
+            ],
+            "success_measures": [item.id for item in self.success_measures],
+        }
+        for section, expected in expected_ids.items():
+            if actual_ids[section] != expected:
+                raise ValueError(f"{section} IDs must be unique and sequential")
+
+        objective_ids = set(actual_ids["objectives"])
+        for initiative in self.recommended_initiatives:
+            references = initiative.supports_objectives
+            if len(references) != len(set(references)):
+                raise ValueError(
+                    "initiative objective references must not contain duplicates"
+                )
+            if not set(references).issubset(objective_ids):
+                raise ValueError(
+                    "initiative objective references must identify existing objectives"
+                )
+
+        orders = [step.order for step in self.next_steps]
+        if orders != list(range(1, len(self.next_steps) + 1)):
+            raise ValueError("next step order values must be unique and sequential")
+        return self
 
 
 class StrategyResponse(StrategyContent):

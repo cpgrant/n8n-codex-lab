@@ -136,5 +136,10 @@ The first `gemma4:31b` request may be slow while the model loads. To return to
 deterministic operation, restart FastAPI without `AI_FACTORY_PROVIDER=ollama`.
 The n8n workflow requires no modification and remains inactive/unpublished.
 
+The Stage 6.1 exported workflow prefills every form field with
+`examples/strategy-brief.synthetic.json`. This avoids hurried manual entry on
+the temporary test URL while still allowing each value to be overwritten with
+other synthetic data.
+
 The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
 will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.

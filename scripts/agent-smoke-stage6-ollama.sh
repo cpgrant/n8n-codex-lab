@@ -28,10 +28,11 @@ jq -e '
   .data.status == "awaiting_review"
   and .data.strategy.provider == "ollama"
   and (.data.strategy.executive_summary | length > 0)
-  and (.data.strategy.objectives | length > 0)
-  and (.data.strategy.strategic_choices | length > 0)
-  and (.data.strategy.recommended_initiatives | length > 0)
-  and (.data.strategy.next_steps | length > 0)
+  and ((.data.strategy.objectives | length) >= 2)
+  and ((.data.strategy.strategic_choices | length) >= 2)
+  and ((.data.strategy.recommended_initiatives | length) >= 3)
+  and ((.data.strategy.success_measures | length) >= 2)
+  and ((.data.strategy.next_steps | length) >= 3)
 ' "$RESPONSE_FILE" >/dev/null
 
 echo "Stage 6 Ollama smoke test passed for synthetic run: $RUN_ID"

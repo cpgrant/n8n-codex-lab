@@ -35,8 +35,9 @@ Strategy Brief Form node, choose the test/execute action, and open its test form
 URL. Keep the workflow inactive and unpublished. Enter only fictional data, or
 adapt the checked-in synthetic example brief.
 
-The required fields contain synthetic defaults so the initial test can be
-submitted immediately before n8n's temporary test listener expires.
+Every brief field contains defaults from the checked-in synthetic example so a
+complete grounded test can be submitted immediately before n8n's temporary
+test listener expires. Replace any values only with other synthetic data.
 
 The `/form-test/...` URL is tied to the current manual test execution. If the
 listener expires while the form is being completed, n8n displays a submission
