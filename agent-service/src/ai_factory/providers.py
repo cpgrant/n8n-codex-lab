@@ -3,12 +3,27 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import datetime, timezone
 import json
 from pathlib import Path
-from typing import Protocol
+import socket
+from typing import Callable, Protocol
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 from uuid import UUID
 
-from .schemas import StrategyBrief
+from .schemas import StrategyBrief, StrategyContent
+
+
+class ProviderTransportError(Exception):
+    """The provider could not be reached or returned an invalid envelope."""
+
+
+class ProviderOutputError(Exception):
+    """The provider response did not contain parseable structured content."""
+
+
+OllamaTransport = Callable[[str, dict[str, object], float], dict[str, object]]
 
 
 class StrategyProvider(Protocol):
@@ -41,6 +56,107 @@ class FakeStrategyProvider:
         return cls(json.loads(fixture_path.read_text(encoding="utf-8")))
 
 
+class OllamaStrategyProvider:
+    """Generate structured strategy content through a local Ollama server."""
+
+    name = "ollama"
+
+    def __init__(
+        self,
+        base_url: str,
+        model: str,
+        timeout_seconds: float,
+        transport: OllamaTransport | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.timeout_seconds = timeout_seconds
+        self._transport = transport or self._post_json
+
+    def generate_strategy(
+        self, brief: StrategyBrief, run_id: UUID
+    ) -> dict[str, object]:
+        schema = StrategyContent.model_json_schema()
+        brief_json = json.dumps(
+            brief.model_dump(mode="json"), ensure_ascii=False, indent=2
+        )
+        schema_json = json.dumps(schema, ensure_ascii=False, separators=(",", ":"))
+        payload: dict[str, object] = {
+            "model": self.model,
+            "stream": False,
+            "think": False,
+            "format": schema,
+            "options": {"temperature": 0},
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are AI Strategy Factory v0.1. Create a modest, "
+                        "decision-oriented strategy using only the supplied synthetic "
+                        "brief. Do not invent real people, organizations, evidence, "
+                        "credentials, URLs, or confidential facts. Return only JSON "
+                        "that satisfies the supplied schema."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        "Generate the eight-section strategy for this synthetic brief.\n\n"
+                        f"BRIEF:\n{brief_json}\n\nJSON SCHEMA:\n{schema_json}"
+                    ),
+                },
+            ],
+        }
+
+        envelope = self._transport(
+            f"{self.base_url}/api/chat", payload, self.timeout_seconds
+        )
+        message = envelope.get("message")
+        if not isinstance(message, dict) or not isinstance(message.get("content"), str):
+            raise ProviderTransportError("Ollama returned an invalid response envelope")
+        try:
+            content = json.loads(message["content"])
+        except json.JSONDecodeError as exc:
+            raise ProviderOutputError("Ollama returned malformed structured JSON") from exc
+        if not isinstance(content, dict):
+            raise ProviderOutputError("Ollama structured output was not an object")
+
+        result = dict(content)
+        result.update(
+            {
+                "schema_version": "0.1",
+                "run_id": str(run_id),
+                "status": "awaiting_review",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "provider": self.name,
+            }
+        )
+        return result
+
+    @staticmethod
+    def _post_json(
+        url: str, payload: dict[str, object], timeout_seconds: float
+    ) -> dict[str, object]:
+        request = Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                raw = response.read()
+        except (HTTPError, URLError, TimeoutError, socket.timeout, OSError) as exc:
+            raise ProviderTransportError("Ollama request failed") from exc
+        try:
+            envelope = json.loads(raw)
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise ProviderTransportError("Ollama returned an invalid JSON envelope") from exc
+        if not isinstance(envelope, dict):
+            raise ProviderTransportError("Ollama response envelope was not an object")
+        return envelope
+
+
 class OpenAIStrategyProvider:
     """Reserved provider name; implementation belongs to a later stage."""
 
@@ -49,4 +165,4 @@ class OpenAIStrategyProvider:
     def generate_strategy(
         self, brief: StrategyBrief, run_id: UUID
     ) -> dict[str, object]:
-        raise NotImplementedError("OpenAIStrategyProvider is not implemented in Stage 1")
+        raise NotImplementedError("OpenAIStrategyProvider is not implemented in Stage 6")

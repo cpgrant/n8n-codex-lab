@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
@@ -16,6 +17,9 @@ class Settings:
     host_url: str = "http://127.0.0.1:8000"
     n8n_url: str = "http://host.docker.internal:8000"
     provider: str = "fake"
+    ollama_base_url: str = "http://127.0.0.1:11888"
+    ollama_model: str = "gemma4:31b"
+    ollama_timeout_seconds: float = 300.0
     data_dir: Path = REPOSITORY_ROOT / "data"
     artifact_dir: Path = REPOSITORY_ROOT / "artifacts"
 
@@ -34,8 +38,29 @@ class Settings:
             raise ValueError("AI_FACTORY_PORT must be between 1 and 65535")
 
         provider = os.getenv("AI_FACTORY_PROVIDER", "fake").strip().lower()
-        if provider not in {"fake", "openai"}:
-            raise ValueError("AI_FACTORY_PROVIDER must be 'fake' or 'openai'")
+        if provider not in {"fake", "ollama", "openai"}:
+            raise ValueError(
+                "AI_FACTORY_PROVIDER must be 'fake', 'ollama', or 'openai'"
+            )
+
+        ollama_base_url = os.getenv(
+            "OLLAMA_BASE_URL", "http://127.0.0.1:11888"
+        ).rstrip("/")
+        parsed_ollama_url = urlparse(ollama_base_url)
+        if parsed_ollama_url.scheme not in {"http", "https"} or not parsed_ollama_url.netloc:
+            raise ValueError("OLLAMA_BASE_URL must be an absolute HTTP(S) URL")
+
+        ollama_model = os.getenv("OLLAMA_MODEL", "gemma4:31b").strip()
+        if not ollama_model:
+            raise ValueError("OLLAMA_MODEL must not be empty")
+
+        timeout_text = os.getenv("OLLAMA_TIMEOUT_SECONDS", "300")
+        try:
+            ollama_timeout_seconds = float(timeout_text)
+        except ValueError as exc:
+            raise ValueError("OLLAMA_TIMEOUT_SECONDS must be a number") from exc
+        if not 1 <= ollama_timeout_seconds <= 1800:
+            raise ValueError("OLLAMA_TIMEOUT_SECONDS must be between 1 and 1800")
 
         return cls(
             host=os.getenv("AI_FACTORY_HOST", "127.0.0.1"),
@@ -47,6 +72,9 @@ class Settings:
                 "AI_FACTORY_N8N_URL", "http://host.docker.internal:8000"
             ).rstrip("/"),
             provider=provider,
+            ollama_base_url=ollama_base_url,
+            ollama_model=ollama_model,
+            ollama_timeout_seconds=ollama_timeout_seconds,
             data_dir=Path(
                 os.getenv("AI_FACTORY_DATA_DIR", str(REPOSITORY_ROOT / "data"))
             ),

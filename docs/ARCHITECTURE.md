@@ -30,3 +30,16 @@ Human test form -> n8n (Docker) -> FastAPI (macOS) -> SQLite
 
 n8n reaches the Mac service through `host.docker.internal:8000`. The workflow
 remains inactive and unpublished unless separately approved.
+
+Stage 6 adds an optional local model path without changing the n8n workflow:
+
+```text
+n8n (Docker) -> FastAPI :8000 -> Ollama :11888 -> gemma4:31b
+                              -> SQLite
+                              -> approved Markdown artifact
+```
+
+`FakeStrategyProvider` remains the deterministic test default.
+`OllamaStrategyProvider` is selected only through the FastAPI process
+environment. Ollama never receives review decisions, writes SQLite records, or
+creates artifacts.

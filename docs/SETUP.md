@@ -111,5 +111,30 @@ click **Execute workflow** again and use the newly opened form. Do not publish
 the workflow merely to avoid the test-listener timeout without making that
 separate operational decision explicitly.
 
+## Stage 6 Ollama strategy generation
+
+Ensure `scripts/start.sh` has made Ollama available at port `11888`. Stop the
+currently running fake-provider FastAPI process with `Ctrl-C`, then start it in
+Ollama mode:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+AI_FACTORY_PROVIDER=ollama \
+OLLAMA_BASE_URL=http://127.0.0.1:11888 \
+OLLAMA_MODEL=gemma4:31b \
+OLLAMA_TIMEOUT_SECONDS=300 \
+scripts/agent-start.sh
+```
+
+In a second terminal:
+
+```bash
+scripts/agent-smoke-stage6-ollama.sh
+```
+
+The first `gemma4:31b` request may be slow while the model loads. To return to
+deterministic operation, restart FastAPI without `AI_FACTORY_PROVIDER=ollama`.
+The n8n workflow requires no modification and remains inactive/unpublished.
+
 The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
 will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.

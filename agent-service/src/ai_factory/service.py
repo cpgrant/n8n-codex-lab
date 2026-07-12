@@ -5,7 +5,7 @@ from __future__ import annotations
 from pydantic import ValidationError
 
 from .errors import FactoryError
-from .providers import StrategyProvider
+from .providers import ProviderOutputError, StrategyProvider
 from .repository import RunRecord, RunRepository
 from .schemas import StrategyBrief, StrategyResponse
 from .statuses import RunStatus
@@ -21,6 +21,19 @@ class StrategyService:
         self.repository.transition(run.run_id, RunStatus.GENERATING)
         try:
             raw_strategy = self.provider.generate_strategy(brief, run.run_id)
+        except ProviderOutputError as exc:
+            self.repository.fail_generation(
+                run.run_id,
+                "PROVIDER_OUTPUT_INVALID",
+                "The provider output did not satisfy the strategy contract.",
+            )
+            raise FactoryError(
+                422,
+                "PROVIDER_OUTPUT_INVALID",
+                "The provider output did not satisfy the strategy contract.",
+                run_id=run.run_id,
+                retryable=False,
+            ) from exc
         except Exception as exc:
             self.repository.fail_generation(
                 run.run_id, "PROVIDER_ERROR", "The strategy provider failed."

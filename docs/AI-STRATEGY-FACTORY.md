@@ -100,6 +100,9 @@ Providers:
 
 - `FakeStrategyProvider`: first implementation; deterministic output for tests
   and synthetic demonstrations, with no network or model dependency.
+- `OllamaStrategyProvider`: Stage 6 opt-in implementation; calls a local Ollama
+  server with a JSON schema, validates the returned eight-section strategy,
+  and requires no API key.
 - `OpenAIStrategyProvider`: later implementation behind the same interface.
 
 Providers return strategy content only. They do not assign run IDs, change run
@@ -189,6 +192,9 @@ Rules:
 | `AI_FACTORY_HOST_URL` | `http://127.0.0.1:8000` | URL used by host-side checks |
 | `AI_FACTORY_N8N_URL` | `http://host.docker.internal:8000` | URL used by n8n inside Docker Desktop |
 | `AI_FACTORY_PROVIDER` | `fake` | Provider selection; v0.1 starts with `fake` |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11888` | Host-side local Ollama API URL |
+| `OLLAMA_MODEL` | `gemma4:31b` | Local model selected for Stage 6 |
+| `OLLAMA_TIMEOUT_SECONDS` | `300` | Synchronous local generation timeout |
 | `AI_FACTORY_DATA_DIR` | repository `data/` | Local SQLite directory |
 | `AI_FACTORY_ARTIFACT_DIR` | repository `artifacts/` | Generated approved artifact directory |
 | `OPENAI_API_KEY` | unset secret | Reserved for the later OpenAI provider |
@@ -225,6 +231,19 @@ and generation time without executing template expressions. Rendering rules:
 - Rich document formats such as DOCX, PDF, or slides
 - Automatic publication or external distribution of artifacts
 - Use of real company, customer, employee, or confidential strategy data
+
+## Stage 6 local model behavior
+
+Stage 6 keeps provider choice in service configuration; API clients and n8n
+cannot choose a provider per request. With `AI_FACTORY_PROVIDER=ollama`, the
+service sends the synthetic brief and the strategy-content JSON schema to the
+local Ollama `/api/chat` endpoint with streaming and thinking disabled and
+temperature set to zero. The service, not the model, assigns run metadata.
+
+Connection, timeout, HTTP, or invalid Ollama-envelope failures produce a safe,
+retryable `502 PROVIDER_ERROR`. Malformed or schema-invalid model content
+produces a non-retryable `422 PROVIDER_OUTPUT_INVALID`. Raw model errors and
+prompts are not returned to n8n.
 
 ## n8n form availability
 

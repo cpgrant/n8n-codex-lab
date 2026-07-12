@@ -80,10 +80,7 @@ class NextStep(StrictModel):
     owner_role: str = Field(min_length=1)
 
 
-class StrategyResponse(StrictModel):
-    schema_version: Literal["0.1"]
-    run_id: UUID
-    status: Literal[RunStatus.AWAITING_REVIEW]
+class StrategyContent(StrictModel):
     executive_summary: str = Field(min_length=1)
     current_situation: CurrentSituation
     objectives: list[Objective] = Field(min_length=1)
@@ -92,8 +89,14 @@ class StrategyResponse(StrictModel):
     risks_and_assumptions: RisksAndAssumptions
     success_measures: list[SuccessMeasure] = Field(min_length=1)
     next_steps: list[NextStep] = Field(min_length=1)
+
+
+class StrategyResponse(StrategyContent):
+    schema_version: Literal["0.1"]
+    run_id: UUID
+    status: Literal[RunStatus.AWAITING_REVIEW]
     generated_at: datetime
-    provider: Literal["fake", "openai"]
+    provider: Literal["fake", "ollama", "openai"]
 
 
 class ReviewRequest(StrictModel):

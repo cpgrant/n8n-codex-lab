@@ -1,9 +1,9 @@
 # AI Strategy Factory service
 
-Stage 3 provides the local FastAPI and SQLite strategy-generation and human
-review slice. It exposes health, create/read runs, approval/rejection, and
-approved Markdown retrieval. Generation remains backed by the deterministic
-fake provider. Real model calls and n8n integration are later stages.
+The local FastAPI and SQLite service exposes health, create/read runs,
+approval/rejection, and approved Markdown retrieval. Generation supports the
+deterministic fake provider and the opt-in local Ollama provider introduced in
+Stage 6.
 
 ## Setup on macOS
 
@@ -46,3 +46,30 @@ scripts/agent-smoke-stage3.sh
 
 Runtime SQLite files are written beneath `AI_FACTORY_DATA_DIR` and ignored by
 Git. Use synthetic data only.
+
+## Ollama provider
+
+Start n8n and repository-managed Ollama:
+
+```bash
+scripts/start.sh
+```
+
+Stop any existing fake-provider FastAPI process, then start the service with
+the local model explicitly selected:
+
+```bash
+AI_FACTORY_PROVIDER=ollama \
+OLLAMA_BASE_URL=http://127.0.0.1:11888 \
+OLLAMA_MODEL=gemma4:31b \
+OLLAMA_TIMEOUT_SECONDS=300 \
+scripts/agent-start.sh
+```
+
+In another terminal, run the opt-in live smoke test:
+
+```bash
+scripts/agent-smoke-stage6-ollama.sh
+```
+
+The normal Python test suite never calls Ollama. `fake` remains the default.

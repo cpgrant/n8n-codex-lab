@@ -2,7 +2,7 @@
 
 ## Status
 
-Stage 3 implements `GET /health`, `POST /v1/strategy-runs`,
+The v0.1 service implements `GET /health`, `POST /v1/strategy-runs`,
 `GET /v1/strategy-runs/{run_id}`,
 `POST /v1/strategy-runs/{run_id}/review`, and
 `GET /v1/strategy-runs/{run_id}/artifact`.
@@ -52,6 +52,10 @@ provider, validates the result, and returns the reviewable draft. It is expected
 to return `201` with status `awaiting_review`. A provider or validation failure
 returns an error while preserving a durable `failed` run when a run ID was
 created.
+
+Provider selection is process configuration, never request input. `fake` is the
+default. Stage 6 permits `ollama`; its local structured generation can take
+substantially longer while a large model is loaded.
 
 Response `201`:
 

@@ -2,6 +2,7 @@ import pytest
 
 from ai_factory.database import initialize_database
 from ai_factory.errors import FactoryError
+from ai_factory.providers import ProviderOutputError
 from ai_factory.repository import RunRepository
 from ai_factory.service import StrategyService
 from ai_factory.statuses import RunStatus
@@ -21,11 +22,19 @@ class InvalidProvider:
         return {"run_id": str(run_id)}
 
 
+class MalformedJsonProvider:
+    name = "ollama"
+
+    def generate_strategy(self, brief, run_id):
+        raise ProviderOutputError("private malformed response detail")
+
+
 @pytest.mark.parametrize(
     ("provider", "code", "status_code"),
     [
         (BrokenProvider(), "PROVIDER_ERROR", 502),
         (InvalidProvider(), "PROVIDER_OUTPUT_INVALID", 422),
+        (MalformedJsonProvider(), "PROVIDER_OUTPUT_INVALID", 422),
     ],
 )
 def test_generation_failure_is_durable(

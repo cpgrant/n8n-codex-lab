@@ -19,7 +19,12 @@ from .idempotency import (
     canonical_json_hash,
     validate_idempotency_key,
 )
-from .providers import FakeStrategyProvider, OpenAIStrategyProvider, StrategyProvider
+from .providers import (
+    FakeStrategyProvider,
+    OllamaStrategyProvider,
+    OpenAIStrategyProvider,
+    StrategyProvider,
+)
 from .repository import RunNotFound, RunRecord, RunRepository
 from .review_service import ReviewService
 from .schemas import (
@@ -105,6 +110,12 @@ def review_run_data(record: RunRecord) -> dict[str, object]:
 def default_provider(settings: Settings) -> StrategyProvider:
     if settings.provider == "openai":
         return OpenAIStrategyProvider()
+    if settings.provider == "ollama":
+        return OllamaStrategyProvider(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_model,
+            timeout_seconds=settings.ollama_timeout_seconds,
+        )
     fixture = REPOSITORY_ROOT / "examples/strategy-response.synthetic.json"
     return FakeStrategyProvider.from_fixture(fixture)
 
