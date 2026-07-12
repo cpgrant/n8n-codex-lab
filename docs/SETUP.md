@@ -63,5 +63,19 @@ cd ~/Development/codex/n8n-codex-lab
 scripts/agent-smoke-stage3.sh
 ```
 
+## Stage 4 n8n workflow
+
+Start Docker Desktop and n8n, then keep the agent service running on the Mac.
+Verify both network paths:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+scripts/verify-stage4.sh
+```
+
+Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json` into n8n as an
+inactive workflow. Use the editor's test form URL for synthetic manual testing.
+Do not activate or publish the workflow without explicit approval.
+
 The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
 will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.

@@ -1,0 +1,441 @@
+{
+  "id": "CodexStrategyV01",
+  "name": "CODEX TEST — AI Strategy Factory v0.1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI Strategy Factory v0.1",
+        "formDescription": "Synthetic test briefs only. This workflow creates a structured strategy draft and pauses for explicit human review.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Strategy title",
+              "fieldName": "title",
+              "defaultValue": "Synthetic volunteer onboarding strategy",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization name",
+              "fieldName": "organization_name",
+              "defaultValue": "Northstar Gardens",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization type",
+              "fieldName": "organization_type",
+              "defaultValue": "Fictional nonprofit",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization context",
+              "fieldName": "organization_context",
+              "fieldType": "textarea",
+              "defaultValue": "Synthetic local community garden network",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Decision horizon",
+              "fieldName": "decision_horizon",
+              "defaultValue": "12 months",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Strategic challenge",
+              "fieldName": "challenge",
+              "fieldType": "textarea",
+              "defaultValue": "Improve conversion from orientation to first volunteer shift",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Desired outcomes (one per line)",
+              "fieldName": "desired_outcomes",
+              "fieldType": "textarea",
+              "defaultValue": "Increase first-shift completion",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Constraints (one per line)",
+              "fieldName": "constraints",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Available evidence (one per line)",
+              "fieldName": "available_evidence",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Stakeholders (one per line)",
+              "fieldName": "stakeholders",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Requested by",
+              "fieldName": "requested_by",
+              "defaultValue": "synthetic-n8n-reviewer",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "buttonLabel": "Generate strategy draft",
+          "path": "codex-test-ai-strategy-factory-v01"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1c2fd90-9de7-4a25-a090-50928d9247e5",
+      "name": "Strategy Brief Form",
+      "webhookId": "0882f2c5-a47c-4ffd-b289-6b0cb5c66f91"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json;\nconst value = (name, label) => input[name] ?? input[label] ?? '';\nconst lines = (name, label) => String(value(name, label)).split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);\nreturn [{\n  json: {\n    schema_version: '0.1',\n    title: String(value('title', 'Strategy title')).trim(),\n    organization: {\n      name: String(value('organization_name', 'Organization name')).trim(),\n      type: String(value('organization_type', 'Organization type')).trim(),\n      context: String(value('organization_context', 'Organization context')).trim(),\n    },\n    decision_horizon: String(value('decision_horizon', 'Decision horizon')).trim(),\n    challenge: String(value('challenge', 'Strategic challenge')).trim(),\n    desired_outcomes: lines('desired_outcomes', 'Desired outcomes (one per line)'),\n    constraints: lines('constraints', 'Constraints (one per line)'),\n    available_evidence: lines('available_evidence', 'Available evidence (one per line)'),\n    stakeholders: lines('stakeholders', 'Stakeholders (one per line)'),\n    requested_by: String(value('requested_by', 'Requested by')).trim(),\n    supersedes_run_id: null,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "04937289-3412-4940-b2ba-d2ff95e77ca8",
+      "name": "Normalize Synthetic Brief"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/v1/strategy-runs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-create-' + $execution.id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "13b6a17b-ad58-4ab6-b0d1-8cb2d1ae8c03",
+      "name": "Create Strategy Draft"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.data;\nconst escapeHtml = (value) => String(value ?? '')\n  .replaceAll('&', '&amp;')\n  .replaceAll('<', '&lt;')\n  .replaceAll('>', '&gt;')\n  .replaceAll('\\\"', '&quot;')\n  .replaceAll(\"'\", '&#039;');\nconst strategy = data.strategy;\nconst reviewHtml = [\n  '<h2>Structured strategy draft</h2>',\n  '<p><strong>Run ID:</strong> ' + escapeHtml(data.run_id) + '</p>',\n  '<h3>Executive summary</h3>',\n  '<p>' + escapeHtml(strategy.executive_summary) + '</p>',\n  '<h3>Complete structured JSON</h3>',\n  '<pre>' + escapeHtml(JSON.stringify(strategy, null, 2)) + '</pre>',\n].join('');\nreturn [{ json: { run_id: data.run_id, review_html: reviewHtml } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "5bb573ff-2c6b-4a81-b17a-9373561509f4",
+      "name": "Prepare Human Review"
+    },
+    {
+      "parameters": {
+        "formTitle": "Review strategy draft",
+        "formDescription": "Review the complete structured response before making an explicit decision.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Strategy draft",
+              "fieldName": "strategy_draft",
+              "fieldType": "html",
+              "html": "={{ $json.review_html }}"
+            },
+            {
+              "fieldLabel": "Decision",
+              "fieldName": "decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "approved"
+                  },
+                  {
+                    "option": "rejected"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Reviewer",
+              "fieldName": "reviewer",
+              "defaultValue": "synthetic-n8n-reviewer",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Review comment (required when rejected)",
+              "fieldName": "comment",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Submit review decision"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ],
+      "id": "79baaf4f-74f4-44e9-bf7b-3d3550c7de9e",
+      "name": "Human Review Form",
+      "webhookId": "9099c6dd-fc11-4519-972a-abfb1963ca98"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8000/v1/strategy-runs/' + $('Prepare Human Review').item.json.run_id + '/review' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-review-' + $execution.id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ decision: $json.decision ?? $json.Decision, reviewer: $json.reviewer ?? $json.Reviewer, comment: $json.comment ?? $json['Review comment (required when rejected)'] ?? null }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "e97c4395-6e53-4b6b-afac-30c9884d6812",
+      "name": "Record Review Decision"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "artifact_created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approved"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "rejected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rejected"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "d0e90e8c-e041-437e-942f-9090b7f5eae8",
+      "name": "Approval Outcome"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Strategy approved",
+        "completionMessage": "={{ 'Approved Markdown artifact: ' + $json.data.artifact.filename + '<br>Run ID: ' + $json.data.run_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -120
+      ],
+      "id": "bd23bfd1-78d5-49ba-a8b1-985b76836de1",
+      "name": "Approved Completion",
+      "webhookId": "7dfadf27-f69c-4e95-9b70-227227b06f64"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Strategy rejected",
+        "completionMessage": "={{ 'No artifact was created.<br>Run ID: ' + $json.data.run_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        120
+      ],
+      "id": "232873e8-2637-46c1-a784-110b239bb339",
+      "name": "Rejected Completion",
+      "webhookId": "df23fd83-bc42-49e8-9479-764459e0b46e"
+    },
+    {
+      "parameters": {
+        "content": "## AI Strategy Factory v0.1\nSynthetic brief → deterministic strategy draft → explicit human review → approved Markdown artifact.\n\nThis workflow must remain inactive until separately approved for activation.",
+        "width": 520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "id": "13736600-ef64-461e-8651-080995127923",
+      "name": "Workflow Notes"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Strategy Brief Form": {
+      "main": [
+        [
+          {
+            "node": "Normalize Synthetic Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Synthetic Brief": {
+      "main": [
+        [
+          {
+            "node": "Create Strategy Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Strategy Draft": {
+      "main": [
+        [
+          {
+            "node": "Prepare Human Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Human Review": {
+      "main": [
+        [
+          {
+            "node": "Human Review Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Review Form": {
+      "main": [
+        [
+          {
+            "node": "Record Review Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Review Decision": {
+      "main": [
+        [
+          {
+            "node": "Approval Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval Outcome": {
+      "main": [
+        [
+          {
+            "node": "Approved Completion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "3b0f1f3b-420e-4db5-9ac3-c6b2a85d1731",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

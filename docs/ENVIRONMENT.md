@@ -26,3 +26,7 @@
 - AI Factory URL from n8n Docker: http://host.docker.internal:8000
 
 - AI Factory persistence: local SQLite under `data/`
+
+- n8n-to-Mac agent URL: http://host.docker.internal:8000
+
+- Stage 4 workflow state: inactive and unpublished

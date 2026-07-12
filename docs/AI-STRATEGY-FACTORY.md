@@ -17,11 +17,12 @@ Human -> n8n (Docker) -> agent service (macOS) -> strategy provider
                          approved Markdown artifact
 ```
 
-Stage 3 implements synchronous create/read run endpoints using the deterministic
-`FakeStrategyProvider`, explicit approval/rejection, immutable review records,
-approved Markdown rendering and retrieval, artifact integrity checks, and
-SQLite-backed idempotency. It does not perform real model calls or create an
-n8n workflow.
+Stage 4 connects the Stage 3 service to the inactive
+`CODEX TEST — AI Strategy Factory v0.1` n8n form workflow. The workflow accepts
+a synthetic brief, shows the deterministic structured draft for explicit human
+review, records approval or rejection, and reports approved artifact metadata.
+It remains unpublished, is unavailable through MCP, and performs no real model
+calls.
 
 ## Example files
 
