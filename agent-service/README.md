@@ -96,3 +96,15 @@ Each quality report is also written atomically as
 `artifacts/quality-reports/quality-report-<run_id>.md` and can be retrieved at
 `GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It remains advisory
 and distinct from the approved strategy artifact.
+
+## Stage 7.1 local model evaluation
+
+Benchmark the installed local candidates with the checked-in synthetic brief:
+
+```bash
+agent-service/.venv/bin/python scripts/evaluate-stage7-1.py
+```
+
+Results and the blinded human-review packet are written below
+`artifacts/evaluations/stage-7.1/`. See
+`docs/STAGE-7.1-VERIFICATION.md` for the review and finalization procedure.

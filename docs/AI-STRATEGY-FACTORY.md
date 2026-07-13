@@ -302,6 +302,15 @@ This artifact remains advisory before and after the human decision. A failed
 file write can be retried from the immutable stored report without another
 critic call or any strategy rewrite.
 
+## Stage 7.1 local-model evaluation
+
+Local model selection is an internal, synthetic-only benchmark. The runner
+compares schema and critique success, generation and critique latency, evidence
+and constraint scores, unsupported claims, issues, and advisory quality scores.
+It produces a blinded strategy packet so the human preference is recorded
+without seeing model names first. Numeric quality scores alone never choose or
+approve a strategy.
+
 ## n8n form availability
 
 The editor's `/form-test/...` URL is temporary and works only while a manual

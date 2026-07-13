@@ -24,7 +24,7 @@ history unless a separate operational-verification date is stated.
 | 6.1 | Generation quality contract | Complete | 2026-07-12; live re-verification 2026-07-13 |
 | 7 | Pre-review quality report | Complete | 2026-07-13 |
 | 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
-| 7.1 | Local model evaluation | Planned | — |
+| 7.1 | Local model evaluation | Human review pending | — |
 | 8 | Flexible intake | Planned | — |
 | 9 | Client-demo hardening | Planned | — |
 | 10 | OpenAI provider and professional routing | Planned | — |
@@ -222,7 +222,8 @@ checksum-protected Markdown quality report while remaining `awaiting_review`.
 
 ### Stage 7.1 — Local model evaluation
 
-Status: **Planned** after Stage 7.
+Status: **In progress** on 2026-07-13; live benchmark complete and blind human
+preference pending.
 
 Benchmark the same synthetic brief set with:
 
@@ -242,6 +243,30 @@ Measure:
 Model selection remains internal configuration rather than a client-facing
 form control. Evaluation uses synthetic data only and should produce a
 reviewable, repeatable report before changing the default model.
+
+Implemented:
+
+- a repeatable runner at `scripts/evaluate-stage7-1.py`;
+- schema, critique, latency, token, grounding, constraint, unsupported-claim,
+  issue, and overall-quality measurements;
+- normalized JSON results, a Markdown report, and a blinded comparison packet
+  under ignored `artifacts/evaluations/stage-7.1/`;
+- a separate blind key and validated reviewer-preference file so preference is
+  recorded by a human rather than inferred from model scores;
+- 72 passing automated tests.
+
+Live results for the checked-in synthetic brief:
+
+| Model | Schema | Critique | Generation | Critique | Quality |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `gemma4:12b` | 100% | 100% | 78.44s | 33.02s | 100 |
+| `gemma4:26b` | 100% | 100% | 46.99s | 11.97s | 100 |
+| `gemma4:31b` | 100% | 100% | 156.84s | 79.79s | 94 |
+
+All candidates scored 10/10 for evidence grounding and constraint adherence,
+with zero unsupported claims. The benchmark is directional because it has one
+run per model on one synthetic brief. Stage completion and any internal model
+default change require the blinded human preference.
 
 ### Stage 8 — Flexible intake
 
