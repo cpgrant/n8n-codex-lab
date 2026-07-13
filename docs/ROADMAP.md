@@ -22,7 +22,7 @@ history unless a separate operational-verification date is stated.
 | 5 | Operational verification | Complete | 2026-07-12 |
 | 6 | Local Ollama strategy provider | Complete | 2026-07-12 |
 | 6.1 | Generation quality contract | Complete | 2026-07-12; live re-verification 2026-07-13 |
-| 7 | Pre-review quality report | Planned | — |
+| 7 | Pre-review quality report | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Planned | — |
 | 8 | Flexible intake | Planned | — |
 | 9 | Client-demo hardening | Planned | — |
@@ -145,7 +145,7 @@ of strategic quality.
 
 ### Stage 7 — Pre-review quality report
 
-Status: **Planned**.
+Status: **Complete** on 2026-07-13.
 
 Add an advisory quality-review step between draft generation and human review:
 
@@ -186,6 +186,16 @@ Completion criteria:
   errors;
 - approval and rejection semantics remain unchanged;
 - automated tests and a synthetic end-to-end n8n test pass.
+
+Completion evidence:
+
+- 66 automated tests passed;
+- deterministic `basic` and Ollama-backed `pro` smoke tests passed;
+- the installed workflow remained inactive, unpublished, credential-free, and
+  unavailable through MCP;
+- manual synthetic run `286e341c-a332-4dbc-9927-61cea879287d` displayed the
+  advisory report before review, was explicitly approved, and created the
+  checksum-bound Markdown artifact.
 
 ### Stage 7.1 — Local model evaluation
 

@@ -33,4 +33,8 @@
 
 - Ollama host URL: http://127.0.0.1:11888
 
-- Planned Stage 6 Ollama model: `gemma4:31b`
+- Stage 6 Ollama model: `gemma4:31b`
+
+- Stage 7 quality mode default: `basic`
+
+- Stage 7 pro critic model: `gemma4:31b`

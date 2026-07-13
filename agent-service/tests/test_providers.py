@@ -5,11 +5,14 @@ import pytest
 
 from ai_factory.providers import (
     FakeStrategyProvider,
+    OllamaQualityCritic,
     OllamaStrategyProvider,
     OpenAIStrategyProvider,
     ProviderOutputError,
     ProviderTransportError,
 )
+from ai_factory.quality import DeterministicQualityReviewer
+from ai_factory.schemas import StrategyResponse
 
 
 def test_fake_provider_is_deterministic(brief, response_fixture):
@@ -90,3 +93,35 @@ def test_ollama_provider_rejects_invalid_responses(brief, envelope, error_type):
 
     with pytest.raises(error_type):
         provider.generate_strategy(brief, uuid4())
+
+
+def test_ollama_quality_critic_is_advisory_and_schema_constrained(
+    brief, response_fixture
+):
+    captured = {}
+    strategy = StrategyResponse.model_validate(response_fixture)
+    deterministic = DeterministicQualityReviewer().assess(brief, strategy)
+
+    def transport(url, payload, timeout):
+        captured.update(url=url, payload=payload, timeout=timeout)
+        return {
+            "message": {
+                "role": "assistant",
+                "content": deterministic.model_dump_json(),
+            }
+        }
+
+    critic = OllamaQualityCritic(
+        "http://127.0.0.1:11888", "gemma4:31b", 300, transport=transport
+    )
+    result = critic.review_strategy(brief, strategy, deterministic)
+
+    assert captured["url"] == "http://127.0.0.1:11888/api/chat"
+    assert captured["payload"]["format"]["type"] == "object"
+    prompt = " ".join(
+        message["content"] for message in captured["payload"]["messages"]
+    )
+    assert "Do not rewrite" in prompt
+    assert "must not be removed" in prompt
+    assert "DETERMINISTIC FINDINGS" in prompt
+    assert result["checks"] == deterministic.model_dump(mode="json")["checks"]

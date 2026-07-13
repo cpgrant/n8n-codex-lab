@@ -267,6 +267,28 @@ references are enforced by Pydantic before a run can reach `awaiting_review`.
 Human review remains mandatory because structural validity does not guarantee
 strategic quality.
 
+## Stage 7 advisory quality report
+
+Stage 7 inserts an immutable advisory report between draft generation and
+human review. It does not add a run status and cannot approve, reject, or
+rewrite a strategy.
+
+Every report contains seven 0-10 checks, an overall 0-100 score, a review
+recommendation, strengths, issues, unsupported claims, missing considerations,
+and questions for the reviewer. The report stores the same canonical draft
+checksum used by human review, making its subject unambiguous.
+
+Modes are controlled by service configuration:
+
+- `basic` performs deterministic alignment, grounding, constraint, objective,
+  measurement, feasibility, and consistency checks;
+- `pro` performs the deterministic checks and a separate Ollama critic call.
+
+Pro-mode merging is conservative: the lower score wins for each check and
+critic findings are added without removing deterministic warnings. The score
+and recommendation remain advisory. Neither can trigger a status transition or
+automatic approval.
+
 ## n8n form availability
 
 The editor's `/form-test/...` URL is temporary and works only while a manual

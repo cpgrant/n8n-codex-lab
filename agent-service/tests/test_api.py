@@ -210,3 +210,51 @@ def test_rejection_requires_comment_and_is_final(tmp_path, brief_payload):
     assert later_approval.status_code == 409
     assert later_approval.json()["error"]["code"] == "INVALID_STATE_TRANSITION"
     assert artifact.status_code == 409
+
+
+def test_quality_report_is_idempotent_retrievable_and_advisory(
+    tmp_path, brief_payload
+):
+    client, _ = client_for(tmp_path)
+
+    with client:
+        created = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Idempotency-Key": "synthetic-quality-create-001"},
+        )
+        run_id = created.json()["data"]["run_id"]
+        not_ready = client.get(f"/v1/strategy-runs/{run_id}/quality-report")
+        quality = client.post(
+            f"/v1/strategy-runs/{run_id}/quality-report",
+            headers={"Idempotency-Key": "synthetic-quality-001"},
+        )
+        replay = client.post(
+            f"/v1/strategy-runs/{run_id}/quality-report",
+            headers={"Idempotency-Key": "synthetic-quality-001"},
+        )
+        fetched_quality = client.get(
+            f"/v1/strategy-runs/{run_id}/quality-report"
+        )
+        fetched_run = client.get(f"/v1/strategy-runs/{run_id}")
+        reviewed = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json={"decision": "approved", "reviewer": "synthetic-reviewer"},
+            headers={"Idempotency-Key": "synthetic-quality-approval-001"},
+        )
+
+    report = quality.json()["data"]["quality_report"]
+    assert not_ready.status_code == 409
+    assert not_ready.json()["error"]["code"] == "QUALITY_REPORT_NOT_READY"
+    assert quality.status_code == 200
+    assert report["mode"] == "basic"
+    assert report["critic_provider"] == "deterministic"
+    assert quality.json()["data"]["status"] == "awaiting_review"
+    assert replay.json()["data"] == quality.json()["data"]
+    assert replay.json()["meta"]["idempotent_replay"] is True
+    assert fetched_quality.json()["data"]["quality_report"] == report
+    assert fetched_run.json()["data"]["quality_report"] == report
+    assert reviewed.status_code == 200
+    assert reviewed.json()["data"]["review"]["draft_checksum"] == report[
+        "draft_checksum"
+    ]

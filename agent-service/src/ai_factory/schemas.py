@@ -145,6 +145,44 @@ class StrategyResponse(StrategyContent):
     provider: Literal["fake", "ollama", "openai"]
 
 
+class QualityScorecard(StrictModel):
+    brief_alignment: int = Field(ge=0, le=10)
+    evidence_grounding: int = Field(ge=0, le=10)
+    constraint_adherence: int = Field(ge=0, le=10)
+    objective_quality: int = Field(ge=0, le=10)
+    measurement_quality: int = Field(ge=0, le=10)
+    initiative_feasibility: int = Field(ge=0, le=10)
+    internal_consistency: int = Field(ge=0, le=10)
+
+
+class QualityIssue(StrictModel):
+    severity: Literal["low", "medium", "high"]
+    section: str = Field(min_length=1, max_length=100)
+    message: str = Field(min_length=1, max_length=1000)
+    suggestion: str = Field(min_length=1, max_length=1000)
+
+
+class QualityAssessment(StrictModel):
+    checks: QualityScorecard
+    strengths: list[str] = Field(max_length=10)
+    issues: list[QualityIssue] = Field(max_length=20)
+    unsupported_claims: list[str] = Field(max_length=20)
+    missing_considerations: list[str] = Field(max_length=20)
+    review_questions: list[str] = Field(max_length=20)
+
+
+class QualityReport(QualityAssessment):
+    schema_version: Literal["0.1"] = "0.1"
+    run_id: UUID
+    mode: Literal["basic", "pro"]
+    overall_score: int = Field(ge=0, le=100)
+    recommendation: Literal["ready_for_review", "review_with_caution"]
+    draft_checksum: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    generated_at: datetime
+    critic_provider: Literal["deterministic", "ollama", "openai"]
+    critic_model: str | None = Field(default=None, min_length=1, max_length=200)
+
+
 class ReviewRequest(StrictModel):
     decision: Literal["approved", "rejected"]
     reviewer: str = Field(min_length=1, max_length=200)
@@ -191,6 +229,7 @@ class ReadRunData(StrictModel):
     status: RunStatus
     brief: StrategyBrief
     strategy: StrategyResponse | None
+    quality_report: QualityReport | None = None
     review: ReviewRecord | None = None
     artifact: ArtifactMetadata | None = None
     error_code: str | None = None
@@ -224,3 +263,9 @@ class ReviewRunData(StrictModel):
 class ReviewRunResponse(StrictModel):
     data: ReviewRunData
     meta: ResponseMeta
+
+
+class QualityReportData(StrictModel):
+    run_id: UUID
+    status: RunStatus
+    quality_report: QualityReport

@@ -15,9 +15,10 @@ The workflow provides the first n8n vertical slice for AI Strategy Factory:
 1. Accept a structured strategy brief through an n8n test form.
 2. Normalize multiline fields into the v0.1 API contract.
 3. Call the Mac-local agent service from Docker.
-4. Display the structured JSON draft for human review.
-5. Record an explicit approval or rejection.
-6. Generate an approved Markdown artifact only after approval.
+4. Generate an immutable advisory quality report for the draft.
+5. Display the quality findings and structured JSON for human review.
+6. Record an explicit approval or rejection.
+7. Generate an approved Markdown artifact only after approval.
 
 ## Runtime prerequisites
 
@@ -44,9 +45,10 @@ listener expires while the form is being completed, n8n displays a submission
 error. Start a new test execution and use its newly opened form. This behavior
 does not indicate a FastAPI or SQLite failure.
 
-Review the complete structured JSON on the second form page. Select `approved`
-or `rejected`, enter a synthetic reviewer label, and include a comment when
-rejecting.
+Review the advisory score, findings, questions, and complete structured JSON on
+the second form page. The quality report cannot approve, reject, or rewrite the
+draft. Select `approved` or `rejected`, enter a synthetic reviewer label, and
+include a comment when rejecting.
 
 Approval ends with an artifact filename and run ID. Rejection confirms that no
 artifact was created.
@@ -54,7 +56,8 @@ artifact was created.
 ## Limitations
 
 - The form has no authentication and is for local manual testing only.
-- The deterministic fake provider remains the only implemented provider.
+- Strategy generation supports deterministic fake and opt-in local Ollama
+  providers. Quality mode is controlled by the FastAPI process configuration.
 - Production form URLs are unavailable until publication; publication is out of
   scope and requires explicit approval.
 - Generated artifacts remain local and ignored by Git.

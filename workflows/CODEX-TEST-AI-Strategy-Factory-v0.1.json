@@ -5,7 +5,7 @@
     {
       "parameters": {
         "formTitle": "AI Strategy Factory v0.1",
-        "formDescription": "Synthetic test briefs only. This workflow creates a structured strategy draft and pauses for explicit human review.",
+        "formDescription": "Synthetic test briefs only. This workflow creates a structured strategy draft and advisory quality report before explicit human review.",
         "formFields": {
           "values": [
             {
@@ -138,12 +138,36 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $json.data;\nconst escapeHtml = (value) => String(value ?? '')\n  .replaceAll('&', '&amp;')\n  .replaceAll('<', '&lt;')\n  .replaceAll('>', '&gt;')\n  .replaceAll('\\\"', '&quot;')\n  .replaceAll(\"'\", '&#039;');\nconst strategy = data.strategy;\nconst reviewHtml = [\n  '<h2>Structured strategy draft</h2>',\n  '<p><strong>Run ID:</strong> ' + escapeHtml(data.run_id) + '</p>',\n  '<h3>Executive summary</h3>',\n  '<p>' + escapeHtml(strategy.executive_summary) + '</p>',\n  '<h3>Complete structured JSON</h3>',\n  '<pre>' + escapeHtml(JSON.stringify(strategy, null, 2)) + '</pre>',\n].join('');\nreturn [{ json: { run_id: data.run_id, review_html: reviewHtml } }];"
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8000/v1/strategy-runs/' + $json.data.run_id + '/quality-report' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-quality-' + $execution.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "6a55fc71-0f8d-4b66-b0aa-a514beab8e74",
+      "name": "Generate Quality Report"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.data;\nconst report = data.quality_report;\nconst strategy = $('Create Strategy Draft').item.json.data.strategy;\nconst escapeHtml = (value) => String(value ?? '')\n  .replaceAll('&', '&amp;')\n  .replaceAll('<', '&lt;')\n  .replaceAll('>', '&gt;')\n  .replaceAll('\\\"', '&quot;')\n  .replaceAll(\"'\", '&#039;');\nconst list = (items, emptyText) => items.length\n  ? '<ul>' + items.map((item) => '<li>' + escapeHtml(item) + '</li>').join('') + '</ul>'\n  : '<p>' + escapeHtml(emptyText) + '</p>';\nconst checkRows = Object.entries(report.checks).map(([name, score]) =>\n  '<tr><td>' + escapeHtml(name.replaceAll('_', ' ')) + '</td><td>' + escapeHtml(score) + '/10</td></tr>'\n).join('');\nconst issueItems = report.issues.map((issue) =>\n  '[' + issue.severity.toUpperCase() + '] ' + issue.section + ': ' + issue.message + ' Suggestion: ' + issue.suggestion\n);\nconst reviewHtml = [\n  '<h2>Advisory quality report</h2>',\n  '<p><strong>Mode:</strong> ' + escapeHtml(report.mode) +\n    ' &nbsp; <strong>Score:</strong> ' + escapeHtml(report.overall_score) + '/100' +\n    ' &nbsp; <strong>Recommendation:</strong> ' + escapeHtml(report.recommendation) + '</p>',\n  '<p><em>This report cannot approve, reject, or rewrite the strategy. The human reviewer makes the final decision.</em></p>',\n  '<table><thead><tr><th>Check</th><th>Score</th></tr></thead><tbody>' + checkRows + '</tbody></table>',\n  '<h3>Strengths</h3>',\n  list(report.strengths, 'No strengths were recorded.'),\n  '<h3>Issues</h3>',\n  list(issueItems, 'No issues were recorded.'),\n  '<h3>Unsupported claims</h3>',\n  list(report.unsupported_claims, 'No unsupported claims were identified.'),\n  '<h3>Missing considerations</h3>',\n  list(report.missing_considerations, 'No missing considerations were identified.'),\n  '<h3>Questions for the reviewer</h3>',\n  list(report.review_questions, 'No additional questions were generated.'),\n  '<hr>',\n  '<h2>Structured strategy draft</h2>',\n  '<p><strong>Run ID:</strong> ' + escapeHtml(data.run_id) + '</p>',\n  '<h3>Executive summary</h3>',\n  '<p>' + escapeHtml(strategy.executive_summary) + '</p>',\n  '<h3>Complete structured JSON</h3>',\n  '<pre>' + escapeHtml(JSON.stringify(strategy, null, 2)) + '</pre>',\n].join('');\nreturn [{ json: { run_id: data.run_id, review_html: reviewHtml } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
+        960,
         0
       ],
       "id": "5bb573ff-2c6b-4a81-b17a-9373561509f4",
@@ -152,7 +176,7 @@
     {
       "parameters": {
         "formTitle": "Review strategy draft",
-        "formDescription": "Review the complete structured response before making an explicit decision.",
+        "formDescription": "Review the advisory quality findings and complete structured response before making an explicit decision.",
         "formFields": {
           "values": [
             {
@@ -197,7 +221,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        960,
+        1200,
         0
       ],
       "id": "79baaf4f-74f4-44e9-bf7b-3d3550c7de9e",
@@ -226,7 +250,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
+        1440,
         0
       ],
       "id": "e97c4395-6e53-4b6b-afac-30c9884d6812",
@@ -289,7 +313,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        1440,
+        1680,
         0
       ],
       "id": "d0e90e8c-e041-437e-942f-9090b7f5eae8",
@@ -305,7 +329,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1680,
+        1920,
         -120
       ],
       "id": "bd23bfd1-78d5-49ba-a8b1-985b76836de1",
@@ -322,7 +346,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1680,
+        1920,
         120
       ],
       "id": "232873e8-2637-46c1-a784-110b239bb339",
@@ -331,7 +355,7 @@
     },
     {
       "parameters": {
-        "content": "## AI Strategy Factory v0.1\nSynthetic brief → deterministic strategy draft → explicit human review → approved Markdown artifact.\n\nThis workflow must remain inactive until separately approved for activation.",
+        "content": "## AI Strategy Factory v0.1 — Stage 7\nSynthetic brief → strategy draft → advisory quality report → explicit human review → approved Markdown artifact.\n\nThe quality report cannot approve, reject, or rewrite a draft.\n\nThis workflow must remain inactive until separately approved for activation.",
         "width": 520
       },
       "type": "n8n-nodes-base.stickyNote",
@@ -369,6 +393,17 @@
       ]
     },
     "Create Strategy Draft": {
+      "main": [
+        [
+          {
+            "node": "Generate Quality Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Quality Report": {
       "main": [
         [
           {

@@ -3,7 +3,12 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from ai_factory.schemas import StrategyBrief, StrategyContent, StrategyResponse
+from ai_factory.schemas import (
+    QualityAssessment,
+    StrategyBrief,
+    StrategyContent,
+    StrategyResponse,
+)
 
 
 def test_checked_in_examples_match_contract(brief, response_fixture):
@@ -72,3 +77,25 @@ def test_strategy_rejects_inconsistent_references(
 
     with pytest.raises(ValidationError, match=message):
         StrategyContent.model_validate(payload)
+
+
+def test_quality_assessment_rejects_out_of_range_score():
+    with pytest.raises(ValidationError, match="less than or equal to 10"):
+        QualityAssessment.model_validate(
+            {
+                "checks": {
+                    "brief_alignment": 11,
+                    "evidence_grounding": 10,
+                    "constraint_adherence": 10,
+                    "objective_quality": 10,
+                    "measurement_quality": 10,
+                    "initiative_feasibility": 10,
+                    "internal_consistency": 10,
+                },
+                "strengths": [],
+                "issues": [],
+                "unsupported_claims": [],
+                "missing_considerations": [],
+                "review_questions": [],
+            }
+        )

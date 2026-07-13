@@ -12,7 +12,12 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from uuid import UUID
 
-from .schemas import StrategyBrief, StrategyContent
+from .schemas import (
+    QualityAssessment,
+    StrategyBrief,
+    StrategyContent,
+    StrategyResponse,
+)
 
 
 class ProviderTransportError(Exception):
@@ -170,6 +175,96 @@ class OllamaStrategyProvider:
         if not isinstance(envelope, dict):
             raise ProviderTransportError("Ollama response envelope was not an object")
         return envelope
+
+
+class OllamaQualityCritic:
+    """Review a stored draft without changing it or making a review decision."""
+
+    name = "ollama"
+
+    def __init__(
+        self,
+        base_url: str,
+        model: str,
+        timeout_seconds: float,
+        transport: OllamaTransport | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.timeout_seconds = timeout_seconds
+        self._transport = transport or OllamaStrategyProvider._post_json
+
+    def review_strategy(
+        self,
+        brief: StrategyBrief,
+        strategy: StrategyResponse,
+        deterministic: QualityAssessment,
+    ) -> dict[str, object]:
+        schema = QualityAssessment.model_json_schema()
+        payload: dict[str, object] = {
+            "model": self.model,
+            "stream": False,
+            "think": False,
+            "format": schema,
+            "options": {"temperature": 0},
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an advisory strategy-quality critic. Review only "
+                        "the supplied synthetic brief and immutable draft. Do not "
+                        "rewrite the draft, approve it, reject it, or invent evidence. "
+                        "Treat the deterministic findings as minimum warnings that "
+                        "must not be removed. Score every rubric field from 0 to 10. "
+                        "Return concise, specific findings and only JSON satisfying "
+                        "the supplied schema."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        "Assess alignment, evidence grounding, constraint adherence, "
+                        "objective quality, measurement quality, initiative "
+                        "feasibility, and internal consistency. Unsupported claims "
+                        "must quote or precisely identify draft text. Review questions "
+                        "must help a human decide whether to approve.\n\n"
+                        "BRIEF:\n"
+                        + json.dumps(
+                            brief.model_dump(mode="json"),
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                        + "\n\nIMMUTABLE DRAFT:\n"
+                        + json.dumps(
+                            strategy.model_dump(mode="json"),
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                        + "\n\nDETERMINISTIC FINDINGS:\n"
+                        + json.dumps(
+                            deterministic.model_dump(mode="json"),
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+                        + "\n\nJSON SCHEMA:\n"
+                        + json.dumps(schema, ensure_ascii=False, separators=(",", ":"))
+                    ),
+                },
+            ],
+        }
+        envelope = self._transport(
+            f"{self.base_url}/api/chat", payload, self.timeout_seconds
+        )
+        message = envelope.get("message")
+        if not isinstance(message, dict) or not isinstance(message.get("content"), str):
+            raise ProviderTransportError("Ollama returned an invalid response envelope")
+        try:
+            content = json.loads(message["content"])
+        except json.JSONDecodeError as exc:
+            raise ProviderOutputError("Ollama returned malformed quality JSON") from exc
+        if not isinstance(content, dict):
+            raise ProviderOutputError("Ollama quality output was not an object")
+        return content
 
 
 class OpenAIStrategyProvider:

@@ -21,16 +21,20 @@ from .idempotency import (
 )
 from .providers import (
     FakeStrategyProvider,
+    OllamaQualityCritic,
     OllamaStrategyProvider,
     OpenAIStrategyProvider,
     StrategyProvider,
 )
+from .quality_service import QualityCritic, QualityReportService
 from .repository import RunNotFound, RunRecord, RunRepository
 from .review_service import ReviewService
 from .schemas import (
     ArtifactMetadata,
     CreateRunData,
     HealthResponse,
+    QualityReport,
+    QualityReportData,
     ReadRunData,
     ReviewRecord,
     ReviewRequest,
@@ -75,6 +79,11 @@ def read_run_data(record: RunRecord) -> dict[str, object]:
             if record.strategy is not None
             else None
         ),
+        quality_report=(
+            QualityReport.model_validate(record.quality_report)
+            if record.quality_report is not None
+            else None
+        ),
         review=(
             ReviewRecord.model_validate(record.review)
             if record.review is not None
@@ -107,6 +116,16 @@ def review_run_data(record: RunRecord) -> dict[str, object]:
     ).model_dump(mode="json")
 
 
+def quality_report_data(record: RunRecord) -> dict[str, object]:
+    if record.quality_report is None:
+        raise RuntimeError("quality report operation has no stored report")
+    return QualityReportData(
+        run_id=record.run_id,
+        status=record.status,
+        quality_report=QualityReport.model_validate(record.quality_report),
+    ).model_dump(mode="json")
+
+
 def default_provider(settings: Settings) -> StrategyProvider:
     if settings.provider == "openai":
         return OpenAIStrategyProvider()
@@ -120,11 +139,24 @@ def default_provider(settings: Settings) -> StrategyProvider:
     return FakeStrategyProvider.from_fixture(fixture)
 
 
+def default_quality_critic(settings: Settings) -> QualityCritic | None:
+    if settings.quality_mode == "basic":
+        return None
+    return OllamaQualityCritic(
+        base_url=settings.ollama_base_url,
+        model=settings.ollama_quality_model,
+        timeout_seconds=settings.ollama_timeout_seconds,
+    )
+
+
 def create_app(
-    settings: Settings | None = None, provider: StrategyProvider | None = None
+    settings: Settings | None = None,
+    provider: StrategyProvider | None = None,
+    quality_critic: QualityCritic | None = None,
 ) -> FastAPI:
     resolved = settings or Settings.from_env()
     resolved_provider = provider or default_provider(resolved)
+    resolved_quality_critic = quality_critic or default_quality_critic(resolved)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -135,6 +167,11 @@ def create_app(
         app.state.repository = RunRepository(resolved.database_path)
         app.state.idempotency = IdempotencyRepository(resolved.database_path)
         app.state.service = StrategyService(app.state.repository, resolved_provider)
+        app.state.quality_service = QualityReportService(
+            app.state.repository,
+            mode=resolved.quality_mode,
+            critic=resolved_quality_critic,
+        )
         app.state.artifact_store = MarkdownArtifactStore(resolved.artifact_dir)
         app.state.review_service = ReviewService(
             app.state.repository, app.state.artifact_store
@@ -284,6 +321,118 @@ def create_app(
             ) from exc
         return {
             "data": read_run_data(record),
+            "meta": {"request_id": request.state.request_id},
+        }
+
+    @app.post("/v1/strategy-runs/{run_id}/quality-report")
+    def create_quality_report(
+        run_id: UUID,
+        request: Request,
+        idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        key = validate_idempotency_key(idempotency_key)
+        settings: Settings = request.app.state.settings
+        request_hash = canonical_json_hash(
+            {
+                "run_id": str(run_id),
+                "mode": settings.quality_mode,
+                "critic_model": (
+                    settings.ollama_quality_model
+                    if settings.quality_mode == "pro"
+                    else None
+                ),
+            }
+        )
+        operation = f"create_quality_report:{run_id}"
+        idempotency: IdempotencyRepository = request.app.state.idempotency
+        replay = idempotency.reserve(operation, key, request_hash)
+        if replay is not None:
+            content = dict(replay.payload)
+            content["meta"] = {
+                "request_id": request.state.request_id,
+                "idempotent_replay": True,
+            }
+            return JSONResponse(status_code=replay.status_code, content=content)
+
+        try:
+            record = request.app.state.quality_service.create_report(run_id)
+            stored_payload: dict[str, object] = {
+                "data": quality_report_data(record)
+            }
+            idempotency.complete(
+                operation, key, request_hash, 200, stored_payload, run_id
+            )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    **stored_payload,
+                    "meta": {
+                        "request_id": request.state.request_id,
+                        "idempotent_replay": False,
+                    },
+                },
+            )
+        except FactoryError as error:
+            if error.retryable:
+                idempotency.release(operation, key, request_hash)
+            else:
+                idempotency.complete(
+                    operation,
+                    key,
+                    request_hash,
+                    error.status_code,
+                    {"error": error.public_body()},
+                    error.run_id,
+                )
+            return JSONResponse(
+                status_code=error.status_code,
+                content={
+                    "error": error.public_body(),
+                    "meta": {
+                        "request_id": request.state.request_id,
+                        "idempotent_replay": False,
+                    },
+                },
+            )
+        except Exception:
+            idempotency.release(operation, key, request_hash)
+            error = FactoryError(
+                500,
+                "INTERNAL_ERROR",
+                "An unexpected internal error occurred.",
+                run_id=run_id,
+                retryable=True,
+            )
+            return JSONResponse(
+                status_code=error.status_code,
+                content={
+                    "error": error.public_body(),
+                    "meta": {
+                        "request_id": request.state.request_id,
+                        "idempotent_replay": False,
+                    },
+                },
+            )
+
+    @app.get("/v1/strategy-runs/{run_id}/quality-report")
+    def get_quality_report(run_id: UUID, request: Request) -> dict[str, object]:
+        try:
+            record = request.app.state.repository.get(run_id)
+        except RunNotFound as exc:
+            raise FactoryError(
+                404,
+                "RUN_NOT_FOUND",
+                "The requested strategy run does not exist.",
+            ) from exc
+        if record.quality_report is None:
+            raise FactoryError(
+                409,
+                "QUALITY_REPORT_NOT_READY",
+                "The strategy run does not have a quality report.",
+                run_id=run_id,
+            )
+        return {
+            "data": quality_report_data(record),
             "meta": {"request_id": request.state.request_id},
         }
 

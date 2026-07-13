@@ -73,3 +73,22 @@ scripts/agent-smoke-stage6-ollama.sh
 ```
 
 The normal Python test suite never calls Ollama. `fake` remains the default.
+
+## Stage 7 quality report
+
+Quality reports are generated separately from strategy drafts and remain
+advisory. `basic` mode runs deterministic checks. `pro` adds a separate Ollama
+critic call:
+
+```bash
+AI_FACTORY_PROVIDER=ollama \
+AI_FACTORY_QUALITY_MODE=pro \
+OLLAMA_QUALITY_MODEL=gemma4:31b \
+scripts/agent-start.sh
+```
+
+Verify with synthetic data:
+
+```bash
+EXPECTED_QUALITY_MODE=pro scripts/agent-smoke-stage7.sh
+```

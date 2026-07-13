@@ -141,5 +141,35 @@ The Stage 6.1 exported workflow prefills every form field with
 the temporary test URL while still allowing each value to be overwritten with
 other synthetic data.
 
-The host-side URL is `http://127.0.0.1:8000`. A future n8n HTTP Request node
-will use `http://host.docker.internal:8000` because n8n runs in Docker Desktop.
+## Stage 7 quality report
+
+`basic` mode is the default and requires no additional model call:
+
+```bash
+AI_FACTORY_QUALITY_MODE=basic scripts/agent-start.sh
+```
+
+For a separate Ollama critique after generation:
+
+```bash
+AI_FACTORY_PROVIDER=ollama \
+AI_FACTORY_QUALITY_MODE=pro \
+OLLAMA_BASE_URL=http://127.0.0.1:11888 \
+OLLAMA_MODEL=gemma4:31b \
+OLLAMA_QUALITY_MODEL=gemma4:31b \
+OLLAMA_TIMEOUT_SECONDS=300 \
+scripts/agent-start.sh
+```
+
+Run the synthetic verification in another terminal:
+
+```bash
+EXPECTED_QUALITY_MODE=pro scripts/agent-smoke-stage7.sh
+```
+
+The exported `CODEX TEST — AI Strategy Factory v0.1` workflow calls the quality
+endpoint and displays its advisory findings before the human decision. Keep the
+workflow inactive and unpublished.
+
+The host-side URL is `http://127.0.0.1:8000`. n8n uses
+`http://host.docker.internal:8000` because it runs in Docker Desktop.

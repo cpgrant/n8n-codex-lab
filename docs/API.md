@@ -4,6 +4,8 @@
 
 The v0.1 service implements `GET /health`, `POST /v1/strategy-runs`,
 `GET /v1/strategy-runs/{run_id}`,
+`POST /v1/strategy-runs/{run_id}/quality-report`,
+`GET /v1/strategy-runs/{run_id}/quality-report`,
 `POST /v1/strategy-runs/{run_id}/review`, and
 `GET /v1/strategy-runs/{run_id}/artifact`.
 
@@ -65,6 +67,7 @@ Response `201`:
     "run_id": "4a3fd768-726a-4d7c-a722-5215d87511e4",
     "status": "awaiting_review",
     "strategy": {},
+    "quality_report": null,
     "created_at": "2026-07-12T10:00:00Z",
     "updated_at": "2026-07-12T10:00:01Z"
   },
@@ -74,6 +77,31 @@ Response `201`:
   }
 }
 ```
+
+## Create an advisory quality report
+
+### `POST /v1/strategy-runs/{run_id}/quality-report`
+
+Requires an `Idempotency-Key` header and no request body. The service applies
+the configured `AI_FACTORY_QUALITY_MODE`:
+
+- `basic` runs deterministic checks without contacting a model;
+- `pro` runs the same checks and a separate Ollama critic call, then merges the
+  results conservatively so model feedback cannot erase deterministic warnings.
+
+The operation is valid for a stored `awaiting_review` draft. It does not change
+the run status, rewrite the strategy, or make an approval decision.
+
+Response `200` includes the run ID, unchanged status, and a `quality_report`
+with seven scores, findings, a recommendation, critic metadata, and the exact
+draft checksum. Reports are immutable; repeating the exact operation returns
+the stored report.
+
+### `GET /v1/strategy-runs/{run_id}/quality-report`
+
+Returns the stored report, or `409 QUALITY_REPORT_NOT_READY` when a valid run
+does not yet have one. `GET /v1/strategy-runs/{run_id}` also includes the report
+as `quality_report`, or `null` before report generation.
 
 The `strategy` member follows the structured strategy response contract. The
 full example is in `examples/strategy-response.synthetic.json`.
@@ -238,10 +266,13 @@ Rules:
 | `409` | `IDEMPOTENCY_CONFLICT` | Key was reused with different input |
 | `409` | `IDEMPOTENCY_IN_PROGRESS` | Matching operation is still running |
 | `409` | `ARTIFACT_NOT_READY` | Run has no approved artifact |
+| `409` | `QUALITY_REPORT_NOT_READY` | Run has no quality report |
 | `422` | `PROVIDER_OUTPUT_INVALID` | Provider output fails the strategy schema |
+| `422` | `QUALITY_REVIEW_OUTPUT_INVALID` | Critic output fails the quality schema |
 | `500` | `ARTIFACT_RENDER_FAILED` | Approved draft could not be rendered |
 | `500` | `INTERNAL_ERROR` | Unexpected safe-to-hide failure |
 | `502` | `PROVIDER_ERROR` | Strategy provider failed |
+| `502` | `QUALITY_REVIEW_PROVIDER_ERROR` | Quality critic failed |
 | `503` | `SERVICE_UNAVAILABLE` | Required local component is unavailable |
 
 The service must not expose prompts, API keys, database paths, stack traces, or

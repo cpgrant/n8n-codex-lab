@@ -43,3 +43,19 @@ n8n (Docker) -> FastAPI :8000 -> Ollama :11888 -> gemma4:31b
 `OllamaStrategyProvider` is selected only through the FastAPI process
 environment. Ollama never receives review decisions, writes SQLite records, or
 creates artifacts.
+
+Stage 7 adds a quality report without changing the run-state machine:
+
+```text
+stored brief + immutable draft
+              |
+              +-> deterministic checks ------------------+
+              |                                           |
+              `-> optional Ollama critic (`pro` mode) -----+-> quality report
+                                                               |
+                                                               v
+                                                        human review
+```
+
+The service binds the report to the draft checksum and stores it in SQLite.
+The quality critic receives no review decision and cannot mutate the draft.

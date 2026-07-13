@@ -19,6 +19,8 @@ class Settings:
     provider: str = "fake"
     ollama_base_url: str = "http://127.0.0.1:11888"
     ollama_model: str = "gemma4:31b"
+    quality_mode: str = "basic"
+    ollama_quality_model: str = "gemma4:31b"
     ollama_timeout_seconds: float = 300.0
     data_dir: Path = REPOSITORY_ROOT / "data"
     artifact_dir: Path = REPOSITORY_ROOT / "artifacts"
@@ -54,6 +56,16 @@ class Settings:
         if not ollama_model:
             raise ValueError("OLLAMA_MODEL must not be empty")
 
+        quality_mode = os.getenv("AI_FACTORY_QUALITY_MODE", "basic").strip().lower()
+        if quality_mode not in {"basic", "pro"}:
+            raise ValueError("AI_FACTORY_QUALITY_MODE must be 'basic' or 'pro'")
+
+        ollama_quality_model = os.getenv(
+            "OLLAMA_QUALITY_MODEL", ollama_model
+        ).strip()
+        if not ollama_quality_model:
+            raise ValueError("OLLAMA_QUALITY_MODEL must not be empty")
+
         timeout_text = os.getenv("OLLAMA_TIMEOUT_SECONDS", "300")
         try:
             ollama_timeout_seconds = float(timeout_text)
@@ -74,6 +86,8 @@ class Settings:
             provider=provider,
             ollama_base_url=ollama_base_url,
             ollama_model=ollama_model,
+            quality_mode=quality_mode,
+            ollama_quality_model=ollama_quality_model,
             ollama_timeout_seconds=ollama_timeout_seconds,
             data_dir=Path(
                 os.getenv("AI_FACTORY_DATA_DIR", str(REPOSITORY_ROOT / "data"))

@@ -9,7 +9,13 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from .database import connect
-from .schemas import ArtifactMetadata, ReviewRecord, StrategyBrief, StrategyResponse
+from .schemas import (
+    ArtifactMetadata,
+    QualityReport,
+    ReviewRecord,
+    StrategyBrief,
+    StrategyResponse,
+)
 from .statuses import RunStatus, validate_transition
 
 
@@ -23,6 +29,7 @@ class RunRecord:
     status: RunStatus
     brief: dict[str, object]
     strategy: dict[str, object] | None
+    quality_report: dict[str, object] | None
     review: dict[str, object] | None
     artifact: dict[str, object] | None
     error_code: str | None
@@ -73,6 +80,9 @@ class RunRepository:
             artifact_row = connection.execute(
                 "SELECT * FROM run_artifacts WHERE run_id = ?", (str(run_id),)
             ).fetchone()
+            quality_row = connection.execute(
+                "SELECT * FROM run_quality_reports WHERE run_id = ?", (str(run_id),)
+            ).fetchone()
         if row is None:
             raise RunNotFound(str(run_id))
         return RunRecord(
@@ -82,6 +92,11 @@ class RunRepository:
             strategy=(
                 json.loads(row["strategy_json"])
                 if row["strategy_json"] is not None
+                else None
+            ),
+            quality_report=(
+                json.loads(quality_row["report_json"])
+                if quality_row is not None
                 else None
             ),
             review=(
@@ -110,6 +125,38 @@ class RunRepository:
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )
+
+    def record_quality_report(
+        self, run_id: UUID, report: QualityReport
+    ) -> RunRecord:
+        report_json = json.dumps(
+            report.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
+        )
+        timestamp = utc_now()
+        with connect(self.database_path) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                "SELECT strategy_json FROM strategy_runs WHERE run_id = ?",
+                (str(run_id),),
+            ).fetchone()
+            if row is None:
+                raise RunNotFound(str(run_id))
+            if row["strategy_json"] is None:
+                raise RuntimeError("run has no reviewable strategy")
+            existing = connection.execute(
+                "SELECT report_json FROM run_quality_reports WHERE run_id = ?",
+                (str(run_id),),
+            ).fetchone()
+            if existing is None:
+                connection.execute(
+                    """
+                    INSERT INTO run_quality_reports (
+                        run_id, report_json, draft_checksum, created_at
+                    ) VALUES (?, ?, ?, ?)
+                    """,
+                    (str(run_id), report_json, report.draft_checksum, timestamp),
+                )
+        return self.get(run_id)
 
     def transition(self, run_id: UUID, target: RunStatus) -> RunRecord:
         current = self.get(run_id)

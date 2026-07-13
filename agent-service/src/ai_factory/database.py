@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 def connect(database_path: Path) -> sqlite3.Connection:
@@ -70,6 +70,14 @@ def initialize_database(database_path: Path) -> None:
                 filename TEXT NOT NULL UNIQUE,
                 media_type TEXT NOT NULL,
                 checksum TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (run_id) REFERENCES strategy_runs(run_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS run_quality_reports (
+                run_id TEXT PRIMARY KEY,
+                report_json TEXT NOT NULL,
+                draft_checksum TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (run_id) REFERENCES strategy_runs(run_id)
             );
