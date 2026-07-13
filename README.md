@@ -8,6 +8,7 @@ while preserving the existing n8n and MCP sandbox.
 
 See:
 
+- `docs/ROADMAP.md`
 - `docs/AI-STRATEGY-FACTORY.md`
 - `docs/API.md`
 - `agent-service/README.md`

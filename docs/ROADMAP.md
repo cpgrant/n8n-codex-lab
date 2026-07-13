@@ -1,0 +1,307 @@
+# AI Strategy Factory roadmap
+
+## Purpose
+
+This is the canonical development roadmap for the AI Strategy Factory in the
+n8n Codex Lab. It records completed work, planned stages, and the safety
+boundary for moving from a synthetic local lab toward a controlled
+professional workflow.
+
+Completion dates use the `Europe/Copenhagen` timezone and are based on Git
+history unless a separate operational-verification date is stated.
+
+## Status summary
+
+| Stage | Milestone | Status | Completed |
+| --- | --- | --- | --- |
+| 0 | Contracts and safety boundary | Complete | 2026-07-12 |
+| 1 | FastAPI and SQLite foundation | Complete | 2026-07-12 |
+| 2 | Deterministic strategy generation | Complete | 2026-07-12 |
+| 3 | Human review and Markdown artifacts | Complete | 2026-07-12 |
+| 4 | Inactive n8n strategy workflow | Complete | 2026-07-12 |
+| 5 | Operational verification | Complete | 2026-07-12 |
+| 6 | Local Ollama strategy provider | Complete | 2026-07-12 |
+| 6.1 | Generation quality contract | Complete | 2026-07-12; live re-verification 2026-07-13 |
+| 7 | Pre-review quality report | Planned | — |
+| 7.1 | Local model evaluation | Planned | — |
+| 8 | Flexible intake | Planned | — |
+| 9 | Client-demo hardening | Planned | — |
+| 10 | OpenAI provider and professional routing | Planned | — |
+
+## Completed foundation
+
+### Stage 0 — Contracts and safety boundary
+
+Status: **Complete** on 2026-07-12 as part of commit `8aeef20`.
+
+Established:
+
+- the synthetic-only strategy brief and structured response contracts;
+- run statuses, permitted transitions, review semantics, and idempotency rules;
+- the provider boundary and approved Markdown artifact rules;
+- explicit v0.1 non-goals and the prohibition on production or confidential
+  data;
+- the rule that n8n workflows remain inactive and unpublished without explicit
+  approval.
+
+### Stage 1 — FastAPI and SQLite foundation
+
+Status: **Complete** on 2026-07-12 in commit `8aeef20`.
+
+Delivered:
+
+- a Mac-local FastAPI service;
+- configuration and health endpoints;
+- SQLite schema and repository-local persistence;
+- typed request and response schemas;
+- isolated Python development and test setup.
+
+### Stage 2 — Deterministic strategy generation
+
+Status: **Complete** on 2026-07-12 in commit `8aeef20`.
+
+Delivered:
+
+- synchronous strategy-run creation and retrieval;
+- the deterministic `FakeStrategyProvider` for safe repeatable tests;
+- durable run state and create-request idempotency;
+- checked-in synthetic brief and response examples;
+- automated and synthetic smoke tests.
+
+### Stage 3 — Human review and Markdown artifacts
+
+Status: **Complete** on 2026-07-12 in commit `a7ff3c5`.
+
+Delivered:
+
+- explicit human approval and rejection;
+- immutable reviewable drafts and review records;
+- terminal rejection with no artifact creation;
+- approved Markdown rendering and retrieval;
+- review idempotency and artifact checksums.
+
+### Stage 4 — Inactive n8n strategy workflow
+
+Status: **Complete** on 2026-07-12 in commit `c85dbe3`.
+
+Delivered:
+
+- the exported `CODEX TEST — AI Strategy Factory v0.1` workflow;
+- synthetic form intake and normalization;
+- n8n-to-Mac FastAPI connectivity through `host.docker.internal`;
+- a complete draft review page and explicit approval/rejection path;
+- an inactive, unpublished, credential-free workflow that is unavailable
+  through MCP.
+
+### Stage 5 — Operational verification
+
+Status: **Complete** on 2026-07-12 in commit `743400c`.
+
+Verified:
+
+- workflow safety flags and local network paths;
+- create and review idempotency;
+- terminal rejection without an artifact;
+- durable SQLite retrieval and restart persistence;
+- approved manual n8n execution and Markdown artifact creation;
+- absence of tracked databases, artifacts, secrets, and runtime caches.
+
+The repeatable procedure is in `docs/STAGE-5-VERIFICATION.md`.
+
+### Stage 6 — Local Ollama strategy provider
+
+Status: **Complete** on 2026-07-12 in commit `b23f38d`. Repository-managed
+Ollama startup support was added earlier that day in commit `52d3147`.
+
+Delivered:
+
+- opt-in `OllamaStrategyProvider` support through service configuration;
+- local `gemma4:31b` structured generation;
+- JSON-schema-constrained output and service-side validation;
+- safe provider timeout, connection, envelope, and invalid-output errors;
+- a live synthetic Ollama smoke test while retaining the fake provider as the
+  deterministic default.
+
+### Stage 6.1 — Generation quality contract
+
+Status: **Complete** on 2026-07-12 in commit `acf97ec`. The committed code was
+live re-verified with `gemma4:31b` on 2026-07-13 using synthetic run
+`78d28f63-fe08-46a9-b8ee-ae6cfa87aaa0`.
+
+Delivered:
+
+- bounded depth for objectives, choices, initiatives, risks, assumptions,
+  measures, and next steps;
+- unique sequential IDs and valid initiative-to-objective references;
+- stronger evidence, stakeholder, constraint, and numeric-target grounding;
+- rejection of shallow or internally inconsistent provider output;
+- a fully prefilled n8n test form based on the checked-in synthetic brief;
+- 55 passing automated tests and successful live local-model generation.
+
+Human approval remains mandatory. Structural validity is not treated as proof
+of strategic quality.
+
+## Planned professional workflow
+
+### Stage 7 — Pre-review quality report
+
+Status: **Planned**.
+
+Add an advisory quality-review step between draft generation and human review:
+
+```text
+Generate draft
+-> deterministic quality checks
+-> optional model critique
+-> human review
+-> approval or rejection
+```
+
+Planned scope:
+
+- a structured quality-report contract;
+- `basic` mode with deterministic checks;
+- `pro` mode with deterministic checks plus a separate critic call;
+- checks for brief alignment, evidence grounding, constraint adherence,
+  measurement quality, feasibility, and internal consistency;
+- strengths, issues, unsupported claims, missing considerations, and review
+  questions;
+- durable association between the quality report and the exact draft checksum;
+- quality findings displayed in the n8n human-review form.
+
+Guardrails:
+
+- the report is advisory and cannot approve a run;
+- no numeric score automatically changes run status;
+- the critic does not silently rewrite the stored draft;
+- the human reviewer retains the final decision;
+- the first implementation may use `gemma4:31b` for both generation and a
+  separate critic call, with the shared-model limitation made explicit.
+
+Completion criteria:
+
+- deterministic and model-assisted reports validate against one contract;
+- reports are reproducible or safely idempotent for the same draft;
+- the review form displays findings without exposing prompts or raw provider
+  errors;
+- approval and rejection semantics remain unchanged;
+- automated tests and a synthetic end-to-end n8n test pass.
+
+### Stage 7.1 — Local model evaluation
+
+Status: **Planned** after Stage 7.
+
+Benchmark the same synthetic brief set with:
+
+- `gemma4:12b` as the latency-oriented baseline;
+- `gemma4:26b` as the middle option;
+- `gemma4:31b` as the current quality baseline.
+
+Measure:
+
+- schema success rate;
+- generation and critique latency;
+- constraint and evidence adherence;
+- unsupported claims;
+- quality-report results;
+- human reviewer preference.
+
+Model selection remains internal configuration rather than a client-facing
+form control. Evaluation uses synthetic data only and should produce a
+reviewable, repeatable report before changing the default model.
+
+### Stage 8 — Flexible intake
+
+Status: **Planned** after the quality workflow is stable.
+
+Add three intake modes:
+
+```text
+Choose input mode
+|-- Load synthetic example
+|-- Enter a blank manual form
+`-- Upload structured JSON
+          |
+          v
+   Validate and normalize
+          |
+          v
+   Generate strategy
+```
+
+Planned scope and guardrails:
+
+- preserve the fast synthetic demonstration path;
+- add a genuinely blank manual form;
+- add JSON upload first, with YAML considered later;
+- enforce a small file-size limit and strict schema validation;
+- reject unknown fields and provide clear validation errors;
+- never use uploaded filenames for artifact paths;
+- do not retain arbitrary uploaded files;
+- keep all tests synthetic until the Stage 9 controls exist.
+
+### Stage 9 — Client-demo hardening
+
+Status: **Planned** before any controlled external pilot.
+
+Planned scope:
+
+- authentication and authorization;
+- per-client run ownership and isolation;
+- a documented data-retention and deletion procedure;
+- privacy, consent, and acceptable-data rules;
+- request throttling and abuse controls;
+- background execution or a clear long-running-request experience;
+- operational logs, health checks, backups, and recovery procedures;
+- client-safe validation, provider, and recovery errors;
+- a stable form URL only after explicit approval to publish or activate the
+  workflow.
+
+Completion of Stage 9 is required before accepting confidential or real client
+strategy briefs. Earlier stages remain suitable only for local demonstrations,
+synthetic workshops, and internal experimentation.
+
+### Stage 10 — OpenAI provider and professional routing
+
+Status: **Planned** after the quality rubric and client-data controls exist.
+
+Planned scope:
+
+- implement the reserved `OpenAIStrategyProvider` behind the existing provider
+  interface;
+- preserve the same schemas, quality report, review semantics, idempotency, and
+  artifact rules across providers;
+- configure generation and review providers independently;
+- support local/private, cost-balanced, premium, and independent cross-provider
+  review modes;
+- add provider-parity, structured-output, timeout, retry, and safe-error tests;
+- keep provider and model choices in controlled server configuration rather
+  than accepting arbitrary values from n8n clients.
+
+Illustrative configuration:
+
+```text
+STRATEGY_GENERATION_PROVIDER=ollama
+STRATEGY_GENERATION_MODEL=gemma4:31b
+
+STRATEGY_REVIEW_PROVIDER=openai
+STRATEGY_REVIEW_MODEL=<approved-openai-model>
+```
+
+Before any hosted-provider use with non-synthetic data, the system must have
+approved API-key handling, consent and disclosure, retention rules, logging
+controls, client authorization, and a clear statement that the brief leaves
+the local Mac.
+
+## Roadmap rules
+
+- Use synthetic data until Stage 9 is complete and real-data use is explicitly
+  approved.
+- Work only with n8n workflows whose names begin with `CODEX TEST`.
+- Never activate or publish a workflow without explicit approval.
+- Never modify existing credentials or commit secrets.
+- Keep generation, quality advice, and human approval as separate concerns.
+- Do not mark a planned stage complete from code alone: require automated tests,
+  synthetic operational verification, documentation, and a clean Git
+  checkpoint.
+- Record material scope changes and completion evidence in this file.

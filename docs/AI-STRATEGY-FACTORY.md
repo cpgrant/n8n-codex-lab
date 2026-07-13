@@ -1,5 +1,7 @@
 # AI Strategy Factory v0.1
 
+The completed and planned development stages are tracked in `docs/ROADMAP.md`.
+
 ## Purpose
 
 AI Strategy Factory v0.1 is a thin, human-reviewed workflow for turning a
