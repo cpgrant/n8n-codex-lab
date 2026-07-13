@@ -328,22 +328,84 @@ blocked until the Stage 9 controls are complete.
 
 Status: **Planned** before any controlled external pilot.
 
-Planned scope:
+Stage 9 is divided into independently reviewable checkpoints. Implementation
+and verification continue with synthetic data throughout the stage.
 
-- authentication and authorization;
-- per-client run ownership and isolation;
-- a documented data-retention and deletion procedure;
-- privacy, consent, and acceptable-data rules;
-- request throttling and abuse controls;
-- background execution or a clear long-running-request experience;
-- operational logs, health checks, backups, and recovery procedures;
-- client-safe validation, provider, and recovery errors;
-- a stable form URL only after explicit approval to publish or activate the
-  workflow.
+#### Stage 9.0 — Data policy and trust boundaries
 
-Completion of Stage 9 is required before accepting confidential or real client
-strategy briefs. Earlier stages remain suitable only for local demonstrations,
-synthetic workshops, and internal experimentation.
+- classify allowed, restricted, and prohibited input data;
+- document consent, acceptable-use, privacy, and AI-disclosure requirements;
+- identify trust boundaries across browser, n8n, FastAPI, SQLite, Ollama,
+  artifacts, logs, backups, MCP, and administrators;
+- define the minimum controls required before a controlled real-data pilot.
+
+#### Stage 9.1 — Authentication and authorization
+
+- require an authenticated user for client-facing intake and review;
+- authenticate n8n-to-FastAPI service calls separately from human sessions;
+- keep credentials in approved secret storage, never workflow exports or Git;
+- test missing, invalid, expired, and insufficient authorization paths;
+- retain explicit human approval as a separate authorized action.
+
+#### Stage 9.2 — Run ownership and isolation
+
+- assign every run to an authenticated owner and client/tenant boundary;
+- derive ownership from trusted authentication context, not request JSON;
+- scope run, quality-report, review, and artifact retrieval by ownership;
+- prevent cross-client enumeration and access, including error differences;
+- migrate existing synthetic lab runs without treating them as client data.
+
+#### Stage 9.3 — Retention, deletion, and recovery
+
+- define retention periods for briefs, drafts, reviews, SQLite records,
+  Markdown artifacts, logs, and backups;
+- implement an authorized deletion workflow covering database rows and files;
+- document what deletion can and cannot remove from backups immediately;
+- test backup creation, restoration, integrity checks, and deletion behavior;
+- maintain a minimal audit record without retaining deleted strategy content.
+
+#### Stage 9.4 — Abuse controls and safer observability
+
+- enforce request, upload, and concurrency limits at trusted boundaries;
+- add rate limiting and protection against repeated expensive model calls;
+- use request/run identifiers while redacting briefs, prompts, model output,
+  tokens, credentials, and personal data from logs;
+- add client-safe validation, provider, timeout, and recovery errors;
+- monitor health and capacity without exposing client content.
+
+#### Stage 9.5 — Long-running request experience
+
+- replace fragile browser waits with background execution or a documented,
+  resilient polling/status flow;
+- make retry and idempotency behavior explicit for generation and critique;
+- show safe progress, timeout, cancellation, and recovery states;
+- ensure a browser disconnect does not duplicate a run or approval decision.
+
+#### Stage 9.6 — Controlled synthetic client-demo verification
+
+- exercise authentication, isolation, deletion, throttling, recovery, and
+  long-running behavior with multiple synthetic test identities;
+- complete automated negative tests and a documented end-to-end demo run;
+- verify workflow exports contain no credentials and remain unavailable via
+  MCP unless separately approved;
+- verify backup/restore and operational runbooks;
+- produce a go/no-go record for a later, separately approved pilot.
+
+Stage 9 completion gates:
+
+- all 9.0-9.6 checkpoints have automated tests, operational evidence, and
+  documented ownership;
+- cross-client access tests fail safely for every run and artifact endpoint;
+- deletion and recovery procedures are demonstrated with synthetic records;
+- logs and exported workflows contain no secrets or strategy content;
+- the controlled synthetic demo passes without bypassing human approval;
+- the Git checkpoint is clean and the roadmap evidence is recorded.
+
+Completing Stage 9 does not automatically authorize real data, activate the
+workflow, or publish a stable form. Each remains a separate explicit decision
+requiring approved data policy, operational ownership, and a documented pilot
+scope. Until then, earlier stages remain suitable only for local synthetic
+demonstrations, workshops, and internal experimentation.
 
 ### Stage 10 — OpenAI provider and professional routing
 
