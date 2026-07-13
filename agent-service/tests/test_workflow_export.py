@@ -8,7 +8,7 @@ WORKFLOW_PATH = (
 )
 
 
-def test_stage7_workflow_export_is_safe_and_routes_quality_before_review():
+def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
     workflow = json.loads(WORKFLOW_PATH.read_text(encoding="utf-8"))
     nodes = {node["name"]: node for node in workflow["nodes"]}
 
@@ -17,7 +17,28 @@ def test_stage7_workflow_export_is_safe_and_routes_quality_before_review():
     assert workflow["active"] is False
     assert workflow["settings"]["availableInMCP"] is False
     assert all("credentials" not in node for node in workflow["nodes"])
-    assert len(nodes) == 11
+    assert len(nodes) == 16
+    assert workflow["settings"]["saveDataErrorExecution"] == "none"
+    assert workflow["settings"]["saveDataSuccessExecution"] == "none"
+    assert workflow["settings"]["saveManualExecutions"] is False
+    assert workflow["connections"]["Strategy Brief Form"]["main"][0][0][
+        "node"
+    ] == "Choose Input Mode"
+    intake_outputs = workflow["connections"]["Choose Input Mode"]["main"]
+    assert [output[0]["node"] for output in intake_outputs] == [
+        "Load Synthetic Example",
+        "Blank Manual Brief Form",
+        "JSON Upload Form",
+    ]
+    assert workflow["connections"]["Load Synthetic Example"]["main"][0][0][
+        "node"
+    ] == "Create Strategy Draft"
+    assert workflow["connections"]["Blank Manual Brief Form"]["main"][0][0][
+        "node"
+    ] == "Normalize Manual Brief"
+    assert workflow["connections"]["JSON Upload Form"]["main"][0][0][
+        "node"
+    ] == "Parse JSON Brief"
     assert workflow["connections"]["Create Strategy Draft"]["main"][0][0][
         "node"
     ] == "Generate Quality Report"
@@ -33,3 +54,59 @@ def test_stage7_workflow_export_is_safe_and_routes_quality_before_review():
     assert "report.issues" in prepare_code
     assert "cannot approve, reject, or rewrite" in prepare_code
     assert "escapeHtml" in prepare_code
+
+
+def test_stage8_intake_modes_are_blank_bounded_and_strict():
+    workflow = json.loads(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    nodes = {node["name"]: node for node in workflow["nodes"]}
+
+    trigger_fields = nodes["Strategy Brief Form"]["parameters"]["formFields"][
+        "values"
+    ]
+    assert trigger_fields[0]["fieldName"] == "input_mode"
+    assert [
+        item["option"]
+        for item in trigger_fields[0]["fieldOptions"]["values"]
+    ] == [
+        "Load synthetic example",
+        "Enter a blank manual form",
+        "Upload structured JSON",
+    ]
+
+    manual_fields = nodes["Blank Manual Brief Form"]["parameters"][
+        "formFields"
+    ]["values"]
+    assert all("defaultValue" not in field for field in manual_fields)
+    assert any(
+        field.get("fieldName") == "synthetic_confirmation"
+        and field.get("requiredField") is True
+        for field in manual_fields
+    )
+
+    upload_fields = nodes["JSON Upload Form"]["parameters"]["formFields"][
+        "values"
+    ]
+    file_field = next(
+        field for field in upload_fields if field.get("fieldType") == "file"
+    )
+    assert file_field["multipleFiles"] is False
+    assert file_field["acceptFileTypes"] == ".json"
+    assert file_field["requiredField"] is True
+
+    parser = nodes["Parse JSON Brief"]["parameters"]["jsCode"]
+    assert "buffer.length > 65536" in parser
+    assert "binaryKeys.length !== 1" in parser
+    assert "Unknown brief fields" in parser
+    assert "Unknown organization fields" in parser
+    assert "getBinaryDataBuffer" in parser
+    assert "filename" not in parser.split("return [{ json:", 1)[1]
+    assert "item.binary" not in parser.split("return [{ json:", 1)[1]
+
+    example = nodes["Load Synthetic Example"]["parameters"]["jsCode"]
+    fixture = json.loads(
+        (REPOSITORY_ROOT / "examples/strategy-brief.synthetic.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert fixture["title"] in example
+    assert fixture["organization"]["name"] in example

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -92,6 +93,41 @@ def test_validation_and_not_found_use_error_contract(tmp_path, brief_payload):
     assert validation.json()["error"]["code"] == "VALIDATION_ERROR"
     assert missing.status_code == 404
     assert missing.json()["error"]["code"] == "RUN_NOT_FOUND"
+
+
+def test_stage8_unknown_uploaded_brief_fields_are_rejected_clearly(
+    tmp_path, brief_payload
+):
+    client, _ = client_for(tmp_path)
+    unknown_top_level = deepcopy(brief_payload)
+    unknown_top_level["uploaded_filename"] = "never-use-this.json"
+    unknown_organization = deepcopy(brief_payload)
+    unknown_organization["organization"]["secret"] = "synthetic"
+
+    with client:
+        top_level = client.post(
+            "/v1/strategy-runs",
+            json=unknown_top_level,
+            headers={"Idempotency-Key": "stage8-unknown-top-level"},
+        )
+        organization = client.post(
+            "/v1/strategy-runs",
+            json=unknown_organization,
+            headers={"Idempotency-Key": "stage8-unknown-organization"},
+        )
+
+    assert top_level.status_code == 400
+    assert top_level.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert any(
+        detail["field"] == "uploaded_filename"
+        for detail in top_level.json()["error"]["details"]
+    )
+    assert organization.status_code == 400
+    assert organization.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert any(
+        detail["field"] == "organization.secret"
+        for detail in organization.json()["error"]["details"]
+    )
 
 
 def test_request_id_is_returned_in_header_and_body(tmp_path):

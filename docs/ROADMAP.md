@@ -25,7 +25,7 @@ history unless a separate operational-verification date is stated.
 | 7 | Pre-review quality report | Complete | 2026-07-13 |
 | 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Human review pending | — |
-| 8 | Flexible intake | Planned | — |
+| 8 | Flexible intake | Complete | 2026-07-13 |
 | 9 | Client-demo hardening | Planned | — |
 | 10 | OpenAI provider and professional routing | Planned | — |
 
@@ -270,7 +270,7 @@ default change require the blinded human preference.
 
 ### Stage 8 — Flexible intake
 
-Status: **Planned** after the quality workflow is stable.
+Status: **Complete** on 2026-07-13.
 
 Add three intake modes:
 
@@ -297,6 +297,32 @@ Planned scope and guardrails:
 - never use uploaded filenames for artifact paths;
 - do not retain arbitrary uploaded files;
 - keep all tests synthetic until the Stage 9 controls exist.
+
+Delivered:
+
+- an initial mode chooser with a fast checked-in synthetic example;
+- a genuinely blank manual brief form with explicit synthetic-data
+  confirmation;
+- a single-file structured JSON upload path with a 64 KiB maximum;
+- strict `.json`, one-object, top-level field, nested organization field, and
+  v0.1 API-schema validation;
+- normalization of all three paths into the same `StrategyBrief` contract;
+- removal of binary data before generation and workflow settings that disable
+  saved success, error, and manual execution data;
+- no use of uploaded filenames for artifact paths;
+- an updated installed workflow that remains inactive, unpublished,
+  credential-free, and unavailable through MCP.
+
+Completion evidence:
+
+- 74 automated tests passed;
+- `scripts/verify-stage8-intake.js` passed the example, blank-manual, valid
+  upload, unknown-field, oversize, and wrong-extension cases;
+- n8n accepted and re-exported the 16-node workflow with all safety flags;
+- the production form continued to return HTTP 404.
+
+The workflow remains synthetic-only. Real or confidential client intake is
+blocked until the Stage 9 controls are complete.
 
 ### Stage 9 — Client-demo hardening
 

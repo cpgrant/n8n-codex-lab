@@ -4,89 +4,39 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "AI Strategy Factory v0.1",
-        "formDescription": "Synthetic test briefs only. This workflow creates a structured strategy draft and advisory quality report before explicit human review.",
+        "formTitle": "AI Strategy Factory v0.1 — choose intake",
+        "formDescription": "Synthetic test briefs only. Choose the example, a blank manual form, or a structured JSON upload (maximum 64 KiB).",
         "formFields": {
           "values": [
             {
-              "fieldLabel": "Strategy title",
-              "fieldName": "title",
-              "defaultValue": "Improve volunteer onboarding for a fictional community garden network",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Organization name",
-              "fieldName": "organization_name",
-              "defaultValue": "Northstar Community Gardens",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Organization type",
-              "fieldName": "organization_type",
-              "defaultValue": "fictional nonprofit network",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Organization context",
-              "fieldName": "organization_context",
-              "fieldType": "textarea",
-              "defaultValue": "A synthetic organization coordinating five imaginary neighborhood gardens.",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Decision horizon",
-              "fieldName": "decision_horizon",
-              "defaultValue": "Next 12 months",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Strategic challenge",
-              "fieldName": "challenge",
-              "fieldType": "textarea",
-              "defaultValue": "New volunteers often attend one orientation but do not complete a first garden shift, limiting the network's ability to staff weekend activities.",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Desired outcomes (one per line)",
-              "fieldName": "desired_outcomes",
-              "fieldType": "textarea",
-              "defaultValue": "Increase the share of oriented volunteers who complete a first shift.\nMake onboarding consistent across all five fictional gardens.\nReduce coordination effort for volunteer garden leads.",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Constraints (one per line)",
-              "fieldName": "constraints",
-              "fieldType": "textarea",
-              "defaultValue": "Use only existing fictional staff and volunteer roles.\nDo not introduce paid software during the first six months.\nKeep the onboarding process accessible from a mobile phone."
-            },
-            {
-              "fieldLabel": "Available evidence (one per line)",
-              "fieldName": "available_evidence",
-              "fieldType": "textarea",
-              "defaultValue": "Synthetic baseline: 120 people attended orientation last season.\nSynthetic baseline: 42 of those people completed a first shift.\nSynthetic interview theme: volunteers were unsure which shift suited beginners."
-            },
-            {
-              "fieldLabel": "Stakeholders (one per line)",
-              "fieldName": "stakeholders",
-              "fieldType": "textarea",
-              "defaultValue": "Volunteer coordinator\nGarden leads\nNew volunteers\nFictional board sponsor"
-            },
-            {
-              "fieldLabel": "Requested by",
-              "fieldName": "requested_by",
-              "defaultValue": "synthetic-lab-user",
+              "fieldLabel": "Input mode",
+              "fieldName": "input_mode",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Load synthetic example"
+                  },
+                  {
+                    "option": "Enter a blank manual form"
+                  },
+                  {
+                    "option": "Upload structured JSON"
+                  }
+                ]
+              },
               "requiredField": true
             }
           ]
         },
         "responseMode": "lastNode",
         "options": {
-          "buttonLabel": "Generate strategy draft",
+          "buttonLabel": "Continue",
           "path": "codex-test-ai-strategy-factory-v01"
         }
       },
       "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.2,
+      "typeVersion": 2.4,
       "position": [
         0,
         0
@@ -97,16 +47,264 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $json;\nconst value = (name, label) => input[name] ?? input[label] ?? '';\nconst lines = (name, label) => String(value(name, label)).split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);\nreturn [{\n  json: {\n    schema_version: '0.1',\n    title: String(value('title', 'Strategy title')).trim(),\n    organization: {\n      name: String(value('organization_name', 'Organization name')).trim(),\n      type: String(value('organization_type', 'Organization type')).trim(),\n      context: String(value('organization_context', 'Organization context')).trim(),\n    },\n    decision_horizon: String(value('decision_horizon', 'Decision horizon')).trim(),\n    challenge: String(value('challenge', 'Strategic challenge')).trim(),\n    desired_outcomes: lines('desired_outcomes', 'Desired outcomes (one per line)'),\n    constraints: lines('constraints', 'Constraints (one per line)'),\n    available_evidence: lines('available_evidence', 'Available evidence (one per line)'),\n    stakeholders: lines('stakeholders', 'Stakeholders (one per line)'),\n    requested_by: String(value('requested_by', 'Requested by')).trim(),\n    supersedes_run_id: null,\n  },\n}];"
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_mode ?? $json['Input mode'] }}",
+                    "rightValue": "Load synthetic example",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Example"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_mode ?? $json['Input mode'] }}",
+                    "rightValue": "Enter a blank manual form",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Manual"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_mode ?? $json['Input mode'] }}",
+                    "rightValue": "Upload structured JSON",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "JSON Upload"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
       "position": [
         240,
         0
       ],
+      "id": "c3839e89-bd2b-40e4-ab02-bd9903704930",
+      "name": "Choose Input Mode"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { schema_version: '0.1', title: 'Improve volunteer onboarding for a fictional community garden network', organization: { name: 'Northstar Community Gardens', type: 'fictional nonprofit network', context: 'A synthetic organization coordinating five imaginary neighborhood gardens.' }, decision_horizon: 'Next 12 months', challenge: \"New volunteers often attend one orientation but do not complete a first garden shift, limiting the network's ability to staff weekend activities.\", desired_outcomes: ['Increase the share of oriented volunteers who complete a first shift.', 'Make onboarding consistent across all five fictional gardens.', 'Reduce coordination effort for volunteer garden leads.'], constraints: ['Use only existing fictional staff and volunteer roles.', 'Do not introduce paid software during the first six months.', 'Keep the onboarding process accessible from a mobile phone.'], available_evidence: ['Synthetic baseline: 120 people attended orientation last season.', 'Synthetic baseline: 42 of those people completed a first shift.', 'Synthetic interview theme: volunteers were unsure which shift suited beginners.'], stakeholders: ['Volunteer coordinator', 'Garden leads', 'New volunteers', 'Fictional board sponsor'], requested_by: 'synthetic-lab-user', supersedes_run_id: null } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -260
+      ],
+      "id": "36fb063c-e9b7-43dd-8dbf-1e2b04f08396",
+      "name": "Load Synthetic Example"
+    },
+    {
+      "parameters": {
+        "formTitle": "Enter a synthetic strategy brief",
+        "formDescription": "All fields are intentionally blank. Use fictional or synthetic test data only.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Strategy title",
+              "fieldName": "title",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization name",
+              "fieldName": "organization_name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization type",
+              "fieldName": "organization_type",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Organization context",
+              "fieldName": "organization_context",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Decision horizon",
+              "fieldName": "decision_horizon",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Strategic challenge",
+              "fieldName": "challenge",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Desired outcomes (one per line)",
+              "fieldName": "desired_outcomes",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Constraints (one per line)",
+              "fieldName": "constraints",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Available evidence (one per line)",
+              "fieldName": "available_evidence",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Stakeholders (one per line)",
+              "fieldName": "stakeholders",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Requested by",
+              "fieldName": "requested_by",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Synthetic data confirmation",
+              "fieldName": "synthetic_confirmation",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "I confirm this brief contains synthetic test data only."
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Validate and generate"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -20
+      ],
+      "id": "201f1d9b-eb44-49b1-a4a8-118371e16429",
+      "name": "Blank Manual Brief Form",
+      "webhookId": "78217e47-c374-4cea-a64d-f4901e808ef8"
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload a synthetic JSON strategy brief",
+        "formDescription": "Upload one .json file no larger than 64 KiB. Unknown fields are rejected. The uploaded file is not forwarded or used as an artifact path.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Brief JSON file",
+              "fieldName": "brief_json",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".json",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Synthetic data confirmation",
+              "fieldName": "synthetic_confirmation",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "I confirm this brief contains synthetic test data only."
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Validate and generate"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        480,
+        220
+      ],
+      "id": "39cc8171-3309-48c4-acee-573a523613dc",
+      "name": "JSON Upload Form",
+      "webhookId": "75f1f2b9-250f-41d9-8d2c-a603f3ca20af"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst confirmation = item.json.synthetic_confirmation ?? item.json['Synthetic data confirmation'];\nif (!String(confirmation).includes('I confirm')) {\n  throw new Error('Stage 8 accepts synthetic test data only.');\n}\nconst binaryKeys = Object.keys(item.binary ?? {});\nif (binaryKeys.length !== 1) {\n  throw new Error('Upload exactly one JSON brief file.');\n}\nconst binaryKey = binaryKeys[0];\nconst metadata = item.binary[binaryKey];\nconst filename = String(metadata.fileName ?? metadata.file_name ?? '');\nif (!filename.toLowerCase().endsWith('.json')) {\n  throw new Error('The uploaded brief must use a .json extension.');\n}\nconst buffer = await helpers.getBinaryDataBuffer(0, binaryKey);\nif (buffer.length > 65536) {\n  throw new Error('The uploaded JSON brief exceeds the 64 KiB limit.');\n}\nlet parsed;\ntry {\n  parsed = JSON.parse(buffer.toString('utf8').replace(/^\\uFEFF/, ''));\n} catch {\n  throw new Error('The uploaded brief is not valid JSON.');\n}\nif (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {\n  throw new Error('The uploaded brief must be one JSON object.');\n}\nconst allowed = ['schema_version', 'title', 'organization', 'decision_horizon', 'challenge', 'desired_outcomes', 'constraints', 'available_evidence', 'stakeholders', 'requested_by', 'supersedes_run_id'];\nconst unknown = Object.keys(parsed).filter((key) => !allowed.includes(key));\nif (unknown.length) {\n  throw new Error('Unknown brief fields: ' + unknown.sort().join(', '));\n}\nif (parsed.organization && typeof parsed.organization === 'object' && !Array.isArray(parsed.organization)) {\n  const unknownOrganization = Object.keys(parsed.organization).filter((key) => !['name', 'type', 'context'].includes(key));\n  if (unknownOrganization.length) {\n    throw new Error('Unknown organization fields: ' + unknownOrganization.sort().join(', '));\n  }\n}\nreturn [{ json: { ...parsed, schema_version: parsed.schema_version ?? '0.1', supersedes_run_id: parsed.supersedes_run_id ?? null } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        220
+      ],
+      "id": "51c1e4e1-3c19-43b3-b5fc-18ef86cb89be",
+      "name": "Parse JSON Brief"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json;\nconst value = (name, label) => input[name] ?? input[label] ?? '';\nconst lines = (name, label) => String(value(name, label)).split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);\nconst confirmation = value('synthetic_confirmation', 'Synthetic data confirmation');\nif (!String(confirmation).includes('I confirm')) {\n  throw new Error('Stage 8 accepts synthetic test data only.');\n}\nreturn [{\n  json: {\n    schema_version: '0.1',\n    title: String(value('title', 'Strategy title')).trim(),\n    organization: {\n      name: String(value('organization_name', 'Organization name')).trim(),\n      type: String(value('organization_type', 'Organization type')).trim(),\n      context: String(value('organization_context', 'Organization context')).trim(),\n    },\n    decision_horizon: String(value('decision_horizon', 'Decision horizon')).trim(),\n    challenge: String(value('challenge', 'Strategic challenge')).trim(),\n    desired_outcomes: lines('desired_outcomes', 'Desired outcomes (one per line)'),\n    constraints: lines('constraints', 'Constraints (one per line)'),\n    available_evidence: lines('available_evidence', 'Available evidence (one per line)'),\n    stakeholders: lines('stakeholders', 'Stakeholders (one per line)'),\n    requested_by: String(value('requested_by', 'Requested by')).trim(),\n    supersedes_run_id: null,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -20
+      ],
       "id": "04937289-3412-4940-b2ba-d2ff95e77ca8",
-      "name": "Normalize Synthetic Brief"
+      "name": "Normalize Manual Brief"
     },
     {
       "parameters": {
@@ -130,7 +328,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
+        960,
         0
       ],
       "id": "13b6a17b-ad58-4ab6-b0d1-8cb2d1ae8c03",
@@ -154,7 +352,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
+        1200,
         0
       ],
       "id": "6a55fc71-0f8d-4b66-b0aa-a514beab8e74",
@@ -167,7 +365,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        960,
+        1440,
         0
       ],
       "id": "5bb573ff-2c6b-4a81-b17a-9373561509f4",
@@ -221,7 +419,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1200,
+        1680,
         0
       ],
       "id": "79baaf4f-74f4-44e9-bf7b-3d3550c7de9e",
@@ -250,7 +448,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1440,
+        1920,
         0
       ],
       "id": "e97c4395-6e53-4b6b-afac-30c9884d6812",
@@ -313,7 +511,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        1680,
+        2160,
         0
       ],
       "id": "d0e90e8c-e041-437e-942f-9090b7f5eae8",
@@ -329,7 +527,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1920,
+        2400,
         -120
       ],
       "id": "bd23bfd1-78d5-49ba-a8b1-985b76836de1",
@@ -346,7 +544,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1920,
+        2400,
         120
       ],
       "id": "232873e8-2637-46c1-a784-110b239bb339",
@@ -355,8 +553,8 @@
     },
     {
       "parameters": {
-        "content": "## AI Strategy Factory v0.1 — Stage 7\nSynthetic brief → strategy draft → advisory quality report → explicit human review → approved Markdown artifact.\n\nThe quality report cannot approve, reject, or rewrite a draft.\n\nThis workflow must remain inactive until separately approved for activation.",
-        "width": 520
+        "content": "## AI Strategy Factory v0.1 — Stage 8\nChoose synthetic example, blank manual form, or size-limited JSON upload → validate and normalize → strategy draft → advisory quality report → explicit human review → approved Markdown artifact.\n\nUploads are limited to 64 KiB, unknown fields are rejected, and filenames are never used for artifact paths.\n\nThe quality report cannot approve, reject, or rewrite a draft.\n\nThis workflow must remain inactive until separately approved for activation.",
+        "width": 720
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -374,14 +572,83 @@
       "main": [
         [
           {
-            "node": "Normalize Synthetic Brief",
+            "node": "Choose Input Mode",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize Synthetic Brief": {
+    "Choose Input Mode": {
+      "main": [
+        [
+          {
+            "node": "Load Synthetic Example",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blank Manual Brief Form",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "JSON Upload Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Synthetic Example": {
+      "main": [
+        [
+          {
+            "node": "Create Strategy Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blank Manual Brief Form": {
+      "main": [
+        [
+          {
+            "node": "Normalize Manual Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Manual Brief": {
+      "main": [
+        [
+          {
+            "node": "Create Strategy Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Upload Form": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON Brief": {
       "main": [
         [
           {
@@ -469,7 +736,10 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
   },
   "versionId": "3b0f1f3b-420e-4db5-9ac3-c6b2a85d1731",
   "meta": {

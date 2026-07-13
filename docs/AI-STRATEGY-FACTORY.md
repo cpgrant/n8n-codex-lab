@@ -311,6 +311,19 @@ It produces a blinded strategy packet so the human preference is recorded
 without seeing model names first. Numeric quality scores alone never choose or
 approve a strategy.
 
+## Stage 8 flexible intake
+
+The inactive n8n test workflow offers a checked-in synthetic example, a blank
+manual form, and a structured JSON upload. Every branch normalizes to the same
+strict `StrategyBrief` contract before generation.
+
+JSON input is limited to one `.json` object and 64 KiB. Unknown top-level and
+organization fields are rejected, arbitrary binary data is removed before the
+API call, and uploaded filenames are never used for artifact paths. Workflow
+execution-data persistence is disabled. Manual and uploaded briefs require an
+explicit synthetic-data confirmation; confidential or real client data remains
+out of scope until Stage 9.
+
 ## n8n form availability
 
 The editor's `/form-test/...` URL is temporary and works only while a manual
@@ -318,6 +331,6 @@ test execution is listening. A person taking too long to complete that form
 may see a submission error even though n8n, FastAPI, and SQLite are healthy.
 
 A stable `/form/...` URL requires an active/published workflow. Activation is
-an explicit operational decision outside Stage 5. Structured JSON ingestion
-can be added later, but YAML or JSON files are not required to solve the test
-listener expiry.
+an explicit operational decision outside Stage 5. Stage 8 JSON upload remains
+available only through a current manual test execution; YAML is not
+implemented.

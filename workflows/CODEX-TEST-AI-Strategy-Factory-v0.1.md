@@ -12,8 +12,8 @@
 
 The workflow provides the first n8n vertical slice for AI Strategy Factory:
 
-1. Accept a structured strategy brief through an n8n test form.
-2. Normalize multiline fields into the v0.1 API contract.
+1. Choose a checked-in synthetic example, blank manual form, or JSON upload.
+2. Validate and normalize the selected input into the v0.1 API contract.
 3. Call the Mac-local agent service from Docker.
 4. Generate an immutable advisory quality report for the draft.
 5. Display the quality findings and structured JSON for human review.
@@ -33,12 +33,17 @@ http://host.docker.internal:8000
 
 Open `CODEX TEST — AI Strategy Factory v0.1` in the n8n editor, select the
 Strategy Brief Form node, choose the test/execute action, and open its test form
-URL. Keep the workflow inactive and unpublished. Enter only fictional data, or
-adapt the checked-in synthetic example brief.
+URL. Keep the workflow inactive and unpublished. Select one mode:
 
-Every brief field contains defaults from the checked-in synthetic example so a
-complete grounded test can be submitted immediately before n8n's temporary
-test listener expires. Replace any values only with other synthetic data.
+- **Load synthetic example** immediately uses the checked-in fictional brief;
+- **Enter a blank manual form** opens fields with no content defaults;
+- **Upload structured JSON** accepts one `.json` object up to 64 KiB.
+
+Manual and uploaded input require explicit confirmation that the brief is
+synthetic. Upload parsing rejects multiple files, wrong extensions, malformed
+JSON, arrays, unknown top-level fields, and unknown organization fields. It
+never uses the uploaded filename for an artifact path and forwards no binary
+data to the agent service.
 
 The `/form-test/...` URL is tied to the current manual test execution. If the
 listener expires while the form is being completed, n8n displays a submission
@@ -61,4 +66,7 @@ artifact was created.
 - Production form URLs are unavailable until publication; publication is out of
   scope and requires explicit approval.
 - Generated artifacts remain local and ignored by Git.
-- File-based JSON or YAML brief ingestion is not implemented in v0.1.
+- YAML upload is not implemented; Stage 8 intentionally starts with JSON.
+- Real or confidential client briefs remain prohibited until Stage 9.
+- Workflow success, error, and manual execution data persistence is disabled to
+  avoid retaining uploaded files after the active test execution.

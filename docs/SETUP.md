@@ -171,6 +171,11 @@ The exported `CODEX TEST — AI Strategy Factory v0.1` workflow calls the qualit
 endpoint and displays its advisory findings before the human decision. Keep the
 workflow inactive and unpublished.
 
+Stage 8 begins with an intake-mode page. The example branch is fastest; the
+manual branch is intentionally blank; and the JSON branch accepts one
+synthetic `.json` brief up to 64 KiB. Uploaded data must satisfy the same strict
+API schema and is not retained as a file by the workflow.
+
 Each quality call also writes an advisory Markdown copy to
 `artifacts/quality-reports/quality-report-<run_id>.md`. Retrieve it through
 `GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It is not an approved
