@@ -210,6 +210,13 @@ class ArtifactMetadata(StrictModel):
     created_at: datetime
 
 
+class QualityArtifactMetadata(StrictModel):
+    filename: str = Field(pattern=r"^quality-report-[0-9a-f-]{36}\.md$")
+    media_type: Literal["text/markdown"] = "text/markdown"
+    checksum: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    created_at: datetime
+
+
 class HealthResponse(StrictModel):
     status: Literal["ok"] = "ok"
     service: Literal["ai-strategy-factory"] = "ai-strategy-factory"
@@ -230,6 +237,7 @@ class ReadRunData(StrictModel):
     brief: StrategyBrief
     strategy: StrategyResponse | None
     quality_report: QualityReport | None = None
+    quality_artifact: QualityArtifactMetadata | None = None
     review: ReviewRecord | None = None
     artifact: ArtifactMetadata | None = None
     error_code: str | None = None
@@ -269,3 +277,4 @@ class QualityReportData(StrictModel):
     run_id: UUID
     status: RunStatus
     quality_report: QualityReport
+    quality_artifact: QualityArtifactMetadata | None = None

@@ -29,8 +29,9 @@ EXPECTED_QUALITY_MODE=basic scripts/agent-smoke-stage7.sh
 
 For `pro`, Ollama must be healthy and the configured critic model installed.
 The script creates one ignored synthetic run and quality report, verifies the
-seven check scores and checksum, confirms the report is retrievable, and leaves
-the run in `awaiting_review` for optional manual review.
+seven check scores and checksum, confirms the JSON report and advisory Markdown
+artifact are retrievable, and leaves the run in `awaiting_review` for optional
+manual review.
 
 ## n8n verification
 
@@ -54,6 +55,8 @@ Import the updated exported workflow only as
 - The n8n workflow remains inactive, unpublished, credential-free, and
   unavailable through MCP.
 - One manual synthetic n8n execution displays the report before review.
+- The Stage 7.0.1 Markdown artifact has the same run ID, a distinct
+  `quality-report-` filename, and a verified checksum.
 
 ## Verification record
 
@@ -80,3 +83,14 @@ On 2026-07-13:
 - the manual output exposed a vague “higher specific target” objective that the
   initial 100/100 report did not flag; the deterministic evaluator and tests
   were strengthened before Stage 7 closure.
+
+Stage 7.0.1 was verified later on 2026-07-13:
+
+- 69 automated tests passed;
+- pro mode passed against local `gemma4:31b` for synthetic run
+  `1010080d-9b6c-455e-9bf9-fc6c396dd678`;
+- the run produced and retrieved
+  `quality-report-1010080d-9b6c-455e-9bf9-fc6c396dd678.md` with its persisted
+  SHA-256 checksum;
+- the report remained `awaiting_review`, visibly advisory, and separate from
+  any approved strategy artifact.

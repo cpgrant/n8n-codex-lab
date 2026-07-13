@@ -92,3 +92,7 @@ Verify with synthetic data:
 ```bash
 EXPECTED_QUALITY_MODE=pro scripts/agent-smoke-stage7.sh
 ```
+Each quality report is also written atomically as
+`artifacts/quality-reports/quality-report-<run_id>.md` and can be retrieved at
+`GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It remains advisory
+and distinct from the approved strategy artifact.

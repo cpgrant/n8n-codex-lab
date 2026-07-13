@@ -92,16 +92,23 @@ the configured `AI_FACTORY_QUALITY_MODE`:
 The operation is valid for a stored `awaiting_review` draft. It does not change
 the run status, rewrite the strategy, or make an approval decision.
 
-Response `200` includes the run ID, unchanged status, and a `quality_report`
-with seven scores, findings, a recommendation, critic metadata, and the exact
-draft checksum. Reports are immutable; repeating the exact operation returns
-the stored report.
+Response `200` includes the run ID, unchanged status, a `quality_report`, and
+`quality_artifact` metadata for its advisory Markdown rendering. Reports are
+immutable; repeating the exact operation returns the stored report and
+artifact metadata.
 
 ### `GET /v1/strategy-runs/{run_id}/quality-report`
 
 Returns the stored report, or `409 QUALITY_REPORT_NOT_READY` when a valid run
 does not yet have one. `GET /v1/strategy-runs/{run_id}` also includes the report
 as `quality_report`, or `null` before report generation.
+
+### `GET /v1/strategy-runs/{run_id}/quality-report/artifact`
+
+Returns the checksum-verified advisory Markdown report as `200 text/markdown`.
+Its service-owned filename is `quality-report-<run_id>.md`; the file is stored
+under `artifacts/quality-reports/`, separate from approved strategy artifacts.
+Returns `409 QUALITY_ARTIFACT_NOT_READY` if it has not been rendered.
 
 The `strategy` member follows the structured strategy response contract. The
 full example is in `examples/strategy-response.synthetic.json`.
@@ -267,9 +274,11 @@ Rules:
 | `409` | `IDEMPOTENCY_IN_PROGRESS` | Matching operation is still running |
 | `409` | `ARTIFACT_NOT_READY` | Run has no approved artifact |
 | `409` | `QUALITY_REPORT_NOT_READY` | Run has no quality report |
+| `409` | `QUALITY_ARTIFACT_NOT_READY` | Run has no quality-report Markdown artifact |
 | `422` | `PROVIDER_OUTPUT_INVALID` | Provider output fails the strategy schema |
 | `422` | `QUALITY_REVIEW_OUTPUT_INVALID` | Critic output fails the quality schema |
 | `500` | `ARTIFACT_RENDER_FAILED` | Approved draft could not be rendered |
+| `500` | `QUALITY_ARTIFACT_RENDER_FAILED` | Quality report could not be rendered |
 | `500` | `INTERNAL_ERROR` | Unexpected safe-to-hide failure |
 | `502` | `PROVIDER_ERROR` | Strategy provider failed |
 | `502` | `QUALITY_REVIEW_PROVIDER_ERROR` | Quality critic failed |

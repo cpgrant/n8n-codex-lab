@@ -5,6 +5,7 @@ from ai_factory.database import initialize_database
 from ai_factory.errors import FactoryError
 from ai_factory.providers import FakeStrategyProvider
 from ai_factory.quality import DeterministicQualityReviewer
+from ai_factory.quality_artifacts import QualityMarkdownArtifactStore
 from ai_factory.quality_service import QualityReportService
 from ai_factory.repository import RunRepository
 from ai_factory.schemas import QualityAssessment, QualityIssue, StrategyResponse
@@ -25,7 +26,11 @@ def test_basic_quality_report_is_durable_immutable_and_checksum_bound(
     tmp_path, brief, response_fixture
 ):
     repository, run = generated_run(tmp_path, brief, response_fixture)
-    service = QualityReportService(repository, mode="basic")
+    service = QualityReportService(
+        repository,
+        mode="basic",
+        artifact_store=QualityMarkdownArtifactStore(tmp_path / "artifacts"),
+    )
 
     created = service.create_report(run.run_id)
     repeated = service.create_report(run.run_id)
@@ -44,6 +49,17 @@ def test_basic_quality_report_is_durable_immutable_and_checksum_bound(
     }
     strategy = StrategyResponse.model_validate(run.strategy)
     assert report["draft_checksum"] == draft_checksum(strategy)
+    assert created.quality_artifact == repeated.quality_artifact
+    assert created.quality_artifact == reopened.quality_artifact
+    assert created.quality_artifact["filename"] == (
+        f"quality-report-{run.run_id}.md"
+    )
+    assert (
+        tmp_path
+        / "artifacts"
+        / "quality-reports"
+        / created.quality_artifact["filename"]
+    ).is_file()
 
 
 class ConservativeCritic:
@@ -74,7 +90,10 @@ def test_pro_quality_report_merges_critic_conservatively(
     repository, run = generated_run(tmp_path, brief, response_fixture)
 
     created = QualityReportService(
-        repository, mode="pro", critic=ConservativeCritic()
+        repository,
+        mode="pro",
+        critic=ConservativeCritic(),
+        artifact_store=QualityMarkdownArtifactStore(tmp_path / "artifacts"),
     ).create_report(run.run_id)
     report = created.quality_report
 
@@ -84,6 +103,43 @@ def test_pro_quality_report_merges_critic_conservatively(
     assert report["checks"]["brief_alignment"] == 2
     assert report["recommendation"] == "review_with_caution"
     assert any(issue["severity"] == "high" for issue in report["issues"])
+
+
+class FailOnceArtifactStore(QualityMarkdownArtifactStore):
+    def __init__(self, artifact_dir):
+        super().__init__(artifact_dir)
+        self.calls = 0
+
+    def create(self, run_id, report):
+        self.calls += 1
+        if self.calls == 1:
+            raise OSError("synthetic artifact failure")
+        return super().create(run_id, report)
+
+
+def test_quality_artifact_failure_can_resume_without_regenerating_report(
+    tmp_path, brief, response_fixture
+):
+    repository, run = generated_run(tmp_path, brief, response_fixture)
+    store = FailOnceArtifactStore(tmp_path / "artifacts")
+    service = QualityReportService(
+        repository, mode="basic", artifact_store=store
+    )
+
+    with pytest.raises(FactoryError) as caught:
+        service.create_report(run.run_id)
+
+    persisted = repository.get(run.run_id)
+    assert caught.value.code == "QUALITY_ARTIFACT_RENDER_FAILED"
+    assert caught.value.retryable is True
+    assert persisted.quality_report is not None
+    assert persisted.quality_artifact is None
+
+    recovered = service.create_report(run.run_id)
+
+    assert store.calls == 2
+    assert recovered.quality_report == persisted.quality_report
+    assert recovered.quality_artifact is not None
 
 
 class InvalidCritic:

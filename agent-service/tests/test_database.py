@@ -26,4 +26,5 @@ def test_current_schema_is_initialized_and_repeatable(tmp_path):
         "run_reviews",
         "run_artifacts",
         "run_quality_reports",
+        "run_quality_artifacts",
     } <= tables

@@ -289,6 +289,19 @@ critic findings are added without removing deterministic warnings. The score
 and recommendation remain advisory. Neither can trigger a status transition or
 automatic approval.
 
+### Stage 7.0.1 quality-report artifact
+
+Each stored quality report is also rendered atomically to
+`artifacts/quality-reports/quality-report-<run_id>.md`. Its metadata and
+SHA-256 checksum are stored in SQLite, and API retrieval verifies integrity.
+The filename shares the strategy run ID for traceability while its directory
+and `quality-report-` prefix distinguish it from the approved
+`strategy-<run_id>.md` artifact.
+
+This artifact remains advisory before and after the human decision. A failed
+file write can be retried from the immutable stored report without another
+critic call or any strategy rewrite.
+
 ## n8n form availability
 
 The editor's `/form-test/...` URL is temporary and works only while a manual

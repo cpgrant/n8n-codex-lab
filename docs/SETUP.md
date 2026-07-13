@@ -171,5 +171,10 @@ The exported `CODEX TEST — AI Strategy Factory v0.1` workflow calls the qualit
 endpoint and displays its advisory findings before the human decision. Keep the
 workflow inactive and unpublished.
 
+Each quality call also writes an advisory Markdown copy to
+`artifacts/quality-reports/quality-report-<run_id>.md`. Retrieve it through
+`GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It is not an approved
+strategy artifact and is created before the review decision.
+
 The host-side URL is `http://127.0.0.1:8000`. n8n uses
 `http://host.docker.internal:8000` because it runs in Docker Desktop.

@@ -12,6 +12,7 @@ from .artifacts import draft_checksum
 from .errors import FactoryError
 from .providers import ProviderOutputError
 from .quality import DeterministicQualityReviewer
+from .quality_artifacts import QualityMarkdownArtifactStore
 from .repository import RunNotFound, RunRecord, RunRepository
 from .schemas import (
     QualityAssessment,
@@ -99,10 +100,12 @@ class QualityReportService:
         repository: RunRepository,
         mode: str = "basic",
         critic: QualityCritic | None = None,
+        artifact_store: QualityMarkdownArtifactStore | None = None,
     ) -> None:
         self.repository = repository
         self.mode = mode
         self.critic = critic
+        self.artifact_store = artifact_store
         self.deterministic = DeterministicQualityReviewer()
 
     def create_report(self, run_id: UUID) -> RunRecord:
@@ -112,9 +115,9 @@ class QualityReportService:
             raise FactoryError(
                 404, "RUN_NOT_FOUND", "The requested strategy run does not exist."
             ) from exc
-        if run.quality_report is not None:
-            return run
-        if run.status is not RunStatus.AWAITING_REVIEW or run.strategy is None:
+        if run.quality_report is None and (
+            run.status is not RunStatus.AWAITING_REVIEW or run.strategy is None
+        ):
             raise FactoryError(
                 409,
                 "INVALID_STATE_TRANSITION",
@@ -122,76 +125,104 @@ class QualityReportService:
                 run_id=run_id,
             )
 
-        brief = StrategyBrief.model_validate(run.brief)
-        strategy = StrategyResponse.model_validate(run.strategy)
-        assessment = self.deterministic.assess(brief, strategy)
-        critic_provider = "deterministic"
-        critic_model = None
+        if run.quality_report is None:
+            brief = StrategyBrief.model_validate(run.brief)
+            strategy = StrategyResponse.model_validate(run.strategy)
+            assessment = self.deterministic.assess(brief, strategy)
+            critic_provider = "deterministic"
+            critic_model = None
 
-        if self.mode == "pro":
-            if self.critic is None:
-                raise FactoryError(
-                    503,
-                    "SERVICE_UNAVAILABLE",
-                    "The configured quality critic is unavailable.",
-                    run_id=run_id,
-                    retryable=True,
-                )
-            try:
-                raw_critique = self.critic.review_strategy(
-                    brief, strategy, assessment
-                )
-                critique = QualityAssessment.model_validate(raw_critique)
-            except ProviderOutputError as exc:
-                raise FactoryError(
-                    422,
-                    "QUALITY_REVIEW_OUTPUT_INVALID",
-                    "The quality critic output did not satisfy the report contract.",
-                    run_id=run_id,
-                ) from exc
-            except ValidationError as exc:
-                raise FactoryError(
-                    422,
-                    "QUALITY_REVIEW_OUTPUT_INVALID",
-                    "The quality critic output did not satisfy the report contract.",
-                    details=[
-                        {
-                            "field": ".".join(str(part) for part in error["loc"]),
-                            "reason": error["msg"],
-                        }
-                        for error in exc.errors()
-                    ],
-                    run_id=run_id,
-                ) from exc
-            except Exception as exc:
-                raise FactoryError(
-                    502,
-                    "QUALITY_REVIEW_PROVIDER_ERROR",
-                    "The quality critic failed.",
-                    run_id=run_id,
-                    retryable=True,
-                ) from exc
-            assessment = _merge_assessments(assessment, critique)
-            critic_provider = self.critic.name
-            critic_model = self.critic.model
+            if self.mode == "pro":
+                if self.critic is None:
+                    raise FactoryError(
+                        503,
+                        "SERVICE_UNAVAILABLE",
+                        "The configured quality critic is unavailable.",
+                        run_id=run_id,
+                        retryable=True,
+                    )
+                try:
+                    raw_critique = self.critic.review_strategy(
+                        brief, strategy, assessment
+                    )
+                    critique = QualityAssessment.model_validate(raw_critique)
+                except ProviderOutputError as exc:
+                    raise FactoryError(
+                        422,
+                        "QUALITY_REVIEW_OUTPUT_INVALID",
+                        "The quality critic output did not satisfy the report contract.",
+                        run_id=run_id,
+                    ) from exc
+                except ValidationError as exc:
+                    raise FactoryError(
+                        422,
+                        "QUALITY_REVIEW_OUTPUT_INVALID",
+                        "The quality critic output did not satisfy the report contract.",
+                        details=[
+                            {
+                                "field": ".".join(
+                                    str(part) for part in error["loc"]
+                                ),
+                                "reason": error["msg"],
+                            }
+                            for error in exc.errors()
+                        ],
+                        run_id=run_id,
+                    ) from exc
+                except Exception as exc:
+                    raise FactoryError(
+                        502,
+                        "QUALITY_REVIEW_PROVIDER_ERROR",
+                        "The quality critic failed.",
+                        run_id=run_id,
+                        retryable=True,
+                    ) from exc
+                assessment = _merge_assessments(assessment, critique)
+                critic_provider = self.critic.name
+                critic_model = self.critic.model
 
-        scores = assessment.checks.model_dump().values()
-        overall_score = round(sum(scores) * 10 / 7)
-        recommendation = (
-            "ready_for_review"
-            if overall_score >= 75
-            and not any(issue.severity == "high" for issue in assessment.issues)
-            else "review_with_caution"
-        )
-        report = QualityReport(
-            **assessment.model_dump(),
-            run_id=run_id,
-            mode=self.mode,
-            overall_score=overall_score,
-            recommendation=recommendation,
-            draft_checksum=draft_checksum(strategy),
-            generated_at=datetime.now(UTC),
-            critic_provider=critic_provider,
-            critic_model=critic_model,
-        )
-        return self.repository.record_quality_report(run_id, report)
+            scores = assessment.checks.model_dump().values()
+            overall_score = round(sum(scores) * 10 / 7)
+            recommendation = (
+                "ready_for_review"
+                if overall_score >= 75
+                and not any(
+                    issue.severity == "high" for issue in assessment.issues
+                )
+                else "review_with_caution"
+            )
+            report = QualityReport(
+                **assessment.model_dump(),
+                run_id=run_id,
+                mode=self.mode,
+                overall_score=overall_score,
+                recommendation=recommendation,
+                draft_checksum=draft_checksum(strategy),
+                generated_at=datetime.now(UTC),
+                critic_provider=critic_provider,
+                critic_model=critic_model,
+            )
+            run = self.repository.record_quality_report(run_id, report)
+
+        if run.quality_artifact is not None:
+            return run
+        if self.artifact_store is None:
+            raise FactoryError(
+                503,
+                "SERVICE_UNAVAILABLE",
+                "The quality artifact store is unavailable.",
+                run_id=run_id,
+                retryable=True,
+            )
+        report = QualityReport.model_validate(run.quality_report)
+        try:
+            artifact = self.artifact_store.create(run_id, report)
+            return self.repository.record_quality_artifact(run_id, artifact)
+        except Exception as exc:
+            raise FactoryError(
+                500,
+                "QUALITY_ARTIFACT_RENDER_FAILED",
+                "The quality report Markdown artifact could not be rendered.",
+                run_id=run_id,
+                retryable=True,
+            ) from exc

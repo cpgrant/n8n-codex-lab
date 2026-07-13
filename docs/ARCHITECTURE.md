@@ -59,3 +59,7 @@ stored brief + immutable draft
 
 The service binds the report to the draft checksum and stores it in SQLite.
 The quality critic receives no review decision and cannot mutate the draft.
+Stage 7.0.1 also renders that stored report under
+`artifacts/quality-reports/quality-report-<run_id>.md`. Its metadata is stored
+separately from the human-approved strategy artifact and retrieval verifies
+the recorded checksum.

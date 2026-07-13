@@ -10,8 +10,9 @@ CREATE_RESPONSE="$(mktemp)"
 QUALITY_RESPONSE="$(mktemp)"
 QUALITY_REPLAY="$(mktemp)"
 READ_RESPONSE="$(mktemp)"
+ARTIFACT_RESPONSE="$(mktemp)"
 
-trap 'rm -f "$CREATE_RESPONSE" "$QUALITY_RESPONSE" "$QUALITY_REPLAY" "$READ_RESPONSE"' EXIT
+trap 'rm -f "$CREATE_RESPONSE" "$QUALITY_RESPONSE" "$QUALITY_REPLAY" "$READ_RESPONSE" "$ARTIFACT_RESPONSE"' EXIT
 
 echo "Creating one synthetic strategy draft ..."
 curl -fsS --max-time 330 \
@@ -37,6 +38,8 @@ jq -e --arg mode "$EXPECTED_QUALITY_MODE" '
   and ([.data.quality_report.checks[] | (. >= 0 and . <= 10)] | all)
   and (.data.quality_report.checks | length) == 7
   and (.data.quality_report.draft_checksum | test("^sha256:[0-9a-f]{64}$"))
+  and .data.quality_artifact.filename == ("quality-report-" + .data.run_id + ".md")
+  and (.data.quality_artifact.checksum | test("^sha256:[0-9a-f]{64}$"))
   and .meta.idempotent_replay == false
 ' "$QUALITY_RESPONSE" >/dev/null
 
@@ -59,6 +62,17 @@ curl -fsS --max-time 15 \
 jq -e --slurpfile quality "$QUALITY_RESPONSE" '
   .data.status == "awaiting_review"
   and .data.quality_report == $quality[0].data.quality_report
+  and .data.quality_artifact == $quality[0].data.quality_artifact
 ' "$READ_RESPONSE" >/dev/null
 
-echo "Stage 7 quality-report smoke test passed for synthetic run: $RUN_ID"
+echo "Checking the advisory Markdown artifact ..."
+curl -fsS --max-time 15 \
+  "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/quality-report/artifact" \
+  > "$ARTIFACT_RESPONSE"
+
+grep -Fq "Advisory AI Strategy Factory quality report — not an approval" \
+  "$ARTIFACT_RESPONSE"
+grep -Fq "| Run ID | \`$RUN_ID\` |" "$ARTIFACT_RESPONSE"
+test -f "$REPOSITORY_ROOT/artifacts/quality-reports/quality-report-$RUN_ID.md"
+
+echo "Stage 7/7.0.1 quality-report smoke test passed for synthetic run: $RUN_ID"

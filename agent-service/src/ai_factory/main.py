@@ -26,6 +26,7 @@ from .providers import (
     OpenAIStrategyProvider,
     StrategyProvider,
 )
+from .quality_artifacts import QualityMarkdownArtifactStore
 from .quality_service import QualityCritic, QualityReportService
 from .repository import RunNotFound, RunRecord, RunRepository
 from .review_service import ReviewService
@@ -33,6 +34,7 @@ from .schemas import (
     ArtifactMetadata,
     CreateRunData,
     HealthResponse,
+    QualityArtifactMetadata,
     QualityReport,
     QualityReportData,
     ReadRunData,
@@ -84,6 +86,11 @@ def read_run_data(record: RunRecord) -> dict[str, object]:
             if record.quality_report is not None
             else None
         ),
+        quality_artifact=(
+            QualityArtifactMetadata.model_validate(record.quality_artifact)
+            if record.quality_artifact is not None
+            else None
+        ),
         review=(
             ReviewRecord.model_validate(record.review)
             if record.review is not None
@@ -123,6 +130,11 @@ def quality_report_data(record: RunRecord) -> dict[str, object]:
         run_id=record.run_id,
         status=record.status,
         quality_report=QualityReport.model_validate(record.quality_report),
+        quality_artifact=(
+            QualityArtifactMetadata.model_validate(record.quality_artifact)
+            if record.quality_artifact is not None
+            else None
+        ),
     ).model_dump(mode="json")
 
 
@@ -167,10 +179,14 @@ def create_app(
         app.state.repository = RunRepository(resolved.database_path)
         app.state.idempotency = IdempotencyRepository(resolved.database_path)
         app.state.service = StrategyService(app.state.repository, resolved_provider)
+        app.state.quality_artifact_store = QualityMarkdownArtifactStore(
+            resolved.artifact_dir
+        )
         app.state.quality_service = QualityReportService(
             app.state.repository,
             mode=resolved.quality_mode,
             critic=resolved_quality_critic,
+            artifact_store=app.state.quality_artifact_store,
         )
         app.state.artifact_store = MarkdownArtifactStore(resolved.artifact_dir)
         app.state.review_service = ReviewService(
@@ -435,6 +451,54 @@ def create_app(
             "data": quality_report_data(record),
             "meta": {"request_id": request.state.request_id},
         }
+
+    @app.get("/v1/strategy-runs/{run_id}/quality-report/artifact")
+    def get_quality_report_artifact(
+        run_id: UUID, request: Request
+    ) -> PlainTextResponse:
+        try:
+            record = request.app.state.repository.get(run_id)
+        except RunNotFound as exc:
+            raise FactoryError(
+                404,
+                "RUN_NOT_FOUND",
+                "The requested strategy run does not exist.",
+            ) from exc
+        if record.quality_artifact is None:
+            raise FactoryError(
+                409,
+                "QUALITY_ARTIFACT_NOT_READY",
+                "The strategy run does not have a quality report artifact.",
+                run_id=run_id,
+            )
+        metadata = QualityArtifactMetadata.model_validate(record.quality_artifact)
+        try:
+            path = request.app.state.quality_artifact_store.path_for(
+                run_id, metadata
+            )
+            content = path.read_text(encoding="utf-8")
+        except (OSError, ValueError) as exc:
+            raise FactoryError(
+                500,
+                "INTERNAL_ERROR",
+                "The quality report artifact is unavailable.",
+                run_id=run_id,
+                retryable=True,
+            ) from exc
+        if sha256_text(content) != metadata.checksum:
+            raise FactoryError(
+                500,
+                "INTERNAL_ERROR",
+                "The quality report artifact failed its integrity check.",
+                run_id=run_id,
+            )
+        return PlainTextResponse(
+            content,
+            media_type=metadata.media_type,
+            headers={
+                "Content-Disposition": f'inline; filename="{metadata.filename}"'
+            },
+        )
 
     @app.post("/v1/strategy-runs/{run_id}/review")
     def review_strategy_run(

@@ -23,6 +23,7 @@ history unless a separate operational-verification date is stated.
 | 6 | Local Ollama strategy provider | Complete | 2026-07-12 |
 | 6.1 | Generation quality contract | Complete | 2026-07-12; live re-verification 2026-07-13 |
 | 7 | Pre-review quality report | Complete | 2026-07-13 |
+| 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Planned | — |
 | 8 | Flexible intake | Planned | — |
 | 9 | Client-demo hardening | Planned | — |
@@ -196,6 +197,28 @@ Completion evidence:
 - manual synthetic run `286e341c-a332-4dbc-9927-61cea879287d` displayed the
   advisory report before review, was explicitly approved, and created the
   checksum-bound Markdown artifact.
+
+### Stage 7.0.1 — Quality report Markdown artifact
+
+Status: **Complete** on 2026-07-13.
+
+Delivered before Stage 7.1:
+
+- an advisory Markdown file at
+  `artifacts/quality-reports/quality-report-<run_id>.md` for every generated
+  quality report;
+- durable filename, media type, SHA-256 checksum, and creation metadata;
+- atomic rendering, safe Markdown escaping, integrity-checked API retrieval,
+  and retry recovery without regenerating the stored quality report;
+- explicit separation from the approved `strategy-<run_id>.md` artifact;
+- retention regardless of the later human approval or rejection decision.
+
+The quality artifact is evidence for human review, not an approved strategy.
+It cannot change run status or bypass approval.
+
+Completion evidence: 69 automated tests and a live pro-mode synthetic smoke
+test passed. Run `1010080d-9b6c-455e-9bf9-fc6c396dd678` produced a retrievable,
+checksum-protected Markdown quality report while remaining `awaiting_review`.
 
 ### Stage 7.1 — Local model evaluation
 

@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 from .database import connect
 from .schemas import (
     ArtifactMetadata,
+    QualityArtifactMetadata,
     QualityReport,
     ReviewRecord,
     StrategyBrief,
@@ -30,6 +31,7 @@ class RunRecord:
     brief: dict[str, object]
     strategy: dict[str, object] | None
     quality_report: dict[str, object] | None
+    quality_artifact: dict[str, object] | None
     review: dict[str, object] | None
     artifact: dict[str, object] | None
     error_code: str | None
@@ -83,6 +85,10 @@ class RunRepository:
             quality_row = connection.execute(
                 "SELECT * FROM run_quality_reports WHERE run_id = ?", (str(run_id),)
             ).fetchone()
+            quality_artifact_row = connection.execute(
+                "SELECT * FROM run_quality_artifacts WHERE run_id = ?",
+                (str(run_id),),
+            ).fetchone()
         if row is None:
             raise RunNotFound(str(run_id))
         return RunRecord(
@@ -97,6 +103,16 @@ class RunRepository:
             quality_report=(
                 json.loads(quality_row["report_json"])
                 if quality_row is not None
+                else None
+            ),
+            quality_artifact=(
+                {
+                    "filename": quality_artifact_row["filename"],
+                    "media_type": quality_artifact_row["media_type"],
+                    "checksum": quality_artifact_row["checksum"],
+                    "created_at": quality_artifact_row["created_at"],
+                }
+                if quality_artifact_row is not None
                 else None
             ),
             review=(
@@ -155,6 +171,38 @@ class RunRepository:
                     ) VALUES (?, ?, ?, ?)
                     """,
                     (str(run_id), report_json, report.draft_checksum, timestamp),
+                )
+        return self.get(run_id)
+
+    def record_quality_artifact(
+        self, run_id: UUID, artifact: QualityArtifactMetadata
+    ) -> RunRecord:
+        with connect(self.database_path) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            report = connection.execute(
+                "SELECT run_id FROM run_quality_reports WHERE run_id = ?",
+                (str(run_id),),
+            ).fetchone()
+            if report is None:
+                raise RuntimeError("run has no quality report")
+            existing = connection.execute(
+                "SELECT run_id FROM run_quality_artifacts WHERE run_id = ?",
+                (str(run_id),),
+            ).fetchone()
+            if existing is None:
+                connection.execute(
+                    """
+                    INSERT INTO run_quality_artifacts (
+                        run_id, filename, media_type, checksum, created_at
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        str(run_id),
+                        artifact.filename,
+                        artifact.media_type,
+                        artifact.checksum,
+                        artifact.created_at.isoformat().replace("+00:00", "Z"),
+                    ),
                 )
         return self.get(run_id)
 

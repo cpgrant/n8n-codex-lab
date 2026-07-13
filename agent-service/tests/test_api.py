@@ -225,6 +225,9 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
         )
         run_id = created.json()["data"]["run_id"]
         not_ready = client.get(f"/v1/strategy-runs/{run_id}/quality-report")
+        artifact_not_ready = client.get(
+            f"/v1/strategy-runs/{run_id}/quality-report/artifact"
+        )
         quality = client.post(
             f"/v1/strategy-runs/{run_id}/quality-report",
             headers={"Idempotency-Key": "synthetic-quality-001"},
@@ -237,15 +240,25 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
             f"/v1/strategy-runs/{run_id}/quality-report"
         )
         fetched_run = client.get(f"/v1/strategy-runs/{run_id}")
+        quality_artifact = client.get(
+            f"/v1/strategy-runs/{run_id}/quality-report/artifact"
+        )
         reviewed = client.post(
             f"/v1/strategy-runs/{run_id}/review",
             json={"decision": "approved", "reviewer": "synthetic-reviewer"},
             headers={"Idempotency-Key": "synthetic-quality-approval-001"},
         )
+        quality_artifact_after_review = client.get(
+            f"/v1/strategy-runs/{run_id}/quality-report/artifact"
+        )
 
     report = quality.json()["data"]["quality_report"]
     assert not_ready.status_code == 409
     assert not_ready.json()["error"]["code"] == "QUALITY_REPORT_NOT_READY"
+    assert artifact_not_ready.status_code == 409
+    assert artifact_not_ready.json()["error"]["code"] == (
+        "QUALITY_ARTIFACT_NOT_READY"
+    )
     assert quality.status_code == 200
     assert report["mode"] == "basic"
     assert report["critic_provider"] == "deterministic"
@@ -254,7 +267,20 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
     assert replay.json()["meta"]["idempotent_replay"] is True
     assert fetched_quality.json()["data"]["quality_report"] == report
     assert fetched_run.json()["data"]["quality_report"] == report
+    artifact_metadata = quality.json()["data"]["quality_artifact"]
+    assert artifact_metadata["filename"] == f"quality-report-{run_id}.md"
+    assert fetched_quality.json()["data"]["quality_artifact"] == artifact_metadata
+    assert fetched_run.json()["data"]["quality_artifact"] == artifact_metadata
+    assert quality_artifact.status_code == 200
+    assert quality_artifact.headers["content-type"].startswith("text/markdown")
+    assert artifact_metadata["filename"] in quality_artifact.headers[
+        "content-disposition"
+    ]
+    assert "Advisory AI Strategy Factory quality report" in quality_artifact.text
+    assert f"| Run ID | `{run_id}` |" in quality_artifact.text
     assert reviewed.status_code == 200
     assert reviewed.json()["data"]["review"]["draft_checksum"] == report[
         "draft_checksum"
     ]
+    assert quality_artifact_after_review.status_code == 200
+    assert quality_artifact_after_review.text == quality_artifact.text
