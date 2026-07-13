@@ -181,6 +181,18 @@ manual branch is intentionally blank; and the JSON branch accepts one
 synthetic `.json` brief up to 64 KiB. Uploaded data must satisfy the same strict
 API schema and is not retained as a file by the workflow.
 
+For a customized synthetic brief, create an ignored working copy and select
+**Upload structured JSON**:
+
+```bash
+cp examples/strategy-brief.synthetic.json tmp/company-brief.synthetic.json
+code tmp/company-brief.synthetic.json
+```
+
+The built-in **Load synthetic example** payload is embedded in the workflow and
+does not change when the source example file is edited. Real or confidential
+data remains prohibited until Stage 9.
+
 Each quality call also writes an advisory Markdown copy to
 `artifacts/quality-reports/quality-report-<run_id>.md`. Retrieve it through
 `GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It is not an approved
