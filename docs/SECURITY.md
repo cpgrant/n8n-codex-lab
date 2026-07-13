@@ -30,3 +30,11 @@
 - Success, error, and manual execution persistence is disabled on the Stage 8
   workflow to reduce upload retention. Stage 9 must define authentication,
   ownership, retention, deletion, privacy, and abuse controls before any pilot.
+
+- The Stage 9.0 data classification, trust boundaries, interim ownership, and
+  pilot gates are defined in `docs/STAGE-9.0-DATA-POLICY.md`. They are policy
+  requirements, not implemented authentication or authorization controls.
+
+- No real-data pilot may proceed until named service/business, security,
+  privacy, operations, incident-response, and pilot-sponsor ownership is
+  recorded and the later Stage 9 controls are verified.

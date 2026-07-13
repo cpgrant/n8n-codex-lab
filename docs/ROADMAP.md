@@ -26,7 +26,8 @@ history unless a separate operational-verification date is stated.
 | 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Human review pending | — |
 | 8 | Flexible intake | Complete | 2026-07-13 |
-| 9 | Client-demo hardening | Planned | — |
+| 9 | Client-demo hardening | In progress; Stage 9.1 next | — |
+| 9.0 | Data policy and trust boundaries | Complete | 2026-07-13 |
 | 10 | OpenAI provider and professional routing | Planned | — |
 
 ## Completed foundation
@@ -326,18 +327,36 @@ blocked until the Stage 9 controls are complete.
 
 ### Stage 9 — Client-demo hardening
 
-Status: **Planned** before any controlled external pilot.
+Status: **In progress** before any controlled external pilot.
 
 Stage 9 is divided into independently reviewable checkpoints. Implementation
 and verification continue with synthetic data throughout the stage.
 
 #### Stage 9.0 — Data policy and trust boundaries
 
+Status: **Complete** on 2026-07-13.
+
 - classify allowed, restricted, and prohibited input data;
 - document consent, acceptable-use, privacy, and AI-disclosure requirements;
 - identify trust boundaries across browser, n8n, FastAPI, SQLite, Ollama,
   artifacts, logs, backups, MCP, and administrators;
 - define the minimum controls required before a controlled real-data pilot.
+
+Delivered:
+
+- an approved synthetic-lab policy at `docs/STAGE-9.0-DATA-POLICY.md`;
+- data classifications, acceptable-use rules, consent/privacy/AI-disclosure
+  requirements, trust boundaries, incident baseline, and minimum pilot gates;
+- accepted interim local-lab ownership for synthetic-only operations;
+- a formal no-pilot decision until named service/business, security/privacy,
+  operations, incident-response, and pilot owners are assigned;
+- synthetic verification recorded in `docs/STAGE-9.0-VERIFICATION.md`.
+
+Completion evidence: 74 automated tests and the Stage 8 intake verifier
+passed; static inspection confirmed the exported workflow remained inactive,
+unpublished, credential-free, unavailable through MCP, and configured not to
+save success, error, or manual execution data. Stage 9.0 completion does not
+authorize real data or implement the controls planned for Stages 9.1-9.6.
 
 #### Stage 9.1 — Authentication and authorization
 

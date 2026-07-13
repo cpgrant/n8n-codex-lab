@@ -17,7 +17,8 @@ Current roadmap status:
 
 - Stages 0-7.0.1 and Stage 8 are complete;
 - Stage 7.1 benchmarking is implemented, with blind human preference deferred;
-- Stage 9 client-demo hardening is next.
+- Stage 9 client-demo hardening is in progress; Stage 9.0 data policy and trust
+  boundaries are complete, and Stage 9.1 authentication is next.
 
 See:
 
@@ -25,4 +26,6 @@ See:
 - `docs/AI-STRATEGY-FACTORY.md`
 - `docs/API.md`
 - `docs/STAGE-8-VERIFICATION.md`
+- `docs/STAGE-9.0-DATA-POLICY.md`
+- `docs/STAGE-9.0-VERIFICATION.md`
 - `agent-service/README.md`
