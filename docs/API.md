@@ -6,6 +6,7 @@ The v0.1 service implements `GET /health`, `POST /v1/strategy-runs`,
 `GET /v1/strategy-runs/{run_id}`,
 `POST /v1/strategy-runs/{run_id}/quality-report`,
 `GET /v1/strategy-runs/{run_id}/quality-report`,
+`GET /v1/strategy-runs/{run_id}/quality-report/artifact`,
 `POST /v1/strategy-runs/{run_id}/review`, and
 `GET /v1/strategy-runs/{run_id}/artifact`.
 
@@ -48,6 +49,12 @@ Response `200`:
 ### `POST /v1/strategy-runs`
 
 Accepts the brief contract in `examples/strategy-brief.synthetic.json`.
+
+Stage 8 does not add a second creation API. The n8n example, blank-manual, and
+JSON-upload paths all normalize to this same endpoint and strict schema. The
+workflow limits uploads to one `.json` object and 64 KiB, removes binary data,
+and never forwards the uploaded filename. Direct API callers remain responsible
+for sending `application/json` that satisfies the documented contract.
 
 The initial synchronous v0.1 contract records the run, invokes the selected
 provider, validates the result, and returns the reviewable draft. It is expected

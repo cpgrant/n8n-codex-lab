@@ -29,7 +29,11 @@
 
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 
-- Stage 4 workflow state: inactive and unpublished
+- AI Strategy Factory workflow: 16-node Stage 8 export, inactive and unpublished
+
+- Workflow MCP availability: disabled
+
+- Workflow execution-data persistence: success/error/manual disabled
 
 - Ollama host URL: http://127.0.0.1:11888
 
@@ -38,3 +42,9 @@
 - Stage 7 quality mode default: `basic`
 
 - Stage 7 pro critic model: `gemma4:31b`
+
+- Stage 8 intake: synthetic example, blank manual form, or JSON up to 64 KiB
+
+- Stage 7.1 candidates installed: `gemma4:12b`, `gemma4:26b`, `gemma4:31b`
+
+- Stage 7.1 model preference: human review pending; current baseline unchanged

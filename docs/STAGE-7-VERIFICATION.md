@@ -38,7 +38,7 @@ manual review.
 Import the updated exported workflow only as
 `CODEX TEST — AI Strategy Factory v0.1`. Keep it inactive and unpublished.
 
-1. Click **Execute workflow** and submit the prefilled synthetic brief.
+1. Click **Execute workflow**, choose **Load synthetic example**, and continue.
 2. Confirm the second form page displays the advisory mode, score, seven
    checks, findings, and complete strategy JSON.
 3. Confirm the page states that the report cannot approve, reject, or rewrite.

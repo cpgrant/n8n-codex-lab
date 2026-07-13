@@ -9,13 +9,18 @@ docker exec -it n8n n8n --version
 docker exec -it n8n ffmpeg -version
 ```
 
-Start project:
+Open the project and load repository-local environment variables when needed:
 ```bash
 cd ~/Development/codex/n8n-codex-lab
 code .
-export N8N_MCP_TOKEN='YOUR_TOKEN'
+set -a
+source .env
+set +a
 codex mcp list
 ```
+
+Keep secrets only in the ignored `.env`; never copy the real token into
+`.env.example`, documentation, or Git.
 
 The repository startup script starts n8n and a repository-managed Ollama
 server on port `11888`:
@@ -136,10 +141,10 @@ The first `gemma4:31b` request may be slow while the model loads. To return to
 deterministic operation, restart FastAPI without `AI_FACTORY_PROVIDER=ollama`.
 The n8n workflow requires no modification and remains inactive/unpublished.
 
-The Stage 6.1 exported workflow prefills every form field with
-`examples/strategy-brief.synthetic.json`. This avoids hurried manual entry on
-the temporary test URL while still allowing each value to be overwritten with
-other synthetic data.
+Stage 8 replaces the formerly prefilled first page with an intake-mode chooser.
+Choose **Load synthetic example** for the fast path, **Enter a blank manual
+form** for synthetic manual entry, or **Upload structured JSON** for one
+synthetic `.json` object up to 64 KiB.
 
 ## Stage 7 quality report
 
