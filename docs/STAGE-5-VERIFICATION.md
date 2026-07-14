@@ -48,10 +48,17 @@ scripts/agent-start.sh
 In another terminal:
 
 ```bash
+cd ~/Development/codex/n8n-codex-lab
+set -a
+source .env
+set +a
 curl -fsS \
   -H "Authorization: Bearer $AI_FACTORY_SERVICE_TOKEN" \
   http://127.0.0.1:8000/v1/strategy-runs/<RUN_ID> | jq
 ```
+
+Sourcing the ignored `.env` exports the token to this verification shell; it
+does not print either token.
 
 Expected result: the response still reports `status: rejected`, the recorded
 review is present, and `artifact` is `null`. This demonstrates persistence

@@ -33,9 +33,12 @@ http://host.docker.internal:8000
 ```
 
 Configure distinct `AI_FACTORY_SERVICE_TOKEN` and `AI_FACTORY_REVIEW_TOKEN`
-values of at least 32 characters in both the FastAPI and n8n process
-environments. Environment access in workflow expressions must remain enabled.
-Do not place token values in the workflow, n8n variables, form fields, or Git.
+values of at least 32 characters in the repository's ignored `.env`. Start n8n
+with `scripts/start.sh` and FastAPI with `scripts/agent-start.sh`; both scripts
+load the same file automatically, and the n8n startup passes the values through
+the repository-owned Compose override. Environment access in workflow
+expressions must remain enabled. Do not place token values in the workflow,
+n8n variables, form fields, or Git. See `docs/AUTHENTICATION-TOKENS.md`.
 
 ## Manual test
 

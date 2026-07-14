@@ -4,9 +4,10 @@
 - Verify `codex mcp list`
 - Verify `echo ${N8N_MCP_TOKEN:+TOKEN_IS_SET}`
 
-## Token is not exported
+## Codex MCP token is not exported
 
-Load the ignored repository environment in the current shell:
+This check is specifically for `N8N_MCP_TOKEN`. Load the ignored repository
+environment in the current shell:
 
 ```bash
 set -a
@@ -16,7 +17,9 @@ echo ${N8N_MCP_TOKEN:+TOKEN_IS_SET}
 ```
 
 Restart any process that must inherit changed environment variables. Never
-print or commit the token itself.
+print or commit the token itself. For the separate Stage 9.1 service and review
+tokens, follow `docs/AUTHENTICATION-TOKENS.md`; the repository startup scripts
+load those values automatically.
 
 ## Form URL returns 404 or submission expires
 
