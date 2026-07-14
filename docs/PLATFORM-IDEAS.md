@@ -15,10 +15,74 @@ it exists and has been verified.
 
 | Option | Current status | Suggested next decision |
 | --- | --- | --- |
+| Income-first factory usefulness gate | Recommended operating principle | Decide whether to prioritize a Job Application MVP |
+| Job Application Factory MVP | Recommended if quick income remains the priority | Define a synthetic contract and personal-use safety checkpoint |
 | Knowledge Factory and shared evidence layer | Recommended candidate | Define a small synthetic contract |
+| Personal-notes LLM Wiki | Later personal-use option | Revisit after the income-focused experiment |
 | LangGraph or another durable agent runtime | Evaluation option | Run only when a bounded use case requires it |
 | Multiple specialist agents | Evaluation option | Start with typed roles inside one controlled run |
 | Additional MCP servers | Add only as needed | Establish an admission policy before installation |
+
+## Income-first factory usefulness gate
+
+### Proposed operating principle
+
+Develop each factory only far enough to test whether it creates meaningful
+personal or commercial value. Continue, pause, redesign, or stop it using
+observed results rather than completing every possible platform feature.
+
+For each factory:
+
+1. name the immediate real-life outcome;
+2. define the smallest safe vertical slice that could produce it;
+3. time-box implementation and real-world evaluation;
+4. record time saved, output quality, outcome achieved, and recurring friction;
+5. continue only when the evidence justifies more work.
+
+### Income-focused priority option
+
+If quick income is the immediate objective, a small Job Application Factory is
+a stronger next-product candidate than Podcast or further client-grade
+Strategy Factory hardening.
+
+The current Strategy Factory can first be packaged as portfolio evidence for
+AI workflow, automation, platform, and product roles. A minimal Job Application
+Factory could then support:
+
+```text
+candidate evidence profile + job description
+-> requirements extraction
+-> evidence-backed match and gap analysis
+-> tailored CV suggestions
+-> cover letter and application-answer drafts
+-> interview preparation pack
+-> unsupported-claim check
+-> human approval and manual submission
+```
+
+The MVP should never invent experience, qualifications, or achievements and
+should never submit an application automatically. A practical usefulness test
+would evaluate five applications and ask whether the factory:
+
+- saves at least 30 minutes per application;
+- improves requirement coverage and evidence-backed tailoring;
+- avoids generic, inflated, or unsupported claims;
+- increases the number or quality of completed applications;
+- improves interview preparation or contributes to interview invitations.
+
+If the results are weak, pause the factory and shift effort to another income
+or portfolio opportunity.
+
+### Personal-data prerequisite
+
+The repository currently permits synthetic data only. Before using a real CV,
+employment history, contact details, or application, define and verify a
+separate personal-use checkpoint covering local-only processing, ignored
+runtime storage, logging and Git exclusions, retention, deletion, backups, and
+any transmission to hosted model providers.
+
+This personal-use checkpoint would not authorize client data, multiple users,
+publication, or automatic submission.
 
 ## Knowledge Factory / LLM Wiki
 
@@ -72,6 +136,25 @@ artifact-checksum, and synthetic-verification patterns.
 
 Do not start by building a general enterprise knowledge base, crawler, or
 autonomous web researcher.
+
+### Later personal-notes LLM Wiki
+
+A narrower personal-notes version could eventually organize the operator's
+own approved notes into a searchable, cited local wiki. Possible capabilities
+include:
+
+- importing selected Markdown notes without changing the originals;
+- preserving notebook path, note title, timestamps, tags, and checksum;
+- linking related concepts, projects, decisions, people, and open questions;
+- generating reviewable topic summaries, timelines, and “what do I know about
+  this?” pages;
+- showing the exact notes supporting each generated statement;
+- detecting duplicate, contradictory, or stale notes;
+- keeping generated wiki pages separate from source notes until approved.
+
+This remains a later personal-use idea. It should not displace the
+income-focused experiment, and it needs an explicit private-data boundary
+before real notes are ingested.
 
 ## Agent orchestration option
 
@@ -187,15 +270,17 @@ These labels are placeholders for later decisions, not active roadmap stages:
 
 ## Recommended evaluation order
 
-1. Define the Knowledge Factory's synthetic input, evidence, quality, review,
-   and artifact contracts.
-2. Test the contract with the current n8n, FastAPI, and provider pattern.
-3. Continue the planned Podcast Factory using a synthetic evidence pack.
-4. Identify capabilities genuinely repeated by Strategy, Knowledge, and
-   Podcast flows.
-5. Evaluate a durable agent runtime against one bounded research loop.
-6. Add only the MCP capabilities required by an accepted experiment.
-7. Move successful options into the roadmap and architecture with verification
+If quick income remains the selected objective:
+
+1. package the Strategy Factory as a concise portfolio case study;
+2. define and build the smallest synthetic Job Application Factory contract;
+3. complete the personal-use safety checkpoint before using real information;
+4. test the factory across five manually submitted applications;
+5. continue, revise, or stop it based on the usefulness evidence;
+6. revisit the Knowledge Factory and personal-notes LLM Wiki afterward;
+7. evaluate an agent runtime or add MCP capabilities only for an accepted,
+   bounded requirement;
+8. move successful options into the roadmap and architecture with verification
    evidence.
 
 This order preserves a simple working platform while allowing evidence-backed
