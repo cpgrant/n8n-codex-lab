@@ -31,4 +31,5 @@ See:
 - `docs/STAGE-9.0-VERIFICATION.md`
 - `docs/STAGE-9.1-AUTH-DESIGN.md`
 - `docs/STAGE-9.1-VERIFICATION.md`
+- `docs/AUTHENTICATION-TOKENS.md`
 - `agent-service/README.md`

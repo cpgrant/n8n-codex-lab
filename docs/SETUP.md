@@ -17,7 +17,8 @@ Stage 9.1 requires distinct `AI_FACTORY_SERVICE_TOKEN` and
 `AI_FACTORY_REVIEW_TOKEN` values of at least 32 characters. Put them in the
 ignored repository `.env`. Never place them in workflow JSON or n8n variables
 intended for non-secret data. Optional expiry variables are documented in
-`.env.example`.
+`.env.example`. See `docs/AUTHENTICATION-TOKENS.md` for generation, expiration,
+startup, and rotation instructions.
 
 The repository startup script starts n8n and a repository-managed Ollama
 server on port `11888`:
