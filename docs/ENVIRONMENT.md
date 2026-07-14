@@ -48,3 +48,11 @@
 - Stage 7.1 candidates installed: `gemma4:12b`, `gemma4:26b`, `gemma4:31b`
 
 - Stage 7.1 model preference: human review pending; current baseline unchanged
+
+- Stage 9.1 human authentication: n8n User Auth on Form Trigger v2.6
+
+- Stage 9.1 API authentication: distinct environment-backed service and review
+  bearer tokens; no tokens stored in the workflow export
+
+- Stage 9.1 authorization boundary: service operations and human review use
+  separate scopes; run ownership/tenant isolation remains pending Stage 9.2

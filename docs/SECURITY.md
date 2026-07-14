@@ -38,3 +38,12 @@
 - No real-data pilot may proceed until named service/business, security,
   privacy, operations, incident-response, and pilot-sponsor ownership is
   recorded and the later Stage 9 controls are verified.
+
+- Stage 9.1 requires n8n User Auth on every strategy form page and distinct,
+  environment-backed FastAPI service and review bearer tokens. Tokens must be
+  at least 32 characters, differ from one another, and remain outside Git and
+  workflow exports.
+
+- Missing API authentication configuration fails closed. Review calls also
+  require the opaque authenticated n8n user ID, and the stored reviewer must
+  match it. This is authentication, not run ownership or tenant isolation.

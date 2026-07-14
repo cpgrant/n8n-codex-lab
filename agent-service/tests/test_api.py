@@ -1,10 +1,15 @@
 from copy import deepcopy
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
 from ai_factory.config import Settings
 from ai_factory.main import create_app
+
+SERVICE_TOKEN = "service-token-" + "s" * 32
+REVIEW_TOKEN = "review-token-" + "r" * 32
+REVIEW_ACTOR = "synthetic-user-001"
 
 
 class BrokenProvider:
@@ -16,9 +21,23 @@ class BrokenProvider:
 
 def client_for(tmp_path):
     settings = Settings(
-        data_dir=tmp_path / "data", artifact_dir=tmp_path / "artifacts"
+        data_dir=tmp_path / "data",
+        artifact_dir=tmp_path / "artifacts",
+        service_token=SERVICE_TOKEN,
+        review_token=REVIEW_TOKEN,
     )
-    return TestClient(create_app(settings)), settings
+    return TestClient(
+        create_app(settings),
+        headers={"Authorization": f"Bearer {SERVICE_TOKEN}"},
+    ), settings
+
+
+def review_headers(idempotency_key: str) -> dict[str, str]:
+    return {
+        "Authorization": f"Bearer {REVIEW_TOKEN}",
+        "X-AI-Factory-Actor-ID": REVIEW_ACTOR,
+        "Idempotency-Key": idempotency_key,
+    }
 
 
 def test_create_read_and_replay_strategy_run(tmp_path, brief_payload):
@@ -139,13 +158,132 @@ def test_request_id_is_returned_in_header_and_body(tmp_path):
     assert response.headers["X-Request-ID"] == "req_known"
 
 
+def test_authentication_fails_closed_and_scopes_are_separate(
+    tmp_path, brief_payload
+):
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        artifact_dir=tmp_path / "artifacts",
+        service_token=SERVICE_TOKEN,
+        review_token=REVIEW_TOKEN,
+    )
+    with TestClient(create_app(settings)) as client:
+        health = client.get("/health")
+        missing = client.post("/v1/strategy-runs", json=brief_payload)
+        invalid = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Authorization": "Bearer invalid-token"},
+        )
+        wrong_scope = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Authorization": f"Bearer {REVIEW_TOKEN}"},
+        )
+
+    assert health.status_code == 200
+    assert missing.status_code == 401
+    assert missing.json()["error"]["code"] == "AUTHENTICATION_REQUIRED"
+    assert missing.headers["www-authenticate"] == "Bearer"
+    assert invalid.status_code == 401
+    assert invalid.json()["error"]["code"] == "AUTHENTICATION_INVALID"
+    assert wrong_scope.status_code == 403
+    assert wrong_scope.json()["error"]["code"] == "AUTHORIZATION_DENIED"
+    assert SERVICE_TOKEN not in missing.text + invalid.text + wrong_scope.text
+    assert REVIEW_TOKEN not in missing.text + invalid.text + wrong_scope.text
+
+
+def test_missing_configuration_and_expired_token_fail_safely(
+    tmp_path, brief_payload
+):
+    unconfigured = Settings(
+        data_dir=tmp_path / "unconfigured-data",
+        artifact_dir=tmp_path / "unconfigured-artifacts",
+    )
+    expired = Settings(
+        data_dir=tmp_path / "expired-data",
+        artifact_dir=tmp_path / "expired-artifacts",
+        service_token=SERVICE_TOKEN,
+        review_token=REVIEW_TOKEN,
+        service_token_expires_at=datetime(2020, 1, 1, tzinfo=timezone.utc),
+    )
+
+    with TestClient(create_app(unconfigured)) as client:
+        not_configured = client.post("/v1/strategy-runs", json=brief_payload)
+    with TestClient(create_app(expired)) as client:
+        expired_response = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Authorization": f"Bearer {SERVICE_TOKEN}"},
+        )
+
+    assert not_configured.status_code == 503
+    assert not_configured.json()["error"]["code"] == (
+        "AUTHENTICATION_NOT_CONFIGURED"
+    )
+    assert expired_response.status_code == 401
+    assert expired_response.json()["error"]["code"] == "AUTHENTICATION_EXPIRED"
+
+
+def test_review_requires_review_scope_and_matching_authenticated_actor(
+    tmp_path, brief_payload
+):
+    client, _ = client_for(tmp_path)
+    decision = {"decision": "approved", "reviewer": REVIEW_ACTOR}
+
+    with client:
+        created = client.post(
+            "/v1/strategy-runs",
+            json=brief_payload,
+            headers={"Idempotency-Key": "auth-review-create-001"},
+        )
+        run_id = created.json()["data"]["run_id"]
+        service_scope = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json=decision,
+            headers={"Idempotency-Key": "auth-review-service-001"},
+        )
+        missing_actor = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json=decision,
+            headers={
+                "Authorization": f"Bearer {REVIEW_TOKEN}",
+                "Idempotency-Key": "auth-review-missing-actor-001",
+            },
+        )
+        mismatched_actor = client.post(
+            f"/v1/strategy-runs/{run_id}/review",
+            json=decision,
+            headers={
+                **review_headers("auth-review-mismatch-001"),
+                "X-AI-Factory-Actor-ID": "different-synthetic-user",
+            },
+        )
+        fetched = client.get(f"/v1/strategy-runs/{run_id}")
+
+    assert service_scope.status_code == 403
+    assert service_scope.json()["error"]["code"] == "AUTHORIZATION_DENIED"
+    assert missing_actor.status_code == 403
+    assert missing_actor.json()["error"]["code"] == "AUTHORIZATION_DENIED"
+    assert mismatched_actor.status_code == 403
+    assert mismatched_actor.json()["error"]["code"] == "AUTHORIZATION_DENIED"
+    assert fetched.json()["data"]["status"] == "awaiting_review"
+    assert fetched.json()["data"]["review"] is None
+
+
 def test_failed_generation_is_safe_durable_and_replayable(tmp_path, brief_payload):
     settings = Settings(
-        data_dir=tmp_path / "data", artifact_dir=tmp_path / "artifacts"
+        data_dir=tmp_path / "data",
+        artifact_dir=tmp_path / "artifacts",
+        service_token=SERVICE_TOKEN,
+        review_token=REVIEW_TOKEN,
     )
     headers = {"Idempotency-Key": "synthetic-failure-001"}
 
-    with TestClient(create_app(settings, provider=BrokenProvider())) as client:
+    with TestClient(
+        create_app(settings, provider=BrokenProvider()),
+        headers={"Authorization": f"Bearer {SERVICE_TOKEN}"},
+    ) as client:
         failed = client.post("/v1/strategy-runs", json=brief_payload, headers=headers)
         replay = client.post("/v1/strategy-runs", json=brief_payload, headers=headers)
         run = client.get(
@@ -165,7 +303,7 @@ def test_approval_creates_replayable_retrievable_markdown(tmp_path, brief_payloa
     client, _ = client_for(tmp_path)
     approval = {
         "decision": "approved",
-        "reviewer": "synthetic-reviewer",
+        "reviewer": REVIEW_ACTOR,
         "comment": "Approved for the fictional planning exercise.",
     }
 
@@ -180,12 +318,12 @@ def test_approval_creates_replayable_retrievable_markdown(tmp_path, brief_payloa
         reviewed = client.post(
             f"/v1/strategy-runs/{run_id}/review",
             json=approval,
-            headers={"Idempotency-Key": "synthetic-approval-001"},
+            headers=review_headers("synthetic-approval-001"),
         )
         replay = client.post(
             f"/v1/strategy-runs/{run_id}/review",
             json=approval,
-            headers={"Idempotency-Key": "synthetic-approval-001"},
+            headers=review_headers("synthetic-approval-001"),
         )
         fetched = client.get(f"/v1/strategy-runs/{run_id}")
         artifact = client.get(f"/v1/strategy-runs/{run_id}/artifact")
@@ -219,22 +357,22 @@ def test_rejection_requires_comment_and_is_final(tmp_path, brief_payload):
         run_id = created.json()["data"]["run_id"]
         invalid = client.post(
             f"/v1/strategy-runs/{run_id}/review",
-            json={"decision": "rejected", "reviewer": "synthetic-reviewer"},
-            headers={"Idempotency-Key": "synthetic-rejection-invalid"},
+            json={"decision": "rejected", "reviewer": REVIEW_ACTOR},
+            headers=review_headers("synthetic-rejection-invalid"),
         )
         rejected = client.post(
             f"/v1/strategy-runs/{run_id}/review",
             json={
                 "decision": "rejected",
-                "reviewer": "synthetic-reviewer",
+                "reviewer": REVIEW_ACTOR,
                 "comment": "Revise the fictional sequencing.",
             },
-            headers={"Idempotency-Key": "synthetic-rejection-001"},
+            headers=review_headers("synthetic-rejection-001"),
         )
         later_approval = client.post(
             f"/v1/strategy-runs/{run_id}/review",
-            json={"decision": "approved", "reviewer": "synthetic-reviewer"},
-            headers={"Idempotency-Key": "synthetic-approval-too-late"},
+            json={"decision": "approved", "reviewer": REVIEW_ACTOR},
+            headers=review_headers("synthetic-approval-too-late"),
         )
         artifact = client.get(f"/v1/strategy-runs/{run_id}/artifact")
 
@@ -281,8 +419,8 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
         )
         reviewed = client.post(
             f"/v1/strategy-runs/{run_id}/review",
-            json={"decision": "approved", "reviewer": "synthetic-reviewer"},
-            headers={"Idempotency-Key": "synthetic-quality-approval-001"},
+            json={"decision": "approved", "reviewer": REVIEW_ACTOR},
+            headers=review_headers("synthetic-quality-approval-001"),
         )
         quality_artifact_after_review = client.get(
             f"/v1/strategy-runs/{run_id}/quality-report/artifact"

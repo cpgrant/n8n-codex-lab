@@ -199,11 +199,21 @@ Rules:
 | `OLLAMA_TIMEOUT_SECONDS` | `300` | Synchronous local generation timeout |
 | `AI_FACTORY_DATA_DIR` | repository `data/` | Local SQLite directory |
 | `AI_FACTORY_ARTIFACT_DIR` | repository `artifacts/` | Generated approved artifact directory |
+| `AI_FACTORY_SERVICE_TOKEN` | required secret | Authenticates normal n8n-to-FastAPI calls |
+| `AI_FACTORY_REVIEW_TOKEN` | required distinct secret | Authorizes explicit review calls only |
+| `AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT` | optional ISO 8601 | Fail-closed service-token expiry |
+| `AI_FACTORY_REVIEW_TOKEN_EXPIRES_AT` | optional ISO 8601 | Fail-closed review-token expiry |
 | `OPENAI_API_KEY` | unset secret | Reserved for the later OpenAI provider |
 
 Secrets must never be committed or embedded in workflow exports. The two URLs
 are intentionally separate: `localhost` inside the n8n container refers to that
 container, not to the Mac.
+
+Stage 9.1 protects all `/v1` endpoints with environment-backed bearer tokens.
+Normal service operations and human review use distinct scopes. The n8n form
+requires an authenticated n8n user and passes only that user's opaque ID to the
+review endpoint; the editable request body cannot substitute another reviewer.
+Run ownership and tenant isolation remain Stage 9.2 concerns.
 
 ## Approved Markdown artifact
 

@@ -63,3 +63,19 @@ Stage 7.0.1 also renders that stored report under
 `artifacts/quality-reports/quality-report-<run_id>.md`. Its metadata is stored
 separately from the human-approved strategy artifact and retrieval verifies
 the recorded checksum.
+
+Stage 9.1 adds independent human and service authentication:
+
+```text
+signed-in n8n user -> n8n User Auth protected form pages
+                              |
+               service token | normal run/report/artifact operations
+                review token | review + opaque authenticated actor ID
+                              v
+                           FastAPI
+```
+
+Tokens are injected into process environments and are absent from the workflow
+export. FastAPI fails closed when a required token is missing. The distinct
+review scope preserves approval/rejection as a separate authorized action.
+Stage 9.1 does not yet bind runs to owners or tenants.

@@ -11,6 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from .artifacts import MarkdownArtifactStore, sha256_text
+from .auth import REVIEW_SCOPE, SERVICE_SCOPE, authenticate
 from .config import REPOSITORY_ROOT, Settings
 from .database import initialize_database
 from .errors import FactoryError
@@ -204,6 +205,25 @@ def create_app(
     async def request_id_middleware(request: Request, call_next):
         request_id = request.headers.get("X-Request-ID") or f"req_{uuid4().hex}"
         request.state.request_id = request_id
+        if request.url.path.startswith("/v1/"):
+            required_scope = (
+                REVIEW_SCOPE
+                if request.method == "POST" and request.url.path.endswith("/review")
+                else SERVICE_SCOPE
+            )
+            try:
+                request.state.auth = authenticate(
+                    resolved,
+                    request.headers.get("Authorization"),
+                    required_scope,
+                    request.headers.get("X-AI-Factory-Actor-ID"),
+                )
+            except FactoryError as error:
+                response = error_response(error, request_id)
+                if error.status_code == 401:
+                    response.headers["WWW-Authenticate"] = "Bearer"
+                response.headers["X-Request-ID"] = request_id
+                return response
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         return response
@@ -507,6 +527,13 @@ def create_app(
         request: Request,
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ) -> JSONResponse:
+        actor_id = request.state.auth.actor_id
+        if review.reviewer != actor_id:
+            raise FactoryError(
+                403,
+                "AUTHORIZATION_DENIED",
+                "The review identity does not match the authenticated actor.",
+            )
         key = validate_idempotency_key(idempotency_key)
         request_hash = canonical_json_hash(review.model_dump(mode="json"))
         operation = f"review_strategy_run:{run_id}"

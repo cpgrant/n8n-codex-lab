@@ -4,6 +4,9 @@ set -euo pipefail
 
 REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AI_FACTORY_HOST_URL="${AI_FACTORY_HOST_URL:-http://127.0.0.1:8000}"
+source "$REPOSITORY_ROOT/scripts/auth-headers.sh"
+load_service_auth
+load_review_auth "synthetic-stage3-reviewer"
 STAMP="$(date +%Y%m%d%H%M%S)"
 CREATE_RESPONSE="$(mktemp)"
 REVIEW_RESPONSE="$(mktemp)"
@@ -12,6 +15,7 @@ ARTIFACT_RESPONSE="$(mktemp)"
 trap 'rm -f "$CREATE_RESPONSE" "$REVIEW_RESPONSE" "$ARTIFACT_RESPONSE"' EXIT
 
 curl -fsS --max-time 10 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: stage3-create-$STAMP" \
   --data-binary "@$REPOSITORY_ROOT/examples/strategy-brief.synthetic.json" \
@@ -20,6 +24,7 @@ curl -fsS --max-time 10 \
 RUN_ID="$(jq -er '.data.run_id' "$CREATE_RESPONSE")"
 
 curl -fsS --max-time 10 \
+  "${REVIEW_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: stage3-approve-$STAMP" \
   --data-binary '{"decision":"approved","reviewer":"synthetic-stage3-reviewer","comment":"Approved by the synthetic Stage 3 smoke test."}' \
@@ -29,6 +34,7 @@ jq -e '.data.status == "artifact_created" and .data.review.decision == "approved
   "$REVIEW_RESPONSE" >/dev/null
 
 curl -fsS --max-time 10 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/artifact" \
   > "$ARTIFACT_RESPONSE"
 

@@ -26,8 +26,9 @@ history unless a separate operational-verification date is stated.
 | 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Human review pending | — |
 | 8 | Flexible intake | Complete | 2026-07-13 |
-| 9 | Client-demo hardening | In progress; Stage 9.1 next | — |
+| 9 | Client-demo hardening | In progress; Stage 9.2 next | — |
 | 9.0 | Data policy and trust boundaries | Complete | 2026-07-13 |
+| 9.1 | Authentication and authorization | Complete | 2026-07-13 |
 | 10 | OpenAI provider and professional routing | Planned | — |
 
 ## Completed foundation
@@ -360,11 +361,35 @@ authorize real data or implement the controls planned for Stages 9.1-9.6.
 
 #### Stage 9.1 — Authentication and authorization
 
+Status: **Complete** on 2026-07-13.
+
 - require an authenticated user for client-facing intake and review;
 - authenticate n8n-to-FastAPI service calls separately from human sessions;
 - keep credentials in approved secret storage, never workflow exports or Git;
 - test missing, invalid, expired, and insufficient authorization paths;
 - retain explicit human approval as a separate authorized action.
+
+Delivered:
+
+- n8n User Auth across the complete multi-page form flow;
+- distinct environment-backed FastAPI service and review bearer tokens;
+- fail-closed missing configuration and optional token expiry;
+- separate service/review scopes and safe `401`, `403`, and `503` contracts;
+- opaque authenticated human actor binding for approval/rejection;
+- removal of the editable reviewer identity from the form;
+- updated synthetic smoke scripts and a repeatable Stage 9.1 verifier;
+- design and verification records in `docs/STAGE-9.1-AUTH-DESIGN.md` and
+  `docs/STAGE-9.1-VERIFICATION.md`.
+
+Completion evidence: 83 automated tests passed; live synthetic API verification
+passed all required and denied paths; n8n imported and re-exported the updated
+workflow with Form Trigger v2.6 and `n8nUserAuth`; the workflow remained
+inactive, unpublished, credential-free, unavailable through MCP, and configured
+not to persist success, error, or manual execution data. The production form
+continued to return HTTP 404.
+
+Stage 9.1 authenticates callers but does not assign run ownership or tenant
+boundaries. That isolation remains Stage 9.2 scope.
 
 #### Stage 9.2 — Run ownership and isolation
 

@@ -48,7 +48,9 @@ scripts/agent-start.sh
 In another terminal:
 
 ```bash
-curl -fsS http://127.0.0.1:8000/v1/strategy-runs/<RUN_ID> | jq
+curl -fsS \
+  -H "Authorization: Bearer $AI_FACTORY_SERVICE_TOKEN" \
+  http://127.0.0.1:8000/v1/strategy-runs/<RUN_ID> | jq
 ```
 
 Expected result: the response still reports `status: rejected`, the recorded

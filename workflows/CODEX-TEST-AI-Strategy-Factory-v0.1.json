@@ -4,6 +4,7 @@
   "nodes": [
     {
       "parameters": {
+        "authentication": "n8nUserAuth",
         "formTitle": "AI Strategy Factory v0.1 — choose intake",
         "formDescription": "Synthetic test briefs only. Choose the example, a blank manual form, or a structured JSON upload (maximum 64 KiB).",
         "formFields": {
@@ -32,11 +33,12 @@
         "responseMode": "lastNode",
         "options": {
           "buttonLabel": "Continue",
+          "includeUserInOutput": true,
           "path": "codex-test-ai-strategy-factory-v01"
         }
       },
       "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.4,
+      "typeVersion": 2.6,
       "position": [
         0,
         0
@@ -316,6 +318,10 @@
             {
               "name": "Idempotency-Key",
               "value": "={{ 'n8n-create-' + $execution.id }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.AI_FACTORY_SERVICE_TOKEN }}"
             }
           ]
         },
@@ -344,6 +350,10 @@
             {
               "name": "Idempotency-Key",
               "value": "={{ 'n8n-quality-' + $execution.id }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.AI_FACTORY_SERVICE_TOKEN }}"
             }
           ]
         },
@@ -400,12 +410,6 @@
               "requiredField": true
             },
             {
-              "fieldLabel": "Reviewer",
-              "fieldName": "reviewer",
-              "defaultValue": "synthetic-n8n-reviewer",
-              "requiredField": true
-            },
-            {
               "fieldLabel": "Review comment (required when rejected)",
               "fieldName": "comment",
               "fieldType": "textarea"
@@ -436,13 +440,21 @@
             {
               "name": "Idempotency-Key",
               "value": "={{ 'n8n-review-' + $execution.id }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $env.AI_FACTORY_REVIEW_TOKEN }}"
+            },
+            {
+              "name": "X-AI-Factory-Actor-ID",
+              "value": "={{ $json.user.id }}"
             }
           ]
         },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ decision: $json.decision ?? $json.Decision, reviewer: $json.reviewer ?? $json.Reviewer, comment: $json.comment ?? $json['Review comment (required when rejected)'] ?? null }) }}",
+        "body": "={{ JSON.stringify({ decision: $json.decision ?? $json.Decision, reviewer: $json.user.id, comment: $json.comment ?? $json['Review comment (required when rejected)'] ?? null }) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",

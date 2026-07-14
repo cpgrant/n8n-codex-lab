@@ -4,6 +4,8 @@ set -euo pipefail
 
 REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AI_FACTORY_HOST_URL="${AI_FACTORY_HOST_URL:-http://127.0.0.1:8000}"
+source "$REPOSITORY_ROOT/scripts/auth-headers.sh"
+load_service_auth
 EXPECTED_QUALITY_MODE="${EXPECTED_QUALITY_MODE:-basic}"
 STAMP="$(date +%Y%m%d%H%M%S)-$$"
 CREATE_RESPONSE="$(mktemp)"
@@ -16,6 +18,7 @@ trap 'rm -f "$CREATE_RESPONSE" "$QUALITY_RESPONSE" "$QUALITY_REPLAY" "$READ_RESP
 
 echo "Creating one synthetic strategy draft ..."
 curl -fsS --max-time 330 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: stage7-create-$STAMP" \
   --data-binary "@$REPOSITORY_ROOT/examples/strategy-brief.synthetic.json" \
@@ -25,6 +28,7 @@ RUN_ID="$(jq -er '.data.run_id' "$CREATE_RESPONSE")"
 
 echo "Generating the $EXPECTED_QUALITY_MODE quality report ..."
 curl -fsS --max-time 330 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -X POST \
   -H "Idempotency-Key: stage7-quality-$STAMP" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/quality-report" \
@@ -45,6 +49,7 @@ jq -e --arg mode "$EXPECTED_QUALITY_MODE" '
 
 echo "Checking quality-report idempotency ..."
 curl -fsS --max-time 330 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -X POST \
   -H "Idempotency-Key: stage7-quality-$STAMP" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/quality-report" \
@@ -57,6 +62,7 @@ jq -e --slurpfile original "$QUALITY_RESPONSE" '
 
 echo "Checking durable report retrieval ..."
 curl -fsS --max-time 15 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID" > "$READ_RESPONSE"
 
 jq -e --slurpfile quality "$QUALITY_RESPONSE" '
@@ -67,6 +73,7 @@ jq -e --slurpfile quality "$QUALITY_RESPONSE" '
 
 echo "Checking the advisory Markdown artifact ..."
 curl -fsS --max-time 15 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/quality-report/artifact" \
   > "$ARTIFACT_RESPONSE"
 

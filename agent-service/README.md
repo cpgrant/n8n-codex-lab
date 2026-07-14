@@ -21,8 +21,23 @@ From the repository root:
 scripts/agent-start.sh
 ```
 
-The service listens on `http://127.0.0.1:8000`. The future n8n workflow, running
-inside Docker Desktop, will use `http://host.docker.internal:8000`.
+The service listens on `http://127.0.0.1:8000`. The n8n workflow, running inside
+Docker Desktop, uses `http://host.docker.internal:8000`.
+
+Stage 9.1 requires two distinct environment-backed tokens of at least 32
+characters. With missing tokens, health remains available but every `/v1`
+operation fails closed:
+
+```bash
+export AI_FACTORY_SERVICE_TOKEN='<local-secret-at-least-32-characters>'
+export AI_FACTORY_REVIEW_TOKEN='<different-secret-at-least-32-characters>'
+scripts/agent-start.sh
+```
+
+Inject the same values into the n8n process environment. Do not store them in
+workflow JSON, Git, n8n variables intended for non-secret data, or shell
+history. The workflow uses n8n User Auth for human form access and sends only
+the authenticated user's opaque ID to the review API.
 
 ## Verify
 
@@ -32,7 +47,8 @@ cd agent-service
 uv run pytest
 ```
 
-With the service running, execute the synthetic Stage 2 API smoke test:
+With the tokens loaded in the verification shell, execute the synthetic Stage
+2 API smoke test:
 
 ```bash
 scripts/agent-smoke-stage2.sh

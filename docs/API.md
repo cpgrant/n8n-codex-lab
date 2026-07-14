@@ -20,11 +20,16 @@ n8n in Docker:    http://host.docker.internal:8000
 All application endpoints are under `/v1`. Request and response bodies use
 `application/json`. Times are ISO 8601 UTC strings. IDs are opaque UUIDs.
 
+Stage 9.1 requires authentication for every `/v1` request. `GET /health`
+remains an unauthenticated, content-free local health check.
+
 ## Common headers
 
 | Header | Applies to | Rule |
 | --- | --- | --- |
 | `Content-Type: application/json` | Requests with bodies | Required |
+| `Authorization: Bearer <token>` | All `/v1` requests | Service token normally; distinct review token for review decisions |
+| `X-AI-Factory-Actor-ID` | Review requests | Required opaque authenticated n8n user ID |
 | `Idempotency-Key` | `POST` requests | Required; 8-255 printable characters |
 | `X-Request-ID` | All requests | Optional caller correlation ID; service returns one if absent |
 
@@ -33,6 +38,22 @@ All application endpoints are under `/v1`. Request and response bodies use
 ### `GET /health`
 
 Does not contact a strategy provider.
+
+It does not report token values or strategy content. A successful health
+response does not mean `/v1` authentication is configured.
+
+## Authentication and authorization
+
+Normal run, quality-report, and artifact operations require
+`AI_FACTORY_SERVICE_TOKEN`. `POST /review` requires the distinct
+`AI_FACTORY_REVIEW_TOKEN` and `X-AI-Factory-Actor-ID`. The `reviewer` field in
+the body must equal that actor ID.
+
+Tokens contain at least 32 characters, are supplied through the process
+environment, and may have optional timezone-aware expiry timestamps. Missing
+server configuration returns a fail-closed `503`; it never enables anonymous
+access. See `docs/STAGE-9.1-AUTH-DESIGN.md` for the authorization matrix and
+rotation contract.
 
 Response `200`:
 
@@ -275,6 +296,10 @@ Rules:
 | `400` | `INVALID_JSON` | Body is not valid JSON |
 | `400` | `VALIDATION_ERROR` | Request fails the documented schema |
 | `400` | `IDEMPOTENCY_KEY_REQUIRED` | Mutation lacks a valid key |
+| `401` | `AUTHENTICATION_REQUIRED` | Bearer token is missing |
+| `401` | `AUTHENTICATION_INVALID` | Bearer token is malformed or unknown |
+| `401` | `AUTHENTICATION_EXPIRED` | Valid bearer token has expired |
+| `403` | `AUTHORIZATION_DENIED` | Identity lacks the required scope or review actor |
 | `404` | `RUN_NOT_FOUND` | Run ID does not exist |
 | `409` | `INVALID_STATE_TRANSITION` | Operation is not valid for current status |
 | `409` | `IDEMPOTENCY_CONFLICT` | Key was reused with different input |
@@ -290,6 +315,7 @@ Rules:
 | `502` | `PROVIDER_ERROR` | Strategy provider failed |
 | `502` | `QUALITY_REVIEW_PROVIDER_ERROR` | Quality critic failed |
 | `503` | `SERVICE_UNAVAILABLE` | Required local component is unavailable |
+| `503` | `AUTHENTICATION_NOT_CONFIGURED` | Required server credential is absent |
 
 The service must not expose prompts, API keys, database paths, stack traces, or
 raw provider errors to n8n clients.
@@ -309,7 +335,7 @@ Create and review operations follow the rules in
 
 ## API non-goals for v0.1
 
-- Authentication or authorization endpoints
+- Token issuance, refresh, or identity-management endpoints
 - Run listing, search, deletion, or bulk operations
 - Draft editing or partial approvals
 - Streaming, webhooks, queues, or asynchronous job polling

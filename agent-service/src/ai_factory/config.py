@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -24,6 +25,34 @@ class Settings:
     ollama_timeout_seconds: float = 300.0
     data_dir: Path = REPOSITORY_ROOT / "data"
     artifact_dir: Path = REPOSITORY_ROOT / "artifacts"
+    service_token: str | None = None
+    review_token: str | None = None
+    service_token_expires_at: datetime | None = None
+    review_token_expires_at: datetime | None = None
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("AI_FACTORY_SERVICE_TOKEN", self.service_token),
+            ("AI_FACTORY_REVIEW_TOKEN", self.review_token),
+        ):
+            if value is not None and len(value) < 32:
+                raise ValueError(f"{name} must contain at least 32 characters")
+        if (
+            self.service_token is not None
+            and self.review_token is not None
+            and self.service_token == self.review_token
+        ):
+            raise ValueError(
+                "AI_FACTORY_SERVICE_TOKEN and AI_FACTORY_REVIEW_TOKEN must differ"
+            )
+        for name, value in (
+            ("AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT", self.service_token_expires_at),
+            ("AI_FACTORY_REVIEW_TOKEN_EXPIRES_AT", self.review_token_expires_at),
+        ):
+            if value is not None and (
+                value.tzinfo is None or value.utcoffset() is None
+            ):
+                raise ValueError(f"{name} must include a timezone")
 
     @property
     def database_path(self) -> Path:
@@ -31,6 +60,28 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
+        def optional_token(name: str) -> str | None:
+            value = os.getenv(name, "").strip()
+            if not value:
+                return None
+            if len(value) < 32:
+                raise ValueError(f"{name} must contain at least 32 characters")
+            return value
+
+        def optional_expiry(name: str) -> datetime | None:
+            value = os.getenv(name, "").strip()
+            if not value:
+                return None
+            try:
+                parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError as exc:
+                raise ValueError(
+                    f"{name} must be a valid ISO 8601 timestamp"
+                ) from exc
+            if parsed.tzinfo is None or parsed.utcoffset() is None:
+                raise ValueError(f"{name} must include a timezone")
+            return parsed
+
         port_text = os.getenv("AI_FACTORY_PORT", "8000")
         try:
             port = int(port_text)
@@ -74,6 +125,17 @@ class Settings:
         if not 1 <= ollama_timeout_seconds <= 1800:
             raise ValueError("OLLAMA_TIMEOUT_SECONDS must be between 1 and 1800")
 
+        service_token = optional_token("AI_FACTORY_SERVICE_TOKEN")
+        review_token = optional_token("AI_FACTORY_REVIEW_TOKEN")
+        if (
+            service_token is not None
+            and review_token is not None
+            and service_token == review_token
+        ):
+            raise ValueError(
+                "AI_FACTORY_SERVICE_TOKEN and AI_FACTORY_REVIEW_TOKEN must differ"
+            )
+
         return cls(
             host=os.getenv("AI_FACTORY_HOST", "127.0.0.1"),
             port=port,
@@ -97,5 +159,13 @@ class Settings:
                     "AI_FACTORY_ARTIFACT_DIR",
                     str(REPOSITORY_ROOT / "artifacts"),
                 )
+            ),
+            service_token=service_token,
+            review_token=review_token,
+            service_token_expires_at=optional_expiry(
+                "AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT"
+            ),
+            review_token_expires_at=optional_expiry(
+                "AI_FACTORY_REVIEW_TOKEN_EXPIRES_AT"
             ),
         )

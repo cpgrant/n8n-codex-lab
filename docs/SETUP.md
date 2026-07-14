@@ -22,6 +22,13 @@ codex mcp list
 Keep secrets only in the ignored `.env`; never copy the real token into
 `.env.example`, documentation, or Git.
 
+Stage 9.1 also requires distinct `AI_FACTORY_SERVICE_TOKEN` and
+`AI_FACTORY_REVIEW_TOKEN` values of at least 32 characters in the FastAPI and
+n8n process environments. Generate and store them using the local secret
+handling used by each process. Never place them in workflow JSON or n8n
+variables intended for non-secret data. Optional expiry variables are
+documented in `.env.example`.
+
 The repository startup script starts n8n and a repository-managed Ollama
 server on port `11888`:
 
@@ -51,6 +58,10 @@ Start the service directly on the Mac:
 cd ~/Development/codex/n8n-codex-lab
 scripts/agent-start.sh
 ```
+
+The shell must have the two Stage 9.1 token variables loaded. Missing token
+configuration deliberately leaves `/v1` unavailable while `/health` remains
+available. The synthetic smoke scripts also require those variables.
 
 In another terminal, verify it:
 
@@ -95,6 +106,11 @@ scripts/verify-stage4.sh
 Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json` into n8n as an
 inactive workflow. Use the editor's test form URL for synthetic manual testing.
 Do not activate or publish the workflow without explicit approval.
+
+The Form Trigger requires a signed-in n8n user. The installed n8n process must
+also receive the Stage 9.1 token variables with workflow environment access
+enabled. Later form pages inherit n8n User Auth, and reviewer identity is taken
+from the authenticated user's opaque ID rather than an editable field.
 
 ## Stage 5 operational verification
 

@@ -14,6 +14,10 @@ def test_config_defaults(monkeypatch):
         "AI_FACTORY_PROVIDER",
         "AI_FACTORY_DATA_DIR",
         "AI_FACTORY_ARTIFACT_DIR",
+        "AI_FACTORY_SERVICE_TOKEN",
+        "AI_FACTORY_REVIEW_TOKEN",
+        "AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT",
+        "AI_FACTORY_REVIEW_TOKEN_EXPIRES_AT",
         "OLLAMA_BASE_URL",
         "OLLAMA_MODEL",
         "AI_FACTORY_QUALITY_MODE",
@@ -35,6 +39,10 @@ def test_config_defaults(monkeypatch):
     assert settings.ollama_timeout_seconds == 300
     assert settings.data_dir.name == "data"
     assert settings.data_dir.parent.name == "n8n-codex-lab"
+    assert settings.service_token is None
+    assert settings.review_token is None
+    assert settings.service_token_expires_at is None
+    assert settings.review_token_expires_at is None
 
 
 def test_invalid_port_is_rejected(monkeypatch):
@@ -73,6 +81,21 @@ def test_pro_quality_mode_selects_separate_ollama_critic(monkeypatch):
     assert critic.model == "gemma4:26b"
 
 
+def test_auth_tokens_and_expiry_are_loaded(monkeypatch):
+    monkeypatch.setenv("AI_FACTORY_SERVICE_TOKEN", "s" * 32)
+    monkeypatch.setenv("AI_FACTORY_REVIEW_TOKEN", "r" * 32)
+    monkeypatch.setenv(
+        "AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT", "2026-08-01T00:00:00Z"
+    )
+
+    settings = Settings.from_env()
+
+    assert settings.service_token == "s" * 32
+    assert settings.review_token == "r" * 32
+    assert settings.service_token_expires_at is not None
+    assert settings.service_token_expires_at.utcoffset() is not None
+
+
 @pytest.mark.parametrize(
     ("name", "value", "message"),
     [
@@ -82,6 +105,12 @@ def test_pro_quality_mode_selects_separate_ollama_critic(monkeypatch):
         ("OLLAMA_TIMEOUT_SECONDS", "0", "between 1 and 1800"),
         ("AI_FACTORY_QUALITY_MODE", "premium", "basic.*pro"),
         ("OLLAMA_QUALITY_MODEL", " ", "must not be empty"),
+        ("AI_FACTORY_SERVICE_TOKEN", "too-short", "at least 32"),
+        (
+            "AI_FACTORY_REVIEW_TOKEN_EXPIRES_AT",
+            "2026-08-01T00:00:00",
+            "include a timezone",
+        ),
     ],
 )
 def test_invalid_ollama_config_is_rejected(monkeypatch, name, value, message):
@@ -89,3 +118,18 @@ def test_invalid_ollama_config_is_rejected(monkeypatch, name, value, message):
 
     with pytest.raises(ValueError, match=message):
         Settings.from_env()
+
+
+def test_auth_tokens_must_be_distinct(monkeypatch):
+    monkeypatch.setenv("AI_FACTORY_SERVICE_TOKEN", "same-token-" + "x" * 32)
+    monkeypatch.setenv("AI_FACTORY_REVIEW_TOKEN", "same-token-" + "x" * 32)
+
+    with pytest.raises(ValueError, match="must differ"):
+        Settings.from_env()
+
+
+def test_direct_auth_settings_are_also_validated():
+    with pytest.raises(ValueError, match="at least 32"):
+        Settings(service_token="too-short")
+    with pytest.raises(ValueError, match="must differ"):
+        Settings(service_token="x" * 32, review_token="x" * 32)

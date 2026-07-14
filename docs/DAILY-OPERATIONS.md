@@ -12,7 +12,9 @@ scripts/agent-start.sh
 ```
 
 Run `scripts/agent-start.sh` in its own terminal because FastAPI remains in the
-foreground. The ignored `.env` selects the local provider and quality mode.
+foreground. The ignored `.env` selects the local provider and quality mode and
+supplies the distinct Stage 9.1 service/review tokens. If either token is
+missing, `/v1` fails closed.
 
 In another terminal:
 
@@ -29,6 +31,7 @@ codex mcp list
 For workflow work, use only names beginning `CODEX TEST`. Keep AI Strategy
 Factory inactive and unpublished, and submit only synthetic data. The temporary
 `/form-test/...` URL exists only while an editor test execution is listening.
+The form requires the user to be signed in to n8n.
 
 ## Verify current milestones
 

@@ -56,6 +56,47 @@ def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
     assert "escapeHtml" in prepare_code
 
 
+def test_stage9_1_workflow_requires_human_and_service_authentication():
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    workflow = json.loads(workflow_text)
+    nodes = {node["name"]: node for node in workflow["nodes"]}
+    trigger = nodes["Strategy Brief Form"]
+
+    assert trigger["typeVersion"] >= 2.6
+    assert trigger["parameters"]["authentication"] == "n8nUserAuth"
+    assert trigger["parameters"]["options"]["includeUserInOutput"] is True
+
+    def headers(node_name):
+        parameters = nodes[node_name]["parameters"]["headerParameters"][
+            "parameters"
+        ]
+        return {item["name"]: item["value"] for item in parameters}
+
+    create_headers = headers("Create Strategy Draft")
+    quality_headers = headers("Generate Quality Report")
+    review_headers = headers("Record Review Decision")
+    assert create_headers["Authorization"] == (
+        "={{ 'Bearer ' + $env.AI_FACTORY_SERVICE_TOKEN }}"
+    )
+    assert quality_headers["Authorization"] == (
+        "={{ 'Bearer ' + $env.AI_FACTORY_SERVICE_TOKEN }}"
+    )
+    assert review_headers["Authorization"] == (
+        "={{ 'Bearer ' + $env.AI_FACTORY_REVIEW_TOKEN }}"
+    )
+    assert review_headers["X-AI-Factory-Actor-ID"] == "={{ $json.user.id }}"
+
+    review_fields = nodes["Human Review Form"]["parameters"]["formFields"][
+        "values"
+    ]
+    assert all(field.get("fieldName") != "reviewer" for field in review_fields)
+    review_body = nodes["Record Review Decision"]["parameters"]["body"]
+    assert "reviewer: $json.user.id" in review_body
+    assert "AI_FACTORY_SERVICE_TOKEN=" not in workflow_text
+    assert "AI_FACTORY_REVIEW_TOKEN=" not in workflow_text
+    assert all("credentials" not in node for node in workflow["nodes"])
+
+
 def test_stage8_intake_modes_are_blank_bounded_and_strict():
     workflow = json.loads(WORKFLOW_PATH.read_text(encoding="utf-8"))
     nodes = {node["name"]: node for node in workflow["nodes"]}

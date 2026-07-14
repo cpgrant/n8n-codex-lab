@@ -6,6 +6,9 @@
 - It contains no credentials.
 - It is exported and imported with `active: false`.
 - It is not available through MCP.
+- Every form page requires a signed-in n8n user.
+- FastAPI tokens are read from the n8n process environment and are not stored
+  in this workflow export.
 - Do not activate or publish it without explicit approval.
 
 ## Purpose
@@ -28,6 +31,11 @@ service URL is:
 ```text
 http://host.docker.internal:8000
 ```
+
+Configure distinct `AI_FACTORY_SERVICE_TOKEN` and `AI_FACTORY_REVIEW_TOKEN`
+values of at least 32 characters in both the FastAPI and n8n process
+environments. Environment access in workflow expressions must remain enabled.
+Do not place token values in the workflow, n8n variables, form fields, or Git.
 
 ## Manual test
 
@@ -52,15 +60,17 @@ does not indicate a FastAPI or SQLite failure.
 
 Review the advisory score, findings, questions, and complete structured JSON on
 the second form page. The quality report cannot approve, reject, or rewrite the
-draft. Select `approved` or `rejected`, enter a synthetic reviewer label, and
-include a comment when rejecting.
+draft. Select `approved` or `rejected` and include a comment when rejecting.
+The reviewer identity is not editable: n8n supplies the signed-in user's opaque
+ID to the review-scoped API call.
 
 Approval ends with an artifact filename and run ID. Rejection confirms that no
 artifact was created.
 
 ## Limitations
 
-- The form has no authentication and is for local manual testing only.
+- Form authentication uses the installed n8n user session. FastAPI service
+  tokens do not provide run ownership or tenant isolation.
 - Strategy generation supports deterministic fake and opt-in local Ollama
   providers. Quality mode is controlled by the FastAPI process configuration.
 - Production form URLs are unavailable until publication; publication is out of

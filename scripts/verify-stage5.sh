@@ -4,6 +4,9 @@ set -euo pipefail
 
 REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AI_FACTORY_HOST_URL="${AI_FACTORY_HOST_URL:-http://127.0.0.1:8000}"
+source "$REPOSITORY_ROOT/scripts/auth-headers.sh"
+load_service_auth
+load_review_auth "synthetic-stage5-reviewer"
 STAMP="$(date +%Y%m%d%H%M%S)-$$"
 CREATE_KEY="stage5-create-$STAMP"
 REVIEW_KEY="stage5-reject-$STAMP"
@@ -21,6 +24,7 @@ echo "Running Stage 4 safety and connectivity checks..."
 
 echo "Creating one synthetic strategy run..."
 curl -fsS --max-time 15 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $CREATE_KEY" \
   --data-binary "@$REPOSITORY_ROOT/examples/strategy-brief.synthetic.json" \
@@ -35,6 +39,7 @@ jq -e '
 
 echo "Checking create idempotency replay..."
 curl -fsS --max-time 15 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $CREATE_KEY" \
   --data-binary "@$REPOSITORY_ROOT/examples/strategy-brief.synthetic.json" \
@@ -48,6 +53,7 @@ jq -e --arg run_id "$RUN_ID" '
 
 echo "Rejecting the synthetic draft..."
 curl -fsS --max-time 15 \
+  "${REVIEW_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $REVIEW_KEY" \
   --data-binary '{"decision":"rejected","reviewer":"synthetic-stage5-reviewer","comment":"Rejected by the synthetic Stage 5 operational verification."}' \
@@ -62,6 +68,7 @@ jq -e '
 
 echo "Checking review idempotency replay..."
 curl -fsS --max-time 15 \
+  "${REVIEW_AUTH_ARGS[@]}" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: $REVIEW_KEY" \
   --data-binary '{"decision":"rejected","reviewer":"synthetic-stage5-reviewer","comment":"Rejected by the synthetic Stage 5 operational verification."}' \
@@ -74,6 +81,7 @@ jq -e '
 
 echo "Checking durable rejected-run retrieval..."
 curl -fsS --max-time 15 \
+  "${SERVICE_AUTH_ARGS[@]}" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID" > "$READ_RESPONSE"
 
 jq -e '
@@ -84,6 +92,7 @@ jq -e '
 
 echo "Checking that rejection produced no approved artifact..."
 ARTIFACT_STATUS="$(curl -sS --max-time 15 -o "$ARTIFACT_RESPONSE" -w '%{http_code}' \
+  "${SERVICE_AUTH_ARGS[@]}" \
   "$AI_FACTORY_HOST_URL/v1/strategy-runs/$RUN_ID/artifact")"
 if [[ "$ARTIFACT_STATUS" != "409" ]]; then
   echo "Expected rejected artifact request status 409, received $ARTIFACT_STATUS."
