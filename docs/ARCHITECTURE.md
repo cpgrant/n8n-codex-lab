@@ -1,5 +1,11 @@
 # ARCHITECTURE
 
+This document describes the implemented Strategy Factory reference
+architecture. The broader multi-factory objective and the boundary between
+shared platform and factory-specific capabilities are in
+`docs/AI-FACTORY-PLATFORM.md`. Shared abstractions have not yet been extracted
+from a second factory.
+
 ```text
 Codex -> MCP -> n8n -> Workflows
 ```

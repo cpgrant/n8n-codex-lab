@@ -2,11 +2,18 @@
 
 Purpose: AI-assisted workflow engineering using Codex, n8n, MCP, Docker and Git.
 
-The lab is evolving incrementally into a lightweight AI Factory Lab. AI
-Strategy Factory v0.1 now includes the Mac-local FastAPI/SQLite service, local
-Ollama generation, advisory quality reports and Markdown copies, explicit human
-review, approved strategy artifacts, Stage 8 flexible synthetic intake, and
-Stage 9.1 human/service authentication.
+The lab is evolving incrementally into a lightweight AI Factory Platform. AI
+Strategy Factory v0.1 is the first reference factory and now includes the
+Mac-local FastAPI/SQLite service, local Ollama generation, advisory quality
+reports and Markdown copies, explicit human review, approved strategy
+artifacts, Stage 8 flexible synthetic intake, and Stage 9.1 human/service
+authentication.
+
+The confirmed portfolio direction includes Strategy, Podcast, and Job
+Application factories. Research and Briefing and Content Repurposing are
+candidate ideas. Only Strategy is implemented; the others remain planned or
+proposed synthetic vertical slices. See `docs/AI-FACTORY-PLATFORM.md` for the
+platform objective, shared lifecycle, boundaries, and recommended sequence.
 
 The inactive `CODEX TEST — AI Strategy Factory v0.1` workflow offers a
 checked-in synthetic example, a genuinely blank manual form, and a size-limited
@@ -25,7 +32,9 @@ Current roadmap status:
 
 See:
 
+- `docs/AI-FACTORY-PLATFORM.md`
 - `docs/ROADMAP.md`
+- `docs/Professional-n8n-Codex-Lab-Manual.md`
 - `docs/AI-STRATEGY-FACTORY.md`
 - `docs/API.md`
 - `docs/STAGE-8-VERIFICATION.md`

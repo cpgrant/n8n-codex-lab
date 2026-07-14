@@ -1,11 +1,18 @@
-# AI Strategy Factory roadmap
+# AI Factory Platform roadmap
 
 ## Purpose
 
-This is the canonical development roadmap for the AI Strategy Factory in the
-n8n Codex Lab. It records completed work, planned stages, and the safety
-boundary for moving from a synthetic local lab toward a controlled
-professional workflow.
+This is the canonical development roadmap for the AI Factory Platform in the
+n8n Codex Lab. The detailed stages below describe the Strategy Factory, which
+is the first reference implementation. The broader objective, shared lifecycle,
+and factory portfolio are defined in `docs/AI-FACTORY-PLATFORM.md`.
+
+The confirmed platform direction includes Strategy, Podcast, and Job
+Application factories. Research and Briefing and Content Repurposing are
+candidate ideas, not committed stages. Factory expansion and production
+hardening are separate decisions: new local synthetic prototypes do not make
+the platform ready for real data, multiple users, publication, or external
+submissions.
 
 Completion dates use the `Europe/Copenhagen` timezone and are based on Git
 history unless a separate operational-verification date is stated.
@@ -14,6 +21,7 @@ history unless a separate operational-verification date is stated.
 
 | Stage | Milestone | Status | Completed |
 | --- | --- | --- | --- |
+| P0 | Platform vision and factory catalog | Complete | 2026-07-14 |
 | 0 | Contracts and safety boundary | Complete | 2026-07-12 |
 | 1 | FastAPI and SQLite foundation | Complete | 2026-07-12 |
 | 2 | Deterministic strategy generation | Complete | 2026-07-12 |
@@ -30,6 +38,24 @@ history unless a separate operational-verification date is stated.
 | 9.0 | Data policy and trust boundaries | Complete | 2026-07-13 |
 | 9.1 | Authentication and authorization | Complete | 2026-07-13 |
 | 10 | OpenAI provider and professional routing | Planned | — |
+
+## Platform P0 — Vision and factory catalog
+
+Status: **Complete** on 2026-07-14.
+
+The platform objective and portfolio are now explicit:
+
+- Strategy Factory is the implemented reference vertical slice;
+- Podcast Factory and Job Application Factory are confirmed planned factories;
+- Research and Briefing Factory and Content Repurposing Factory are candidate
+  ideas requiring a later portfolio decision;
+- the shared factory lifecycle preserves validation, immutable runs, quality
+  checks, explicit human review, approved artifacts, and retention/deletion;
+- shared platform components will be extracted from repeated needs after a
+  second working factory, rather than generalized from Strategy alone.
+
+See `docs/AI-FACTORY-PLATFORM.md` for scope, boundaries, and the recommended
+expansion sequence.
 
 ## Completed foundation
 
@@ -552,6 +578,64 @@ Before any hosted-provider use with non-synthetic data, the system must have
 approved API-key handling, consent and disclosure, retention rules, logging
 controls, client authorization, and a clear statement that the brief leaves
 the local Mac.
+
+## Factory expansion roadmap
+
+The Strategy stages above are the reference implementation track. Additional
+factories should be thin vertical slices first, then sources of proven shared
+platform components.
+
+### F1 — Strategy Factory reference implementation
+
+Status: **Local synthetic vertical slice complete through the Stage 9.1
+baseline.** Continue with the post-Stage 9.1 Track B recommendations unless an
+operationalization milestone is chosen.
+
+### F2 — Podcast Factory
+
+Status: **Confirmed planned; synthetic contract not yet defined.**
+
+Recommended first slice:
+
+- accept a checked-in synthetic source pack and episode brief;
+- produce an evidence-backed outline, draft script, editorial quality report,
+  and human-reviewed script/show-notes artifact;
+- remain inactive and unpublished, with no distribution integration;
+- define copyright, source provenance, AI disclosure, and voice/likeness gates
+  before audio generation is added.
+
+### F3 — Job Application Factory
+
+Status: **Confirmed planned; synthetic contract not yet defined.**
+
+Recommended first slice:
+
+- use only a synthetic candidate profile and synthetic job posting;
+- map claims to supplied evidence before drafting a CV, cover letter,
+  application answers, or interview pack;
+- prohibit invented qualifications and automatic application submission;
+- require stricter privacy, retention, ownership, and deletion controls before
+  any real candidate data is considered.
+
+### Candidate factories
+
+Research and Briefing Factory and Content Repurposing Factory are potentially
+useful because they reuse evidence, review, and artifact capabilities while
+producing distinct outputs. They remain ideas rather than scheduled work until
+one is selected for a concrete use case.
+
+Recommended sequence:
+
+1. keep Strategy stable as the reference factory;
+2. build the Podcast Factory as the second inactive synthetic vertical slice;
+3. compare both implementations and extract only repeated platform primitives;
+4. design the Job Application Factory with its sensitive-data boundary first;
+5. schedule candidate factories only after an explicit value and safety review.
+
+The Stage 9.2-9.6 operationalization gates apply before any factory uses real
+data, multiple users, an externally accessible form, publication, or automatic
+delivery/submission. They do not prevent local synthetic contract and product
+work under Track B.
 
 ## Roadmap rules
 
