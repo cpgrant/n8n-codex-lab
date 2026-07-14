@@ -14,6 +14,10 @@ hardening are separate decisions: new local synthetic prototypes do not make
 the platform ready for real data, multiple users, publication, or external
 submissions.
 
+Uncommitted Knowledge Factory, agent-runtime, and MCP options are recorded in
+`docs/PLATFORM-IDEAS.md`. Their placeholder labels are not active stages and do
+not change the status summary below.
+
 Completion dates use the `Europe/Copenhagen` timezone and are based on Git
 history unless a separate operational-verification date is stated.
 

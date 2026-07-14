@@ -10,6 +10,10 @@ reference implementation; it is not the final extent of the platform.
 The platform should make new factories easier to build without forcing every
 factory into one premature generic framework.
 
+Exploratory Knowledge Factory, agent-runtime, and MCP integration options are
+kept separately in `docs/PLATFORM-IDEAS.md` until they are accepted as roadmap
+commitments.
+
 ## Shared factory lifecycle
 
 Every factory should use the same high-level control pattern:
