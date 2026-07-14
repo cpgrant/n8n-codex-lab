@@ -25,19 +25,19 @@ The service listens on `http://127.0.0.1:8000`. The n8n workflow, running inside
 Docker Desktop, uses `http://host.docker.internal:8000`.
 
 Stage 9.1 requires two distinct environment-backed tokens of at least 32
-characters. With missing tokens, health remains available but every `/v1`
-operation fails closed:
+characters. Store them in the repository's ignored `.env`; the startup scripts
+load and validate that file automatically:
 
 ```bash
-export AI_FACTORY_SERVICE_TOKEN='<local-secret-at-least-32-characters>'
-export AI_FACTORY_REVIEW_TOKEN='<different-secret-at-least-32-characters>'
+scripts/start.sh
 scripts/agent-start.sh
 ```
 
-Inject the same values into the n8n process environment. Do not store them in
-workflow JSON, Git, n8n variables intended for non-secret data, or shell
-history. The workflow uses n8n User Auth for human form access and sends only
-the authenticated user's opaque ID to the review API.
+`scripts/start.sh` injects the same values into n8n through the repository-owned
+Compose override. Do not store them in workflow JSON, Git, n8n variables
+intended for non-secret data, or shell history. The workflow uses n8n User Auth
+for human form access and sends only the authenticated user's opaque ID to the
+review API.
 
 ## Verify
 

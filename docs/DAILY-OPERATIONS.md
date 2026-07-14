@@ -5,24 +5,19 @@
 ```bash
 cd ~/Development/codex/n8n-codex-lab
 scripts/start.sh
-set -a
-source .env
-set +a
 scripts/agent-start.sh
 ```
 
 Run `scripts/agent-start.sh` in its own terminal because FastAPI remains in the
-foreground. The ignored `.env` selects the local provider and quality mode and
-supplies the distinct Stage 9.1 service/review tokens. If either token is
-missing, `/v1` fails closed.
+foreground. Both startup scripts automatically load the ignored `.env`.
+`scripts/start.sh` supplies the distinct Stage 9.1 tokens to n8n, and
+`scripts/agent-start.sh` supplies them to FastAPI. Missing, short, or identical
+tokens stop startup safely.
 
 In another terminal:
 
 ```bash
 cd ~/Development/codex/n8n-codex-lab
-set -a
-source .env
-set +a
 scripts/status.sh
 scripts/agent-check.sh
 codex mcp list

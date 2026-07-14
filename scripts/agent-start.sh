@@ -5,6 +5,10 @@ set -euo pipefail
 REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$REPOSITORY_ROOT/agent-service/.uv-cache}"
 
+source "$REPOSITORY_ROOT/scripts/load-env.sh"
+load_repository_env "$REPOSITORY_ROOT"
+require_factory_auth_env
+
 cd "$REPOSITORY_ROOT/agent-service"
 
 exec uv run uvicorn ai_factory.main:app \

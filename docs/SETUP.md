@@ -1,33 +1,23 @@
 # SETUP
 
 ## Startup
-```bash
-cd ~/Development/docker/n8n
-docker compose up -d
-docker compose ps
-docker exec -it n8n n8n --version
-docker exec -it n8n ffmpeg -version
-```
 
-Open the project and load repository-local environment variables when needed:
+Open the project:
+
 ```bash
 cd ~/Development/codex/n8n-codex-lab
 code .
-set -a
-source .env
-set +a
 codex mcp list
 ```
 
 Keep secrets only in the ignored `.env`; never copy the real token into
 `.env.example`, documentation, or Git.
 
-Stage 9.1 also requires distinct `AI_FACTORY_SERVICE_TOKEN` and
-`AI_FACTORY_REVIEW_TOKEN` values of at least 32 characters in the FastAPI and
-n8n process environments. Generate and store them using the local secret
-handling used by each process. Never place them in workflow JSON or n8n
-variables intended for non-secret data. Optional expiry variables are
-documented in `.env.example`.
+Stage 9.1 requires distinct `AI_FACTORY_SERVICE_TOKEN` and
+`AI_FACTORY_REVIEW_TOKEN` values of at least 32 characters. Put them in the
+ignored repository `.env`. Never place them in workflow JSON or n8n variables
+intended for non-secret data. Optional expiry variables are documented in
+`.env.example`.
 
 The repository startup script starts n8n and a repository-managed Ollama
 server on port `11888`:
@@ -37,6 +27,11 @@ cd ~/Development/codex/n8n-codex-lab
 scripts/start.sh
 curl -fsS http://127.0.0.1:11888/api/tags | jq
 ```
+
+`scripts/start.sh` loads `.env`, validates both tokens, and passes them to n8n
+through the repository-owned `compose.n8n-auth.yml` override. It fails before
+starting services when authentication configuration is missing or invalid.
+Explicit environment values take precedence over matching `.env` entries.
 
 It is safe to run `scripts/start.sh` again when Ollama is already healthy. The
 matching `scripts/stop.sh` stops only the Ollama PID started and recorded by
@@ -59,9 +54,10 @@ cd ~/Development/codex/n8n-codex-lab
 scripts/agent-start.sh
 ```
 
-The shell must have the two Stage 9.1 token variables loaded. Missing token
-configuration deliberately leaves `/v1` unavailable while `/health` remains
-available. The synthetic smoke scripts also require those variables.
+`scripts/agent-start.sh` loads the same ignored `.env` and validates both Stage
+9.1 tokens. Missing or invalid configuration stops startup instead of running a
+partially configured API. Explicit environment values take precedence over
+matching `.env` entries. The synthetic smoke scripts also require the tokens.
 
 In another terminal, verify it:
 
@@ -107,10 +103,10 @@ Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json` into n8n as an
 inactive workflow. Use the editor's test form URL for synthetic manual testing.
 Do not activate or publish the workflow without explicit approval.
 
-The Form Trigger requires a signed-in n8n user. The installed n8n process must
-also receive the Stage 9.1 token variables with workflow environment access
-enabled. Later form pages inherit n8n User Auth, and reviewer identity is taken
-from the authenticated user's opaque ID rather than an editable field.
+The Form Trigger requires a signed-in n8n user. `scripts/start.sh` supplies the
+Stage 9.1 token variables to n8n. Later form pages inherit n8n User Auth, and
+reviewer identity is taken from the authenticated user's opaque ID rather than
+an editable field.
 
 ## Stage 5 operational verification
 

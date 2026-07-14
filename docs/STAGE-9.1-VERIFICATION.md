@@ -119,3 +119,12 @@ import/re-export rather than by activating or publishing the form.
 Stage 9.1 is complete for the local synthetic lab. Stage 9.2 run ownership and
 isolation is next. Until that checkpoint is complete, authentication must not
 be represented as client/tenant isolation, and real data remains prohibited.
+
+## Startup integration follow-up
+
+On 2026-07-14, repository startup was tightened so `scripts/start.sh` and
+`scripts/agent-start.sh` automatically load the ignored `.env` and reject
+missing, short, or identical tokens. The n8n startup uses the repository-owned
+`compose.n8n-auth.yml` override to pass both tokens into the container without
+embedding values in workflow JSON or tracked files. `scripts/status.sh` checks
+only whether the container configuration is valid and never prints a token.
