@@ -27,9 +27,12 @@
   fields, discards binary input before the API call, and never uses an uploaded
   filename as an artifact path.
 
-- Success, error, and manual execution persistence is disabled on the Stage 8
-  workflow to reduce upload retention. Stage 9 must define authentication,
-  ownership, retention, deletion, privacy, and abuse controls before any pilot.
+- Production success and error execution persistence is disabled. Manual
+  execution persistence is enabled for the local synthetic lab because n8n
+  2.29 multi-page test forms require a stored waiting execution. Saved manual
+  runs can retain synthetic form and uploaded JSON data in the local n8n
+  database until the local operator deletes them. This exception is not
+  authorization for real data or a substitute for pilot retention controls.
 
 - The Stage 9.0 data classification, trust boundaries, interim ownership, and
   pilot gates are defined in `docs/STAGE-9.0-DATA-POLICY.md`. They are policy

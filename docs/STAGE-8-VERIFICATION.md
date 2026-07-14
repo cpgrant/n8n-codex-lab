@@ -40,6 +40,12 @@ failures.
 - binary input omitted from the normalized output;
 - saved success, error, and manual workflow executions disabled.
 
+Stage 9.1 follow-up (2026-07-14): this line records the original Stage 8
+checkpoint. The current tracked workflow enables manual execution persistence
+because n8n 2.29 multi-page test forms require a saved waiting execution.
+Production success/error persistence remains disabled, and all saved manual
+content remains synthetic-only.
+
 ## Create a customized synthetic brief
 
 Do not modify the deterministic response fixture. Copy the input brief into the

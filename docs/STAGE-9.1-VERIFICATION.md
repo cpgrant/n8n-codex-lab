@@ -79,7 +79,8 @@ Before import, the existing workflow was exported and confirmed to:
 - contain zero credential-bearing nodes.
 
 The repository export was then imported over workflow ID
-`CodexStrategyV01` and re-exported. The installed result confirmed:
+`CodexStrategyV01` and re-exported. The original 2026-07-13 installed result
+confirmed:
 
 | Check | Result |
 | --- | --- |
@@ -135,3 +136,41 @@ compatibility exception: any workflow expression can read environment values
 exposed to the n8n container. It does not satisfy pilot-grade secret isolation,
 does not relax the no-pilot decision, and must be replaced or re-evaluated
 before real data is considered.
+
+## Live authenticated form verification
+
+Date: 2026-07-14 (`Europe/Copenhagen`)
+
+The inactive, unpublished `CODEX TEST — AI Strategy Factory v0.1` workflow was
+run manually with the built-in synthetic community-garden example. No
+credential was created or modified, and no real, personal, confidential, or
+client data was submitted.
+
+Live result:
+
+| Check | Result |
+| --- | --- |
+| n8n execution | `81` — `success` |
+| API run ID | `09c130e4-190d-452c-aa76-2a3c8b85dcee` |
+| Human authentication | Signed-in n8n user required across form pages |
+| Service authentication | Environment-backed service token accepted |
+| Review authentication | Distinct review token and opaque actor binding accepted |
+| Quality report | Created locally; one medium objective-quality issue recorded |
+| Human decision | Explicit approval with a synthetic-test-only caveat |
+| Approved artifact | `artifacts/strategy-09c130e4-190d-452c-aa76-2a3c8b85dcee.md` |
+| Production form | Unpublished/inactive |
+
+The approval comment requires a specific conversion target, deadline, owner,
+and capacity rationale before operational use. The generated quality report and
+approved artifact are ignored by Git and remain local synthetic evidence.
+
+During the live test, n8n 2.29 returned no execution status when manual
+execution persistence was disabled. Enabling **Save manual executions** allowed
+the stored execution to move through the later form page and complete. The
+tracked workflow now records `saveManualExecutions: true`; production success
+and error persistence remain `none`.
+
+This compatibility setting means synthetic form and uploaded JSON content can
+remain in the local n8n database until the local lab operator deletes the
+manual execution. It does not relax the synthetic-only/no-pilot decision and
+must be replaced by governed retention and secret isolation before a pilot.

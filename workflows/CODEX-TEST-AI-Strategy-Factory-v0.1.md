@@ -81,5 +81,9 @@ artifact was created.
 - Generated artifacts remain local and ignored by Git.
 - YAML upload is not implemented; Stage 8 intentionally starts with JSON.
 - Real or confidential client briefs remain prohibited until Stage 9.
-- Workflow success, error, and manual execution data persistence is disabled to
-  avoid retaining uploaded files after the active test execution.
+- Production success and error execution persistence remains disabled. Manual
+  execution persistence is enabled because n8n 2.29 multi-page test forms need
+  the stored waiting execution to advance between pages. This can retain
+  synthetic form and JSON-upload data in the local n8n database until the lab
+  operator deletes the execution; real or confidential data remains
+  prohibited.

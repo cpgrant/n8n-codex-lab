@@ -125,8 +125,10 @@ Browser test form
 
 Current implementation facts:
 
-- n8n success, error, and manual execution persistence is disabled for this
-  workflow, but transient execution memory still handles submitted content.
+- n8n production success and error execution persistence is disabled. Manual
+  execution persistence is enabled for functional n8n 2.29 multi-page tests,
+  so submitted synthetic form data and uploaded JSON may remain in the local
+  n8n database until the local lab operator deletes the execution.
 - FastAPI stores the complete normalized brief and generated draft in SQLite.
 - SQLite also stores idempotency records, quality reports, review identity and
   comments, checksums, errors, and artifact metadata.
@@ -136,7 +138,8 @@ Current implementation facts:
 - A quality-report Markdown artifact is created before review. An approved
   strategy Markdown artifact is created only after explicit approval.
 - Generated SQLite and artifact directories are local and ignored by Git, but
-  they have no implemented retention or deletion policy.
+  they have no implemented retention or deletion policy. Manual n8n execution
+  deletion is also an operator action rather than an automated retention rule.
 - Existing backup guidance covers the n8n volume. Governed backup, restore,
   retention, and deletion behavior for factory SQLite data and artifacts is
   not yet implemented.

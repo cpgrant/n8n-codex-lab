@@ -89,7 +89,7 @@ async function main() {
   assert.equal(workflow.settings.availableInMCP, false);
   assert.equal(workflow.settings.saveDataErrorExecution, 'none');
   assert.equal(workflow.settings.saveDataSuccessExecution, 'none');
-  assert.equal(workflow.settings.saveManualExecutions, false);
+  assert.equal(workflow.settings.saveManualExecutions, true);
   console.log('Stage 8 intake verification passed.');
 }
 

@@ -40,11 +40,12 @@ If the log contains `access to env vars denied`, restart n8n with
 the `$env` expressions required for the service and review tokens. This access
 is limited by policy to the local synthetic lab; see `docs/SECURITY.md`.
 
-For n8n 2.29 multi-page test forms, **Save manual executions** may need to be
-enabled temporarily in the workflow settings so the form can poll its waiting
-execution. Keep production success/error saving disabled, keep the workflow
-inactive and unpublished, submit synthetic data only, and disable manual
-execution saving after the test if the stored trace is no longer needed.
+For n8n 2.29 multi-page test forms, **Save manual executions** must remain
+enabled so the form can poll and resume its waiting execution. Keep production
+success/error saving disabled, keep the workflow inactive and unpublished, and
+submit synthetic data only. The local operator may delete completed manual
+test executions from n8n's **Executions** view after verification evidence is
+recorded and the trace is no longer needed.
 
 ## Stage 8 JSON upload is rejected
 

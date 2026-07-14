@@ -83,6 +83,12 @@ Static inspection of
 | Nodes | 16 |
 | Credential-bearing nodes | 0 |
 
+This table records the 2026-07-13 Stage 9.0 checkpoint. On 2026-07-14, live
+Stage 9.1 form verification established that n8n 2.29 requires manual execution
+persistence for multi-page test-form waiting/resume behavior. The current
+workflow therefore sets `saveManualExecutions: true` while keeping production
+success/error persistence disabled and retaining the synthetic-only boundary.
+
 The installed n8n workflow was not modified, activated, published, or accessed
 during this documentation checkpoint.
 

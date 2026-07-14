@@ -751,7 +751,7 @@
     "availableInMCP": false,
     "saveDataErrorExecution": "none",
     "saveDataSuccessExecution": "none",
-    "saveManualExecutions": false
+    "saveManualExecutions": true
   },
   "versionId": "3b0f1f3b-420e-4db5-9ac3-c6b2a85d1731",
   "meta": {

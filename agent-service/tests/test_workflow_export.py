@@ -20,7 +20,7 @@ def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
     assert len(nodes) == 16
     assert workflow["settings"]["saveDataErrorExecution"] == "none"
     assert workflow["settings"]["saveDataSuccessExecution"] == "none"
-    assert workflow["settings"]["saveManualExecutions"] is False
+    assert workflow["settings"]["saveManualExecutions"] is True
     assert workflow["connections"]["Strategy Brief Form"]["main"][0][0][
         "node"
     ] == "Choose Input Mode"

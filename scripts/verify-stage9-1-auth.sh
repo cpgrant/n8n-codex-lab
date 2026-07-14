@@ -102,7 +102,7 @@ jq -e '
   and .settings.availableInMCP == false
   and .settings.saveDataErrorExecution == "none"
   and .settings.saveDataSuccessExecution == "none"
-  and .settings.saveManualExecutions == false
+  and .settings.saveManualExecutions == true
   and ([.nodes[] | select(has("credentials"))] | length) == 0
   and ([.nodes[] | select(.name == "Strategy Brief Form")][0].typeVersion >= 2.6)
   and ([.nodes[] | select(.name == "Strategy Brief Form")][0].parameters.authentication == "n8nUserAuth")

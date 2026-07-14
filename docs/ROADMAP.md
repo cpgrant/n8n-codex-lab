@@ -309,8 +309,8 @@ Delivered:
 - strict `.json`, one-object, top-level field, nested organization field, and
   v0.1 API-schema validation;
 - normalization of all three paths into the same `StrategyBrief` contract;
-- removal of binary data before generation and workflow settings that disable
-  saved success, error, and manual execution data;
+- removal of binary data before generation and workflow settings that initially
+  disabled saved success, error, and manual execution data;
 - no use of uploaded filenames for artifact paths;
 - an updated installed workflow that remains inactive, unpublished,
   credential-free, and unavailable through MCP.
@@ -325,6 +325,11 @@ Completion evidence:
 
 The workflow remains synthetic-only. Real or confidential client intake is
 blocked until the Stage 9 controls are complete.
+
+Stage 9.1 follow-up: n8n 2.29 multi-page test forms require a saved manual
+waiting execution. Manual execution persistence is now enabled for synthetic
+tests; production success/error persistence remains disabled. This can retain
+synthetic form/upload data locally until operator deletion.
 
 ### Stage 9 — Client-demo hardening
 
@@ -359,6 +364,10 @@ unpublished, credential-free, unavailable through MCP, and configured not to
 save success, error, or manual execution data. Stage 9.0 completion does not
 authorize real data or implement the controls planned for Stages 9.1-9.6.
 
+That persistence statement records the Stage 9.0 checkpoint. The dated Stage
+9.1 follow-up below supersedes only the manual-execution setting for functional
+synthetic multi-page tests.
+
 #### Stage 9.1 — Authentication and authorization
 
 Status: **Complete** on 2026-07-13.
@@ -384,9 +393,10 @@ Delivered:
 Completion evidence: 83 automated tests passed; live synthetic API verification
 passed all required and denied paths; n8n imported and re-exported the updated
 workflow with Form Trigger v2.6 and `n8nUserAuth`; the workflow remained
-inactive, unpublished, credential-free, unavailable through MCP, and configured
-not to persist success, error, or manual execution data. The production form
-continued to return HTTP 404.
+inactive, unpublished, credential-free, and unavailable through MCP. A live
+synthetic multi-page run on 2026-07-14 confirmed that n8n 2.29 requires manual
+execution persistence; production success/error persistence remains disabled.
+The production form continued to return HTTP 404.
 
 Stage 9.1 authenticates callers but does not assign run ownership or tenant
 boundaries. That isolation remains Stage 9.2 scope.
