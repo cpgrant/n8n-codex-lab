@@ -128,3 +128,10 @@ missing, short, or identical tokens. The n8n startup uses the repository-owned
 `compose.n8n-auth.yml` override to pass both tokens into the container without
 embedding values in workflow JSON or tracked files. `scripts/status.sh` checks
 only whether the container configuration is valid and never prints a token.
+
+The same override explicitly sets `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` for the
+checked-in workflow's `$env` token expressions. This is a local synthetic-lab
+compatibility exception: any workflow expression can read environment values
+exposed to the n8n container. It does not satisfy pilot-grade secret isolation,
+does not relax the no-pilot decision, and must be replaced or re-evaluated
+before real data is considered.

@@ -47,3 +47,9 @@
 - Missing API authentication configuration fails closed. Review calls also
   require the opaque authenticated n8n user ID, and the stored reviewer must
   match it. This is authentication, not run ownership or tenant isolation.
+
+- The local Compose override sets `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` because
+  the checked-in workflow reads its two FastAPI tokens through `$env`. This
+  permits workflow expressions to read every environment variable exposed to
+  the n8n container, so it is a synthetic-lab exception rather than a pilot
+  secret-management design. Only approved `CODEX TEST` workflows may use it.

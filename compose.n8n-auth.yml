@@ -1,5 +1,8 @@
 services:
   n8n:
     environment:
+      # Required by the checked-in workflow's $env token expressions. This is
+      # a local synthetic-lab exception; do not carry it into a real-data pilot.
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - AI_FACTORY_SERVICE_TOKEN=${AI_FACTORY_SERVICE_TOKEN:?AI_FACTORY_SERVICE_TOKEN is required}
       - AI_FACTORY_REVIEW_TOKEN=${AI_FACTORY_REVIEW_TOKEN:?AI_FACTORY_REVIEW_TOKEN is required}

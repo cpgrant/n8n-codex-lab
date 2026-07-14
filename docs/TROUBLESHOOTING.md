@@ -27,6 +27,25 @@ The workflow is intentionally inactive, so `/form/...` returns 404. Click
 **Execute workflow** in n8n and use the current `/form-test/...` URL. Start a
 new test execution if its listener expires.
 
+## Form reports a problem submitting the response
+
+Check recent n8n logs without printing environment values:
+
+```bash
+docker logs --since 10m --tail 300 n8n
+```
+
+If the log contains `access to env vars denied`, restart n8n with
+`scripts/start.sh`. The repository-owned Compose override explicitly enables
+the `$env` expressions required for the service and review tokens. This access
+is limited by policy to the local synthetic lab; see `docs/SECURITY.md`.
+
+For n8n 2.29 multi-page test forms, **Save manual executions** may need to be
+enabled temporarily in the workflow settings so the form can poll its waiting
+execution. Keep production success/error saving disabled, keep the workflow
+inactive and unpublished, submit synthetic data only, and disable manual
+execution saving after the test if the stored trace is no longer needed.
+
 ## Stage 8 JSON upload is rejected
 
 Confirm there is exactly one `.json` file no larger than 65,536 bytes, its root
