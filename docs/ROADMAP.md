@@ -26,7 +26,7 @@ history unless a separate operational-verification date is stated.
 | 7.0.1 | Quality report Markdown artifact | Complete | 2026-07-13 |
 | 7.1 | Local model evaluation | Human review pending | — |
 | 8 | Flexible intake | Complete | 2026-07-13 |
-| 9 | Client-demo hardening | In progress; Stage 9.2 next | — |
+| 9 | Client-demo and operationalization hardening | Local baseline complete; decision gate open | — |
 | 9.0 | Data policy and trust boundaries | Complete | 2026-07-13 |
 | 9.1 | Authentication and authorization | Complete | 2026-07-13 |
 | 10 | OpenAI provider and professional routing | Planned | — |
@@ -401,7 +401,44 @@ The production form continued to return HTTP 404.
 Stage 9.1 authenticates callers but does not assign run ownership or tenant
 boundaries. That isolation remains Stage 9.2 scope.
 
+#### Post-Stage 9.1 decision gate
+
+Stages 9.0-9.1 form the completed **local synthetic-lab security baseline**.
+The workflow is suitable for a single local operator using synthetic data while
+it remains inactive and unpublished. Production hardening remains important
+for operationalization, but the full Stage 9.2-9.6 sequence is not required for
+continued local product development.
+
+Choose one of these tracks deliberately:
+
+**Track A — Operationalization and client-demo hardening**
+
+Use this track when there is a concrete need for multiple users, a published
+form, a controlled client demonstration, or pilot preparation. Continue through
+Stages 9.2-9.6 in order. Completion of those stages remains mandatory before
+any real-data or externally accessible pilot can be considered.
+
+**Track B — Local synthetic product development (recommended now)**
+
+Keep the workflow local, inactive, unpublished, and synthetic-only. Prioritize:
+
+1. a Stage 9.5-lite usability pass for clear generation progress, resilient
+   form-window recovery, and obvious completion/artifact links;
+2. Stage 9.3-lite housekeeping with a documented synthetic execution-retention
+   period, safe cleanup procedure, and basic SQLite/artifact backup check;
+3. strategy-quality improvements, especially measurable objectives, actionable
+   reviewer feedback, and stronger final artifacts.
+
+Under Track B, Stage 9.2, full Stage 9.3, Stage 9.4, and Stage 9.6 remain
+pilot-gated rather than canceled. The no-pilot and synthetic-only decisions
+remain in force.
+
 #### Stage 9.2 — Run ownership and isolation
+
+Status: **Pilot-gated / deferred for the single-user local lab.**
+
+Start when multiple authenticated users, client boundaries, publication, or a
+controlled pilot becomes a concrete requirement.
 
 - assign every run to an authenticated owner and client/tenant boundary;
 - derive ownership from trusted authentication context, not request JSON;
@@ -410,6 +447,11 @@ boundaries. That isolation remains Stage 9.2 scope.
 - migrate existing synthetic lab runs without treating them as client data.
 
 #### Stage 9.3 — Retention, deletion, and recovery
+
+Status: **Local housekeeping recommended; full controls pilot-gated.**
+
+The Track B subset covers synthetic execution cleanup and a basic backup check.
+The complete scope below is required for operationalization.
 
 - define retention periods for briefs, drafts, reviews, SQLite records,
   Markdown artifacts, logs, and backups;
@@ -420,6 +462,10 @@ boundaries. That isolation remains Stage 9.2 scope.
 
 #### Stage 9.4 — Abuse controls and safer observability
 
+Status: **Publication/pilot-gated.**
+
+Defer while the service is single-user, local, inactive, and unpublished.
+
 - enforce request, upload, and concurrency limits at trusted boundaries;
 - add rate limiting and protection against repeated expensive model calls;
 - use request/run identifiers while redacting briefs, prompts, model output,
@@ -429,6 +475,12 @@ boundaries. That isolation remains Stage 9.2 scope.
 
 #### Stage 9.5 — Long-running request experience
 
+Status: **Usability subset recommended next; full resilient execution remains
+operationalization work.**
+
+The live Stage 9.1 run exposed confusing browser-window and waiting-state
+behavior, making a small local usability pass valuable before more demos.
+
 - replace fragile browser waits with background execution or a documented,
   resilient polling/status flow;
 - make retry and idempotency behavior explicit for generation and critique;
@@ -436,6 +488,10 @@ boundaries. That isolation remains Stage 9.2 scope.
 - ensure a browser disconnect does not duplicate a run or approval decision.
 
 #### Stage 9.6 — Controlled synthetic client-demo verification
+
+Status: **Client-demo-gated / deferred.**
+
+Run only after the operationalization controls it verifies are implemented.
 
 - exercise authentication, isolation, deletion, throttling, recovery, and
   long-running behavior with multiple synthetic test identities;
@@ -454,6 +510,10 @@ Stage 9 completion gates:
 - logs and exported workflows contain no secrets or strategy content;
 - the controlled synthetic demo passes without bypassing human approval;
 - the Git checkpoint is clean and the roadmap evidence is recorded.
+
+These gates define readiness for a controlled external demonstration or later
+pilot decision. They do not block local synthetic product and quality work
+under Track B.
 
 Completing Stage 9 does not automatically authorize real data, activate the
 workflow, or publish a stable form. Each remains a separate explicit decision

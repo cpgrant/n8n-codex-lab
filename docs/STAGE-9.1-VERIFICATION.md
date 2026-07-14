@@ -118,8 +118,10 @@ import/re-export rather than by activating or publishing the form.
 ## Completion decision
 
 Stage 9.1 is complete for the local synthetic lab. Stage 9.2 run ownership and
-isolation is next. Until that checkpoint is complete, authentication must not
-be represented as client/tenant isolation, and real data remains prohibited.
+isolation remains the next operationalization checkpoint, but it is deferred
+until multiple users, publication, a controlled client demonstration, or pilot
+preparation becomes a concrete requirement. Authentication must not be
+represented as client/tenant isolation, and real data remains prohibited.
 
 ## Startup integration follow-up
 

@@ -18,8 +18,10 @@ Current roadmap status:
 
 - Stages 0-7.0.1 and Stage 8 are complete;
 - Stage 7.1 benchmarking is implemented, with blind human preference deferred;
-- Stage 9 client-demo hardening is in progress; Stages 9.0 and 9.1 are complete,
-  and Stage 9.2 run ownership and isolation is next.
+- Stages 9.0 and 9.1 complete the local synthetic-lab security baseline. The
+  roadmap is now at a decision gate: local usability, housekeeping, and product
+  quality are recommended next, while Stages 9.2-9.6 remain available as the
+  pilot-gated operationalization track.
 
 See:
 
