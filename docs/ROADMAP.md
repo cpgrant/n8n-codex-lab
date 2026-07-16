@@ -512,10 +512,35 @@ controlled pilot becomes a concrete requirement.
 
 #### Stage 9.3 — Retention, deletion, and recovery
 
-Status: **Local housekeeping recommended; full controls pilot-gated.**
+Status: **Stage 9.3-lite complete on 2026-07-16. Full lifecycle controls remain
+pilot-gated.**
 
 The Track B subset covers synthetic execution cleanup and a basic backup check.
 The complete scope below is required for operationalization.
+
+Stage 9.3-lite implemented:
+
+- explicit 14-day n8n execution pruning and a 500-execution cap;
+- a read-only `CODEX TEST` execution-retention audit with a separate 24-hour
+  stale-waiting threshold;
+- a safe operator procedure that deletes confirmed execution candidates only
+  through the n8n UI and never deletes workflows;
+- online SQLite backup plus local Markdown artifact copy;
+- a versioned SHA-256 manifest with file sizes and owner-only permissions;
+- SQLite integrity and recorded-artifact checksum verification;
+- a basic restore test in automatically removed temporary storage;
+- a read-only 30-day expired-backup audit.
+
+Verification evidence: 91 automated tests, shell syntax and destructive-command
+checks, a live read-only n8n audit, and a live factory backup/verify/restore
+test. The n8n audit identified stale waiting executions `65`, `66`, `67`, and
+`75`; it did not delete them. The ignored verification backup reconciled 31
+runs, 16 approved strategy artifacts, and 13 quality-report artifacts. See
+`docs/STAGE-9.3-LITE-VERIFICATION.md`.
+
+Stage 9.3-lite does not implement per-run deletion, audit tombstones,
+tenant-aware authorization, backup encryption/offline custody, automated
+expiry, or restoration into active storage. Those remain in the full scope:
 
 - define retention periods for briefs, drafts, reviews, SQLite records,
   Markdown artifacts, logs, and backups;

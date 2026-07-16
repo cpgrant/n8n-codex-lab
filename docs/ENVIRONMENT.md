@@ -33,7 +33,15 @@
 
 - Workflow MCP availability: disabled
 
-- Workflow execution-data persistence: success/error/manual disabled
+- Workflow execution-data persistence: production success/error disabled;
+  manual enabled for n8n 2.29 multi-page form tests
+
+- Stage 9.3-lite n8n retention: rolling pruning enabled, 336-hour maximum age,
+  500-execution cap; stale waiting `CODEX TEST` runs audited after 24 hours
+
+- Stage 9.3-lite factory backups: ignored local
+  `backups/ai-strategy-factory/`, SHA-256 manifest, SQLite integrity check, and
+  temporary restore test
 
 - Ollama host URL: http://127.0.0.1:11888
 

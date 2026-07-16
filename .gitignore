@@ -39,6 +39,7 @@ artifacts/*
 # Workflow test output
 output/
 tmp/
+backups/
 
 # Editor settings
 .vscode/

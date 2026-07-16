@@ -34,6 +34,7 @@ The form requires the user to be signed in to n8n.
 scripts/verify-stage4.sh
 node scripts/verify-stage8-intake.js
 node scripts/verify-stage9-5-lite.js
+scripts/verify-stage9-3-lite.sh
 cd agent-service && .venv/bin/pytest tests -q
 ```
 
@@ -42,6 +43,44 @@ Track B-Q1 strategy-quality regression cases are stored in
 suite validates their deterministic findings and the enhanced approved
 Markdown artifact. Live Ollama verification evidence is recorded in
 `docs/TRACK-B-Q1-VERIFICATION.md`.
+
+## Stage 9.3-lite housekeeping
+
+Retention targets for this local synthetic lab:
+
+| Data | Local retention |
+| --- | --- |
+| Completed `CODEX TEST` n8n executions | 14 days |
+| Stale waiting form-test executions | Audit after 24 hours |
+| Factory SQLite runs and Markdown artifacts | Review after 30 days |
+| Factory backup directories | 30 days |
+| Temporary verifier logs and restore directories | Remove after verification |
+
+n8n pruning is explicitly configured for 336 hours and at most 500 saved
+executions. The current container already uses n8n's default 336-hour rolling
+pruning; the explicit count cap applies after the next normal n8n restart.
+
+List only expired or stale `CODEX TEST` execution candidates:
+
+```bash
+scripts/n8n-execution-retention-audit.sh
+```
+
+This command copies a temporary SQLite snapshot and is read-only. It does not
+query or print execution payloads. Confirm that no form test is active, then
+delete only the listed execution IDs through n8n's **Executions** view. Do not
+delete workflows or edit the live n8n database directly.
+
+Create and verify a factory backup:
+
+```bash
+BACKUP="$(scripts/factory-backup.sh create)"
+scripts/factory-backup.sh verify "$BACKUP"
+scripts/factory-backup.sh restore-test "$BACKUP"
+```
+
+The backup and restore-test commands do not stop FastAPI and do not overwrite
+active `data/` or `artifacts/`. See `docs/BACKUP-AND-RECOVERY.md`.
 
 ## Track B baseline
 

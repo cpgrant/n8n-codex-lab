@@ -6,3 +6,9 @@ services:
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - AI_FACTORY_SERVICE_TOKEN=${AI_FACTORY_SERVICE_TOKEN:?AI_FACTORY_SERVICE_TOKEN is required}
       - AI_FACTORY_REVIEW_TOKEN=${AI_FACTORY_REVIEW_TOKEN:?AI_FACTORY_REVIEW_TOKEN is required}
+      # Stage 9.3-lite: retain local synthetic execution history for at most
+      # 14 days. The count cap prevents an unusually busy test period from
+      # retaining an excessive number of manual executions.
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+      - EXECUTIONS_DATA_PRUNE_MAX_COUNT=500

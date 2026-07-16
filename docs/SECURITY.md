@@ -33,6 +33,13 @@
   runs can retain synthetic form and uploaded JSON data in the local n8n
   database until the local operator deletes them. This exception is not
   authorization for real data or a substitute for pilot retention controls.
+- Stage 9.3-lite makes n8n's 14-day rolling execution pruning explicit and caps
+  saved executions at 500. A read-only audit lists only `CODEX TEST` execution
+  metadata; deletion remains a confirmed operator action in the n8n UI.
+- Local factory backups are ignored by Git, use owner-only permissions, and
+  contain complete synthetic briefs, drafts, reviews, reports, and artifacts.
+  Treat them as content-bearing data. The 30-day backup audit does not delete
+  files automatically.
 
 - The Stage 9.0 data classification, trust boundaries, interim ownership, and
   pilot gates are defined in `docs/STAGE-9.0-DATA-POLICY.md`. They are policy
