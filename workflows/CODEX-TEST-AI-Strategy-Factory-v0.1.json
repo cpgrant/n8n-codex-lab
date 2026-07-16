@@ -6,7 +6,7 @@
       "parameters": {
         "authentication": "n8nUserAuth",
         "formTitle": "AI Strategy Factory v0.1 — choose intake",
-        "formDescription": "Synthetic test briefs only. Choose the example, a blank manual form, or a structured JSON upload (maximum 64 KiB).",
+        "formDescription": "Synthetic test briefs only. Choose the example, a blank manual form, or a structured JSON upload (maximum 64 KiB). Local Ollama generation and quality review can each take several minutes; the next pages explain recovery before either slow step starts.",
         "formFields": {
           "values": [
             {
@@ -226,7 +226,7 @@
           ]
         },
         "options": {
-          "buttonLabel": "Validate and generate"
+          "buttonLabel": "Validate brief"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -269,7 +269,7 @@
           ]
         },
         "options": {
-          "buttonLabel": "Validate and generate"
+          "buttonLabel": "Validate brief"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -310,6 +310,47 @@
     },
     {
       "parameters": {
+        "jsCode": "return [{ json: { brief: $json } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "607c8d41-35ec-48e8-ac1f-b167fce917cc",
+      "name": "Preserve Brief for Generation"
+    },
+    {
+      "parameters": {
+        "formTitle": "Ready to generate the strategy",
+        "formDescription": "Phase 1 of 2 slow local-model steps. Review this guidance before starting generation.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Generation and recovery guidance",
+              "fieldName": "generation_guidance",
+              "fieldType": "html",
+              "html": "<h2>Strategy generation</h2><p>Local Ollama generation normally takes several minutes on this Mac and may take longer under load. Keep this form tab open after selecting <strong>Generate strategy</strong>.</p><p><strong>No run ID exists until generation finishes.</strong> If the temporary form expires or closes before the next page displays a run ID, return to n8n, select <strong>Execute workflow</strong>, and start one new synthetic run. Do not repeatedly resubmit while the spinner is active.</p><p>After generation, the next page displays the stored run ID before the separate quality-review call begins.</p>"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Generate strategy"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "3d184b37-7f0d-4714-96bd-60b06a7c0925",
+      "name": "Generation Readiness",
+      "webhookId": "04f8937a-d14f-48f9-a2ba-eb9456c0e87b"
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "http://host.docker.internal:8000/v1/strategy-runs",
         "sendHeaders": true,
@@ -328,13 +369,15 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($json) }}",
-        "options": {}
+        "body": "={{ JSON.stringify($('Preserve Brief for Generation').item.json.brief) }}",
+        "options": {
+          "timeout": 330000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        960,
+        1440,
         0
       ],
       "id": "13b6a17b-ad58-4ab6-b0d1-8cb2d1ae8c03",
@@ -342,8 +385,36 @@
     },
     {
       "parameters": {
+        "formTitle": "Strategy draft stored — ready for quality review",
+        "formDescription": "Generation is complete. Copy the run ID before starting the second slow local-model step.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Run recovery details",
+              "fieldName": "quality_guidance",
+              "fieldType": "html",
+              "html": "={{ '<h2>Draft created</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p>The draft is stored in SQLite. The next step runs the separate advisory quality critic and can take several more minutes. Keep this tab open after selecting <strong>Generate quality report</strong>.</p><p>If this page or the next request fails, do not create another run automatically. From the repository, check the stored run with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p><p>The quality report is advisory and cannot approve the strategy.</p>' }}"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Generate quality report"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "70cb6495-d43a-437e-941e-8b73c55079ee",
+      "name": "Quality Review Readiness",
+      "webhookId": "da7d4331-8382-49e9-8d47-caecb63b47df"
+    },
+    {
+      "parameters": {
         "method": "POST",
-        "url": "={{ 'http://host.docker.internal:8000/v1/strategy-runs/' + $json.data.run_id + '/quality-report' }}",
+        "url": "={{ 'http://host.docker.internal:8000/v1/strategy-runs/' + $('Create Strategy Draft').item.json.data.run_id + '/quality-report' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -357,12 +428,14 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "timeout": 330000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1200,
+        1920,
         0
       ],
       "id": "6a55fc71-0f8d-4b66-b0aa-a514beab8e74",
@@ -375,7 +448,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
+        2160,
         0
       ],
       "id": "5bb573ff-2c6b-4a81-b17a-9373561509f4",
@@ -383,8 +456,21 @@
     },
     {
       "parameters": {
+        "jsCode": "const input = $json;\nconst runId = input.run_id;\nconst qualityData = $('Generate Quality Report').item.json.data;\nconst filename = qualityData.quality_artifact?.filename ?? ('quality-report-' + runId + '.md');\nconst escapeHtml = (value) => String(value ?? '')\n  .replaceAll('&', '&amp;')\n  .replaceAll('<', '&lt;')\n  .replaceAll('>', '&gt;')\n  .replaceAll('\\\"', '&quot;')\n  .replaceAll(\"'\", '&#039;');\nconst recovery = [\n  '<h2>Run and artifact locations</h2>',\n  '<p><strong>Run ID:</strong> <code>' + escapeHtml(runId) + '</code></p>',\n  '<p><strong>Advisory Markdown copy:</strong> <code>artifacts/quality-reports/' + escapeHtml(filename) + '</code></p>',\n  '<p><strong>Status/recovery:</strong> <code>scripts/strategy-run-status.sh ' + escapeHtml(runId) + '</code></p>',\n  '<p><em>The quality report is advisory. Only the decision below can approve or reject this strategy.</em></p>',\n  '<hr>',\n].join('');\nreturn [{ json: { ...input, review_html: recovery + input.review_html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ],
+      "id": "a435adfd-a29a-48b2-a6ad-66374a118e88",
+      "name": "Add Review Recovery Details"
+    },
+    {
+      "parameters": {
         "formTitle": "Review strategy draft",
-        "formDescription": "Review the advisory quality findings and complete structured response before making an explicit decision.",
+        "formDescription": "Quality review is complete. Review the advisory findings and structured response before making an explicit human decision. The run ID and local Markdown locations appear at the top of the report.",
         "formFields": {
           "values": [
             {
@@ -423,7 +509,7 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        1680,
+        2640,
         0
       ],
       "id": "79baaf4f-74f4-44e9-bf7b-3d3550c7de9e",
@@ -460,7 +546,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1920,
+        2880,
         0
       ],
       "id": "e97c4395-6e53-4b6b-afac-30c9884d6812",
@@ -523,7 +609,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        2160,
+        3120,
         0
       ],
       "id": "d0e90e8c-e041-437e-942f-9090b7f5eae8",
@@ -533,13 +619,13 @@
       "parameters": {
         "operation": "completion",
         "completionTitle": "Strategy approved",
-        "completionMessage": "={{ 'Approved Markdown artifact: ' + $json.data.artifact.filename + '<br>Run ID: ' + $json.data.run_id }}",
+        "completionMessage": "={{ '<h2>Approved artifact created</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><strong>Approved strategy:</strong><br><code>artifacts/<wbr>' + $json.data.artifact.filename + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><strong>Advisory quality report:</strong><br><code>artifacts/quality-reports/<wbr>quality-report-' + $json.data.run_id + '.md</code></p><p>From the repository, verify the stored status and paths with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p>' }}",
         "options": {}
       },
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        2400,
+        3360,
         -120
       ],
       "id": "bd23bfd1-78d5-49ba-a8b1-985b76836de1",
@@ -550,13 +636,13 @@
       "parameters": {
         "operation": "completion",
         "completionTitle": "Strategy rejected",
-        "completionMessage": "={{ 'No artifact was created.<br>Run ID: ' + $json.data.run_id }}",
+        "completionMessage": "={{ '<h2>Strategy rejected</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\">No approved strategy artifact was created. The advisory report remains available at<br><code>artifacts/quality-reports/<wbr>quality-report-' + $json.data.run_id + '.md</code>.</p><p>From the repository, verify the stored status with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p>' }}",
         "options": {}
       },
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        2400,
+        3360,
         120
       ],
       "id": "232873e8-2637-46c1-a784-110b239bb339",
@@ -565,7 +651,7 @@
     },
     {
       "parameters": {
-        "content": "## AI Strategy Factory v0.1 — Stage 8\nChoose synthetic example, blank manual form, or size-limited JSON upload → validate and normalize → strategy draft → advisory quality report → explicit human review → approved Markdown artifact.\n\nUploads are limited to 64 KiB, unknown fields are rejected, and filenames are never used for artifact paths.\n\nThe quality report cannot approve, reject, or rewrite a draft.\n\nThis workflow must remain inactive until separately approved for activation.",
+        "content": "## AI Strategy Factory v0.1 — Stage 9.5-lite\nChoose synthetic example, blank manual form, or size-limited JSON upload → validate and normalize → generation-readiness guidance → strategy draft → stored run-ID checkpoint → advisory quality report → explicit human review → approved Markdown artifact.\n\nThe two deliberate readiness pages separate the slow Ollama generation and critic calls, set timing expectations, and provide recovery guidance. Run status can be checked with `scripts/strategy-run-status.sh <run-id>`.\n\nUploads are limited to 64 KiB, unknown fields are rejected, and filenames are never used for artifact paths. The quality report cannot approve, reject, or rewrite a draft.\n\nThis workflow must remain inactive until separately approved for activation.",
         "width": 720
       },
       "type": "n8n-nodes-base.stickyNote",
@@ -620,7 +706,7 @@
       "main": [
         [
           {
-            "node": "Create Strategy Draft",
+            "node": "Preserve Brief for Generation",
             "type": "main",
             "index": 0
           }
@@ -642,7 +728,7 @@
       "main": [
         [
           {
-            "node": "Create Strategy Draft",
+            "node": "Preserve Brief for Generation",
             "type": "main",
             "index": 0
           }
@@ -664,6 +750,28 @@
       "main": [
         [
           {
+            "node": "Preserve Brief for Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Brief for Generation": {
+      "main": [
+        [
+          {
+            "node": "Generation Readiness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generation Readiness": {
+      "main": [
+        [
+          {
             "node": "Create Strategy Draft",
             "type": "main",
             "index": 0
@@ -672,6 +780,17 @@
       ]
     },
     "Create Strategy Draft": {
+      "main": [
+        [
+          {
+            "node": "Quality Review Readiness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Review Readiness": {
       "main": [
         [
           {
@@ -694,6 +813,17 @@
       ]
     },
     "Prepare Human Review": {
+      "main": [
+        [
+          {
+            "node": "Add Review Recovery Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Review Recovery Details": {
       "main": [
         [
           {

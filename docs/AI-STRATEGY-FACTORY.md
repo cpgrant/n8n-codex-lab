@@ -340,6 +340,21 @@ The editor's `/form-test/...` URL is temporary and works only while a manual
 test execution is listening. A person taking too long to complete that form
 may see a submission error even though n8n, FastAPI, and SQLite are healthy.
 
+Stage 9.5-lite adds two deliberate readiness pages around the slow local-model
+calls. Before strategy generation, the form explains that no run ID exists yet
+and how to restart safely if the temporary execution disappears. After the
+draft is stored, the form displays the run ID before starting the separate
+quality critic. A stored run can be checked without exposing its content:
+
+```bash
+scripts/strategy-run-status.sh <run-id>
+```
+
+The review and completion pages show repository-relative paths for the
+advisory quality report and any human-approved strategy artifact. These are
+local paths rather than unauthenticated browser links because artifact API
+retrieval remains protected by the Stage 9.1 service token.
+
 A stable `/form/...` URL requires an active/published workflow. Activation is
 an explicit operational decision outside Stage 5. Stage 8 JSON upload remains
 available only through a current manual test execution; YAML is not

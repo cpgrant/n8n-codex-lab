@@ -33,6 +33,7 @@ The form requires the user to be signed in to n8n.
 ```bash
 scripts/verify-stage4.sh
 node scripts/verify-stage8-intake.js
+node scripts/verify-stage9-5-lite.js
 cd agent-service && .venv/bin/pytest tests -q
 ```
 
@@ -46,15 +47,30 @@ cd ~/Development/codex/n8n-codex-lab
 scripts/verify-track-b-baseline.sh
 ```
 
-The verifier performs service-health, workflow-safety, flexible-intake, test
-suite, and one live synthetic Ollama generation/quality check. The live check
-can take several minutes. It writes an ignored Markdown report under
+The verifier performs service-health, workflow-safety, flexible-intake,
+Stage 9.5-lite workflow-contract, test-suite, and one live synthetic Ollama
+generation/quality check. The live check can take several minutes. It writes an
+ignored Markdown report under
 `artifacts/evaluations/track-b/` and detailed ignored logs under `tmp/`.
 
 It does not start or stop services, activate or publish the workflow, delete
 data, or print authentication tokens. After it passes, perform one manual
 synthetic n8n form walkthrough to record the current browser experience before
 implementing Stage 9.5-lite.
+
+## Recover a strategy run
+
+After the workflow displays a run ID, the draft exists independently of the
+temporary browser form. Check its safe status and artifact locations with:
+
+```bash
+scripts/strategy-run-status.sh <run-id>
+```
+
+The command automatically loads the ignored `.env`, authenticates to FastAPI,
+and prints only status and service-owned repository-relative artifact paths. It
+does not print the brief, strategy content, prompts, or token values. Do not
+create another run merely because a form tab closed after a run ID appeared.
 
 ## Shut down
 

@@ -153,6 +153,8 @@ run_check stage4 "Stage 4 workflow safety and connectivity" \
   "$REPOSITORY_ROOT/scripts/verify-stage4.sh"
 run_check stage8 "Stage 8 flexible-intake contract" \
   node "$REPOSITORY_ROOT/scripts/verify-stage8-intake.js"
+run_check stage9-5-lite "Stage 9.5-lite workflow contract" \
+  node "$REPOSITORY_ROOT/scripts/verify-stage9-5-lite.js"
 run_check tests "Automated FastAPI and Stage 9.1 tests" \
   run_python_tests
 run_check live-ollama "Live Ollama generation and pro quality report" \

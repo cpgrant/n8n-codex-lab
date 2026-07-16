@@ -505,8 +505,8 @@ Defer while the service is single-user, local, inactive, and unpublished.
 
 #### Stage 9.5 — Long-running request experience
 
-Status: **Usability subset recommended next; full resilient execution remains
-operationalization work.**
+Status: **Stage 9.5-lite complete on 2026-07-16. Full resilient execution
+remains operationalization work.**
 
 The live Stage 9.1 run exposed confusing browser-window and waiting-state
 behavior, making a small local usability pass valuable before more demos.
@@ -516,6 +516,33 @@ behavior, making a small local usability pass valuable before more demos.
 - make retry and idempotency behavior explicit for generation and critique;
 - show safe progress, timeout, cancellation, and recovery states;
 - ensure a browser disconnect does not duplicate a run or approval decision.
+
+Stage 9.5-lite implemented:
+
+- a pre-generation readiness page with realistic local Ollama timing and safe
+  before-run recovery guidance;
+- a stored-draft checkpoint that displays the run ID before the separate
+  quality-critic call;
+- explicit 330-second n8n timeouts for generation and critique;
+- `scripts/strategy-run-status.sh` for authenticated, content-free status and
+  artifact-location recovery after a run ID exists;
+- prominent run ID, advisory-report location, approved-artifact location, and
+  retry guidance through review and completion;
+- an automated workflow-contract verifier and updated regression tests.
+
+Implementation evidence: 83 automated tests, Stage 8 regression verification,
+Stage 9.5-lite static verification, successful n8n import/re-export, and an
+exact semantic comparison of the tracked and installed 20-node workflow. The
+installed workflow remains inactive, unpublished, credential-free, and
+unavailable through MCP.
+
+Manual completion evidence: synthetic run
+`5062f0cf-eb42-4f4b-9f0f-38459e06e399` passed the generation-readiness,
+stored-run recovery, pro quality-review, explicit approval, and final artifact
+checks. The terminal status changed from `awaiting_review` without a quality
+artifact to `artifact_created` with both expected Markdown paths. A long-command
+overflow found on the first completion rendering was corrected with wrap-safe
+markup, asserted by the automated verifier, and accepted by n8n on re-import.
 
 #### Stage 9.6 — Controlled synthetic client-demo verification
 

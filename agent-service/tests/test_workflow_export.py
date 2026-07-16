@@ -8,7 +8,7 @@ WORKFLOW_PATH = (
 )
 
 
-def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
+def test_stage9_5_lite_workflow_is_safe_and_routes_readiness_before_slow_calls():
     workflow = json.loads(WORKFLOW_PATH.read_text(encoding="utf-8"))
     nodes = {node["name"]: node for node in workflow["nodes"]}
 
@@ -17,7 +17,7 @@ def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
     assert workflow["active"] is False
     assert workflow["settings"]["availableInMCP"] is False
     assert all("credentials" not in node for node in workflow["nodes"])
-    assert len(nodes) == 16
+    assert len(nodes) == 20
     assert workflow["settings"]["saveDataErrorExecution"] == "none"
     assert workflow["settings"]["saveDataSuccessExecution"] == "none"
     assert workflow["settings"]["saveManualExecutions"] is True
@@ -32,28 +32,49 @@ def test_stage8_workflow_export_is_safe_and_routes_quality_before_review():
     ]
     assert workflow["connections"]["Load Synthetic Example"]["main"][0][0][
         "node"
-    ] == "Create Strategy Draft"
+    ] == "Preserve Brief for Generation"
     assert workflow["connections"]["Blank Manual Brief Form"]["main"][0][0][
         "node"
     ] == "Normalize Manual Brief"
     assert workflow["connections"]["JSON Upload Form"]["main"][0][0][
         "node"
     ] == "Parse JSON Brief"
+    assert workflow["connections"]["Preserve Brief for Generation"]["main"][0][0][
+        "node"
+    ] == "Generation Readiness"
+    assert workflow["connections"]["Generation Readiness"]["main"][0][0][
+        "node"
+    ] == "Create Strategy Draft"
     assert workflow["connections"]["Create Strategy Draft"]["main"][0][0][
+        "node"
+    ] == "Quality Review Readiness"
+    assert workflow["connections"]["Quality Review Readiness"]["main"][0][0][
         "node"
     ] == "Generate Quality Report"
     assert workflow["connections"]["Generate Quality Report"]["main"][0][0][
         "node"
     ] == "Prepare Human Review"
+    assert workflow["connections"]["Prepare Human Review"]["main"][0][0][
+        "node"
+    ] == "Add Review Recovery Details"
+    assert workflow["connections"]["Add Review Recovery Details"]["main"][0][0][
+        "node"
+    ] == "Human Review Form"
 
     quality_url = nodes["Generate Quality Report"]["parameters"]["url"]
     assert quality_url.endswith("+ '/quality-report' }}")
+    assert "Create Strategy Draft" in quality_url
+    assert nodes["Create Strategy Draft"]["parameters"]["options"]["timeout"] == 330000
+    assert nodes["Generate Quality Report"]["parameters"]["options"]["timeout"] == 330000
     prepare_code = nodes["Prepare Human Review"]["parameters"]["jsCode"]
     assert "report.overall_score" in prepare_code
     assert "report.checks" in prepare_code
     assert "report.issues" in prepare_code
     assert "cannot approve, reject, or rewrite" in prepare_code
     assert "escapeHtml" in prepare_code
+    recovery_code = nodes["Add Review Recovery Details"]["parameters"]["jsCode"]
+    assert "artifacts/quality-reports/" in recovery_code
+    assert "scripts/strategy-run-status.sh" in recovery_code
 
 
 def test_stage9_1_workflow_requires_human_and_service_authentication():
