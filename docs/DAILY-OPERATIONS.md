@@ -57,8 +57,8 @@ Retention targets for this local synthetic lab:
 | Temporary verifier logs and restore directories | Remove after verification |
 
 n8n pruning is explicitly configured for 336 hours and at most 500 saved
-executions. The current container already uses n8n's default 336-hour rolling
-pruning; the explicit count cap applies after the next normal n8n restart.
+executions. A normal container recreation on 2026-07-16 verified the active
+values as pruning `true`, maximum age `336`, and maximum count `500`.
 
 List only expired or stale `CODEX TEST` execution candidates:
 

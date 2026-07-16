@@ -458,8 +458,9 @@ Keep the workflow local, inactive, unpublished, and synthetic-only. Prioritize:
 2. ~~strategy-quality improvements, especially measurable objectives,
    actionable reviewer feedback, and stronger final artifacts;~~ completed
    2026-07-16 as Track B-Q1;
-3. Stage 9.3-lite housekeeping with a documented synthetic execution-retention
-   period, safe cleanup procedure, and basic SQLite/artifact backup check;
+3. ~~Stage 9.3-lite housekeeping with a documented synthetic
+   execution-retention period, safe cleanup procedure, and basic
+   SQLite/artifact backup check;~~ completed 2026-07-16.
 
 Under Track B, Stage 9.2, full Stage 9.3, Stage 9.4, and Stage 9.6 remain
 pilot-gated rather than canceled. The no-pilot and synthetic-only decisions
@@ -684,9 +685,9 @@ platform components.
 
 ### F1 — Strategy Factory reference implementation
 
-Status: **Local synthetic vertical slice complete through Stage 9.5-lite and
-Track B-Q1.** Continue with Stage 9.3-lite unless an operationalization
-milestone is chosen.
+Status: **Local synthetic Track B vertical slice complete through Stage
+9.5-lite, Track B-Q1, and Stage 9.3-lite.** Choose the Podcast Factory F2
+contract next unless an operationalization milestone is selected.
 
 ### F2 — Podcast Factory
 

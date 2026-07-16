@@ -45,8 +45,14 @@ EXECUTIONS_DATA_PRUNE_MAX_COUNT=10000
 ```
 
 The repository overlay now records the same 336-hour maximum age and lowers the
-local saved-execution cap to 500. The count cap takes effect on the next normal
-n8n restart; no special restart was required for verification.
+local saved-execution cap to 500. A requested normal container recreation on
+2026-07-16 confirmed all three values in the running n8n container:
+
+```text
+EXECUTIONS_DATA_PRUNE=true
+EXECUTIONS_DATA_MAX_AGE=336
+EXECUTIONS_DATA_PRUNE_MAX_COUNT=500
+```
 
 The read-only command:
 
