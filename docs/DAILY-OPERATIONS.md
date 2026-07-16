@@ -36,6 +36,26 @@ node scripts/verify-stage8-intake.js
 cd agent-service && .venv/bin/pytest tests -q
 ```
 
+## Track B baseline
+
+After n8n, Ollama, and FastAPI are running with the repository `.env` set to
+`AI_FACTORY_PROVIDER=ollama` and `AI_FACTORY_QUALITY_MODE=pro`, run:
+
+```bash
+cd ~/Development/codex/n8n-codex-lab
+scripts/verify-track-b-baseline.sh
+```
+
+The verifier performs service-health, workflow-safety, flexible-intake, test
+suite, and one live synthetic Ollama generation/quality check. The live check
+can take several minutes. It writes an ignored Markdown report under
+`artifacts/evaluations/track-b/` and detailed ignored logs under `tmp/`.
+
+It does not start or stop services, activate or publish the workflow, delete
+data, or print authentication tokens. After it passes, perform one manual
+synthetic n8n form walkthrough to record the current browser experience before
+implementing Stage 9.5-lite.
+
 ## Shut down
 
 Stop FastAPI with `Ctrl-C` in its terminal, then:
