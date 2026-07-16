@@ -452,16 +452,50 @@ any real-data or externally accessible pilot can be considered.
 
 Keep the workflow local, inactive, unpublished, and synthetic-only. Prioritize:
 
-1. a Stage 9.5-lite usability pass for clear generation progress, resilient
-   form-window recovery, and obvious completion/artifact links;
-2. Stage 9.3-lite housekeeping with a documented synthetic execution-retention
+1. ~~a Stage 9.5-lite usability pass for clear generation progress, resilient
+   form-window recovery, and obvious completion/artifact links;~~ completed
+   2026-07-16;
+2. ~~strategy-quality improvements, especially measurable objectives,
+   actionable reviewer feedback, and stronger final artifacts;~~ completed
+   2026-07-16 as Track B-Q1;
+3. Stage 9.3-lite housekeeping with a documented synthetic execution-retention
    period, safe cleanup procedure, and basic SQLite/artifact backup check;
-3. strategy-quality improvements, especially measurable objectives, actionable
-   reviewer feedback, and stronger final artifacts.
 
 Under Track B, Stage 9.2, full Stage 9.3, Stage 9.4, and Stage 9.6 remain
 pilot-gated rather than canceled. The no-pilot and synthetic-only decisions
 remain in force.
+
+#### Track B-Q1 — Strategy quality and final artifacts
+
+Status: **Complete on 2026-07-16.**
+
+This local synthetic product checkpoint improves the decision quality of a
+draft without changing the separation between generation, advisory criticism,
+and explicit review:
+
+- generation instructions require success measures to map clearly to
+  objectives and require an objective to repeat the measure's exact supported
+  end-state target;
+- deterministic quality checks distinguish aligned, vague, missing, and
+  conflicting objective-to-measure targets;
+- baseline and scope numbers are not treated as conflicting end-state targets;
+- actionable findings identify the objective, measure, exact target, required
+  rewrite, and reviewer question;
+- the Ollama critic independently checks the same alignment while retaining all
+  deterministic findings as minimum warnings;
+- approved Markdown artifacts begin with a decision summary and include the
+  strategy provider, advisory score, recommendation, critic, and matching
+  quality-report artifact path when available.
+
+Verification evidence: 87 automated tests, Stage 8 intake verification, Stage
+9.5-lite workflow verification, and a live isolated-port Ollama/pro-critic
+synthetic run. Run `ef812274-2027-49b1-94a8-6d0c0885f364` correctly aligned the
+35%-to-60% objective with its 60% measure and classified a five-garden scope
+statement as missing the exact 100% adoption target rather than as a false
+numeric conflict. The report scored 94/100 with `ready_for_review`. A labeled
+synthetic test approval produced the enhanced strategy Markdown with the
+matching advisory quality-report path. See
+`docs/TRACK-B-Q1-VERIFICATION.md`.
 
 #### Stage 9.2 — Run ownership and isolation
 
@@ -625,9 +659,9 @@ platform components.
 
 ### F1 — Strategy Factory reference implementation
 
-Status: **Local synthetic vertical slice complete through the Stage 9.1
-baseline.** Continue with the post-Stage 9.1 Track B recommendations unless an
-operationalization milestone is chosen.
+Status: **Local synthetic vertical slice complete through Stage 9.5-lite and
+Track B-Q1.** Continue with Stage 9.3-lite unless an operationalization
+milestone is chosen.
 
 ### F2 — Podcast Factory
 

@@ -8,7 +8,14 @@ from uuid import UUID
 from .artifacts import MarkdownArtifactStore, draft_checksum
 from .errors import FactoryError
 from .repository import RunNotFound, RunRecord, RunRepository
-from .schemas import ReviewRecord, ReviewRequest, StrategyBrief, StrategyResponse
+from .schemas import (
+    QualityArtifactMetadata,
+    QualityReport,
+    ReviewRecord,
+    ReviewRequest,
+    StrategyBrief,
+    StrategyResponse,
+)
 from .statuses import RunStatus
 
 
@@ -52,8 +59,25 @@ class ReviewService:
             return run
 
         brief = StrategyBrief.model_validate(run.brief)
+        quality_report = (
+            QualityReport.model_validate(run.quality_report)
+            if run.quality_report is not None
+            else None
+        )
+        quality_artifact = (
+            QualityArtifactMetadata.model_validate(run.quality_artifact)
+            if run.quality_artifact is not None
+            else None
+        )
         try:
-            artifact = self.artifact_store.create(run_id, brief, strategy, review)
+            artifact = self.artifact_store.create(
+                run_id,
+                brief,
+                strategy,
+                review,
+                quality_report=quality_report,
+                quality_artifact=quality_artifact,
+            )
             return self.repository.record_artifact(run_id, artifact)
         except Exception as exc:
             raise FactoryError(

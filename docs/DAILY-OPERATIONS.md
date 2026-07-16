@@ -37,6 +37,12 @@ node scripts/verify-stage9-5-lite.js
 cd agent-service && .venv/bin/pytest tests -q
 ```
 
+Track B-Q1 strategy-quality regression cases are stored in
+`examples/quality-objective-measure-cases.synthetic.json`. The full service
+suite validates their deterministic findings and the enhanced approved
+Markdown artifact. Live Ollama verification evidence is recorded in
+`docs/TRACK-B-Q1-VERIFICATION.md`.
+
 ## Track B baseline
 
 After n8n, Ollama, and FastAPI are running with the repository `.env` set to

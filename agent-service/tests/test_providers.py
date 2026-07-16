@@ -68,6 +68,8 @@ def test_ollama_provider_sends_schema_and_injects_service_metadata(
     )
     assert "measurable numeric targets" in prompt
     assert "desired end-state number" in prompt
+    assert "repeat that exact end-state target" in prompt
+    assert "never use different target values" in prompt
     assert "Use stakeholder labels" in prompt
     assert "sequential IDs without gaps" in prompt
     assert result["run_id"] == str(run_id)
@@ -123,5 +125,8 @@ def test_ollama_quality_critic_is_advisory_and_schema_constrained(
     )
     assert "Do not rewrite" in prompt
     assert "must not be removed" in prompt
+    assert "maps clearly to an objective" in prompt
+    assert "repeated exactly" in prompt
+    assert "baseline or scope number" in prompt
     assert "DETERMINISTIC FINDINGS" in prompt
     assert result["checks"] == deterministic.model_dump(mode="json")["checks"]

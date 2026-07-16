@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import re
 
 from .schemas import (
@@ -10,6 +11,7 @@ from .schemas import (
     QualityScorecard,
     StrategyBrief,
     StrategyResponse,
+    SuccessMeasure,
 )
 
 CHECK_LABELS = {
@@ -52,6 +54,32 @@ VAGUE_OBJECTIVE_PATTERNS = (
     r"\bto (?:a |an )?(?:higher|lower|better) target\b",
 )
 
+NUMBER_WORDS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+}
+
+
+@dataclass(frozen=True)
+class ObjectiveMeasureGap:
+    kind: str
+    objective_id: str
+    objective_statement: str
+    measure_id: str | None
+    measure_name: str | None
+    measure_target: str | None
+    objective_numbers: frozenset[str]
+    explicit_target_numbers: frozenset[str]
+    target_numbers: frozenset[str]
+
 
 def _tokens(value: str) -> set[str]:
     return {
@@ -59,6 +87,28 @@ def _tokens(value: str) -> set[str]:
         for token in re.findall(r"[a-z0-9]+", value.casefold())
         if len(token) > 2 and token not in STOP_WORDS
     }
+
+
+def _number_tokens(value: str) -> frozenset[str]:
+    numeric = {
+        token.lstrip("0") or "0"
+        for token in re.findall(r"(?<![a-z])\d+(?:\.\d+)?", value.casefold())
+    }
+    words = {
+        number
+        for word, number in NUMBER_WORDS.items()
+        if re.search(rf"\b{word}\b", value, flags=re.IGNORECASE)
+    }
+    return frozenset(numeric | words)
+
+
+def _explicit_target_numbers(value: str) -> frozenset[str]:
+    target_phrases = re.findall(
+        r"\b(?:to|reach|achieve|target(?:\s+of)?|at\s+least|at\s+most)\s+"
+        r"(?:[a-z-]+\s+){0,3}(\d+(?:\.\d+)?)",
+        value.casefold(),
+    )
+    return frozenset(token.lstrip("0") or "0" for token in target_phrases)
 
 
 def _joined_strategy(strategy: StrategyResponse) -> str:
@@ -146,19 +196,168 @@ def _initiative_score(brief: StrategyBrief, strategy: StrategyResponse) -> int:
     return round(10 * points / (2 * len(strategy.recommended_initiatives)))
 
 
-def _objective_score(strategy: StrategyResponse) -> tuple[int, list[str]]:
+def _best_measure_for_objective(
+    strategy: StrategyResponse, statement: str
+) -> SuccessMeasure | None:
+    objective_tokens = _tokens(statement)
+    ranked = sorted(
+        (
+            (
+                len(objective_tokens & _tokens(measure.measure)),
+                measure.id,
+                measure,
+            )
+            for measure in strategy.success_measures
+        ),
+        key=lambda item: (item[0], item[1]),
+        reverse=True,
+    )
+    if not ranked or ranked[0][0] < 2:
+        return None
+    return ranked[0][2]
+
+
+def _objective_measure_gaps(
+    strategy: StrategyResponse,
+) -> list[ObjectiveMeasureGap]:
+    gaps: list[ObjectiveMeasureGap] = []
+    for objective in strategy.objectives:
+        measure = _best_measure_for_objective(strategy, objective.statement)
+        objective_numbers = _number_tokens(objective.statement)
+        explicit_target_numbers = _explicit_target_numbers(
+            objective.statement
+        )
+        target_numbers = (
+            _number_tokens(measure.target) if measure is not None else frozenset()
+        )
+        vague = any(
+            re.search(pattern, objective.statement, flags=re.IGNORECASE)
+            for pattern in VAGUE_OBJECTIVE_PATTERNS
+        )
+        kind: str | None = None
+        if vague:
+            kind = "vague"
+        elif (
+            measure is not None
+            and target_numbers
+            and target_numbers.isdisjoint(objective_numbers)
+            and not explicit_target_numbers
+        ):
+            kind = "missing"
+        elif (
+            measure is not None
+            and target_numbers
+            and target_numbers.isdisjoint(objective_numbers)
+            and explicit_target_numbers
+        ):
+            kind = "conflicting"
+        if kind is not None:
+            gaps.append(
+                ObjectiveMeasureGap(
+                    kind=kind,
+                    objective_id=objective.id,
+                    objective_statement=objective.statement,
+                    measure_id=measure.id if measure is not None else None,
+                    measure_name=measure.measure if measure is not None else None,
+                    measure_target=measure.target if measure is not None else None,
+                    objective_numbers=objective_numbers,
+                    explicit_target_numbers=explicit_target_numbers,
+                    target_numbers=target_numbers,
+                )
+            )
+    return gaps
+
+
+def _objective_score(
+    strategy: StrategyResponse,
+) -> tuple[int, int, list[ObjectiveMeasureGap]]:
     objective_tokens = [_tokens(item.statement) for item in strategy.objectives]
     distinct_objectives = len({frozenset(tokens) for tokens in objective_tokens})
     score = round(10 * distinct_objectives / len(strategy.objectives))
-    vague = [
-        item.statement
-        for item in strategy.objectives
-        if any(
-            re.search(pattern, item.statement, flags=re.IGNORECASE)
-            for pattern in VAGUE_OBJECTIVE_PATTERNS
+    gaps = _objective_measure_gaps(strategy)
+    objective_penalty = sum(
+        3 if gap.kind == "conflicting" else 4 for gap in gaps
+    )
+    consistency_penalty = 4 * sum(
+        gap.kind == "conflicting" for gap in gaps
+    )
+    return (
+        max(0, score - objective_penalty),
+        max(0, 10 - consistency_penalty),
+        gaps,
+    )
+
+
+def _gap_finding(gap: ObjectiveMeasureGap) -> tuple[QualityIssue, str, str]:
+    section = f"objectives.{gap.objective_id}"
+    if gap.kind == "conflicting":
+        message = (
+            f"{gap.objective_id} uses numeric value(s) "
+            f"{', '.join(sorted(gap.objective_numbers))}, but "
+            f"{gap.measure_id} defines target '{gap.measure_target}'."
         )
-    ]
-    return max(0, score - 4 * len(vague)), vague
+        suggestion = (
+            f"Choose one approved target and use it consistently in "
+            f"{gap.objective_id} and {gap.measure_id}. If the measure governs, "
+            f"rewrite the objective to use the exact target "
+            f"'{gap.measure_target}'; do not approve while the values conflict."
+        )
+        missing = (
+            f"{gap.objective_id} and {gap.measure_id} use conflicting target "
+            f"values: '{gap.objective_statement}' versus '{gap.measure_target}'."
+        )
+        question = (
+            f"Which target should govern {gap.objective_id}: the objective's "
+            f"value(s) or {gap.measure_id}'s target '{gap.measure_target}'?"
+        )
+        severity = "high"
+    elif gap.measure_id is not None:
+        description = "uses vague target language" if gap.kind == "vague" else (
+            "does not state a numeric end-state target"
+        )
+        message = (
+            f"{gap.objective_id} {description}, while {gap.measure_id} defines "
+            f"target '{gap.measure_target}'."
+        )
+        suggestion = (
+            f"Rewrite {gap.objective_id} to state the exact end-state target "
+            f"'{gap.measure_target}' from {gap.measure_id}, retaining any "
+            "supported baseline and keeping the timeframe separate."
+        )
+        missing = (
+            f"{gap.objective_id} does not explicitly align to "
+            f"{gap.measure_id}'s target '{gap.measure_target}'."
+        )
+        question = (
+            f"Should {gap.objective_id} explicitly adopt {gap.measure_id}'s "
+            f"target '{gap.measure_target}' before approval?"
+        )
+        severity = "medium"
+    else:
+        message = f"{gap.objective_id} uses vague target language."
+        suggestion = (
+            f"Replace the vague target in {gap.objective_id} with a measurable "
+            "end-state or explicitly record why a numeric target is unsupported."
+        )
+        missing = (
+            f"{gap.objective_id} has a vague target and no clearly linked "
+            "success measure."
+        )
+        question = (
+            f"What measurable end-state should replace the vague target in "
+            f"{gap.objective_id}?"
+        )
+        severity = "medium"
+    return (
+        QualityIssue(
+            severity=severity,
+            section=section,
+            message=message,
+            suggestion=suggestion,
+        ),
+        missing,
+        question,
+    )
 
 
 class DeterministicQualityReviewer:
@@ -180,7 +379,9 @@ class DeterministicQualityReviewer:
         measurement_score = _measurement_score(brief, strategy)
         initiative_score = _initiative_score(brief, strategy)
 
-        objective_score, vague_objectives = _objective_score(strategy)
+        objective_score, consistency_score, objective_gaps = _objective_score(
+            strategy
+        )
 
         checks = QualityScorecard(
             brief_alignment=brief_score,
@@ -189,11 +390,17 @@ class DeterministicQualityReviewer:
             objective_quality=objective_score,
             measurement_quality=measurement_score,
             initiative_feasibility=initiative_score,
-            internal_consistency=10,
+            internal_consistency=consistency_score,
         )
         issues: list[QualityIssue] = []
         for name, score in checks.model_dump().items():
             if score >= 7:
+                continue
+            if name == "objective_quality" and objective_gaps:
+                continue
+            if name == "internal_consistency" and any(
+                gap.kind == "conflicting" for gap in objective_gaps
+            ):
                 continue
             issues.append(
                 QualityIssue(
@@ -206,6 +413,8 @@ class DeterministicQualityReviewer:
                     ),
                 )
             )
+        gap_findings = [_gap_finding(gap) for gap in objective_gaps]
+        issues.extend(item[0] for item in gap_findings)
 
         strengths = [
             f"{CHECK_LABELS[name]} passed the deterministic check ({score}/10)."
@@ -215,7 +424,7 @@ class DeterministicQualityReviewer:
         missing_considerations = [
             *(f"Outcome or challenge coverage: {item}" for item in missing_outcomes),
             *(f"Constraint coverage: {item}" for item in missing_constraints),
-            *(f"Objective target is vague: {item}" for item in vague_objectives),
+            *(item[1] for item in gap_findings),
         ]
         review_questions = [
             f"What evidence supports this statement: {claim}" for claim in unsupported
@@ -223,6 +432,7 @@ class DeterministicQualityReviewer:
         review_questions.extend(
             f"Where does the draft address: {item}" for item in missing_considerations
         )
+        review_questions = [*(item[2] for item in gap_findings), *review_questions]
         return QualityAssessment(
             checks=checks,
             strengths=strengths[:10],

@@ -18,11 +18,26 @@ class FailOnceArtifactStore(MarkdownArtifactStore):
         super().__init__(artifact_dir)
         self.failed = False
 
-    def create(self, run_id, brief, strategy, review):
+    def create(
+        self,
+        run_id,
+        brief,
+        strategy,
+        review,
+        quality_report=None,
+        quality_artifact=None,
+    ):
         if not self.failed:
             self.failed = True
             raise OSError("private filesystem detail")
-        return super().create(run_id, brief, strategy, review)
+        return super().create(
+            run_id,
+            brief,
+            strategy,
+            review,
+            quality_report=quality_report,
+            quality_artifact=quality_artifact,
+        )
 
 
 def generated_run(tmp_path, brief, response_fixture):

@@ -422,6 +422,9 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
             json={"decision": "approved", "reviewer": REVIEW_ACTOR},
             headers=review_headers("synthetic-quality-approval-001"),
         )
+        approved_artifact = client.get(
+            f"/v1/strategy-runs/{run_id}/artifact"
+        )
         quality_artifact_after_review = client.get(
             f"/v1/strategy-runs/{run_id}/quality-report/artifact"
         )
@@ -456,5 +459,15 @@ def test_quality_report_is_idempotent_retrievable_and_advisory(
     assert reviewed.json()["data"]["review"]["draft_checksum"] == report[
         "draft_checksum"
     ]
+    assert approved_artifact.status_code == 200
+    assert "## Decision summary" in approved_artifact.text
+    assert (
+        f"| Advisory quality score | {report['overall_score']}/100 |"
+        in approved_artifact.text
+    )
+    assert (
+        f"`quality-reports/quality-report-{run_id}.md`"
+        in approved_artifact.text
+    )
     assert quality_artifact_after_review.status_code == 200
     assert quality_artifact_after_review.text == quality_artifact.text

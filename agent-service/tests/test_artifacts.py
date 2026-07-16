@@ -27,6 +27,10 @@ def test_approved_markdown_is_service_named_atomic_and_checksummed(
 
     assert metadata.filename == f"strategy-{RUN_ID}.md"
     assert metadata.checksum == sha256_text(content)
+    assert "## Decision summary" in content
+    assert "### Objectives" in content
+    assert "### Strategic choices" in content
+    assert "| Strategy provider | fake |" in content
     assert "## Executive summary" in content
     assert "## Current situation" in content
     assert "## Objectives" in content

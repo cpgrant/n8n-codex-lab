@@ -12,6 +12,8 @@ from uuid import UUID
 
 from .schemas import (
     ArtifactMetadata,
+    QualityArtifactMetadata,
+    QualityReport,
     ReviewRecord,
     StrategyBrief,
     StrategyResponse,
@@ -49,6 +51,8 @@ class MarkdownArtifactStore:
         brief: StrategyBrief,
         strategy: StrategyResponse,
         review: ReviewRecord,
+        quality_report: QualityReport | None = None,
+        quality_artifact: QualityArtifactMetadata | None = None,
     ) -> str:
         lines = [
             f"# {escape_markdown(brief.title)}",
@@ -60,22 +64,75 @@ class MarkdownArtifactStore:
             f"| Organization | {table_text(brief.organization.name)} |",
             f"| Decision horizon | {table_text(brief.decision_horizon)} |",
             f"| Run ID | `{strategy.run_id}` |",
+            f"| Strategy provider | {table_text(strategy.provider)} |",
             f"| Generated at | {strategy.generated_at.isoformat()} |",
             f"| Approved by | {table_text(review.reviewer)} |",
             f"| Approved at | {review.decided_at.isoformat()} |",
             f"| Draft checksum | `{review.draft_checksum}` |",
-            "",
-            "## Executive summary",
-            "",
-            escape_markdown(strategy.executive_summary),
-            "",
-            "## Current situation",
-            "",
-            escape_markdown(strategy.current_situation.summary),
-            "",
-            "### Evidence",
-            "",
         ]
+        if quality_report is not None:
+            critic = quality_report.critic_provider
+            if quality_report.critic_model is not None:
+                critic = f"{critic} / {quality_report.critic_model}"
+            lines.extend(
+                [
+                    f"| Advisory quality score | {quality_report.overall_score}/100 |",
+                    "| Advisory recommendation | "
+                    f"{table_text(quality_report.recommendation)} |",
+                    f"| Quality mode | {table_text(quality_report.mode)} |",
+                    f"| Quality critic | {table_text(critic)} |",
+                ]
+            )
+        if quality_artifact is not None:
+            lines.append(
+                "| Quality report artifact | "
+                f"`quality-reports/{quality_artifact.filename}` |"
+            )
+        lines.extend(
+            [
+                "",
+                "## Decision summary",
+                "",
+                "### Objectives",
+                "",
+                "| ID | Outcome | Time horizon |",
+                "| --- | --- | --- |",
+            ]
+        )
+        for item in strategy.objectives:
+            lines.append(
+                f"| {item.id} | {table_text(item.statement)} | "
+                f"{table_text(item.time_horizon)} |"
+            )
+        lines.extend(
+            [
+                "",
+                "### Strategic choices",
+                "",
+                "| ID | Choice | Trade-off |",
+                "| --- | --- | --- |",
+            ]
+        )
+        for item in strategy.strategic_choices:
+            lines.append(
+                f"| {item.id} | {table_text(item.choice)} | "
+                f"{table_text(item.trade_offs)} |"
+            )
+        lines.extend(
+            [
+                "",
+                "## Executive summary",
+                "",
+                escape_markdown(strategy.executive_summary),
+                "",
+                "## Current situation",
+                "",
+                escape_markdown(strategy.current_situation.summary),
+                "",
+                "### Evidence",
+                "",
+            ]
+        )
         lines.extend(f"- {escape_markdown(item)}" for item in strategy.current_situation.evidence)
         lines.extend(["", "## Objectives", ""])
         for item in strategy.objectives:
@@ -160,11 +217,19 @@ class MarkdownArtifactStore:
         brief: StrategyBrief,
         strategy: StrategyResponse,
         review: ReviewRecord,
+        quality_report: QualityReport | None = None,
+        quality_artifact: QualityArtifactMetadata | None = None,
     ) -> ArtifactMetadata:
         self.artifact_dir.mkdir(parents=True, exist_ok=True)
         filename = f"strategy-{run_id}.md"
         target = self.artifact_dir / filename
-        content = self.render(brief, strategy, review)
+        content = self.render(
+            brief,
+            strategy,
+            review,
+            quality_report=quality_report,
+            quality_artifact=quality_artifact,
+        )
         temporary_path: Path | None = None
         try:
             with tempfile.NamedTemporaryFile(

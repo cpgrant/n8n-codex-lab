@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1",
+  "description": "Synthetic regression cases for objective-to-success-measure target alignment.",
+  "cases": [
+    {
+      "id": "aligned-target",
+      "objective_statement": "Raise the synthetic orientation-to-first-shift conversion rate from 35% to at least 50%.",
+      "measure": "Orientation-to-first-shift conversion rate",
+      "measure_target": "At least 50%",
+      "expected_gap": null
+    },
+    {
+      "id": "vague-target",
+      "objective_statement": "Raise the synthetic orientation-to-first-shift conversion rate from 35% to a higher specific target.",
+      "measure": "Orientation-to-first-shift conversion rate",
+      "measure_target": "At least 50%",
+      "expected_gap": "vague"
+    },
+    {
+      "id": "missing-target",
+      "objective_statement": "Improve the synthetic orientation-to-first-shift conversion rate.",
+      "measure": "Orientation-to-first-shift conversion rate",
+      "measure_target": "At least 50%",
+      "expected_gap": "missing"
+    },
+    {
+      "id": "scope-number-missing-target",
+      "objective_statement": "Standardize onboarding across all five fictional gardens.",
+      "measure": "Onboarding adoption rate across the fictional gardens",
+      "measure_target": "100%",
+      "expected_gap": "missing"
+    },
+    {
+      "id": "conflicting-target",
+      "objective_statement": "Raise the synthetic orientation-to-first-shift conversion rate from 35% to at least 60%.",
+      "measure": "Orientation-to-first-shift conversion rate",
+      "measure_target": "At least 50%",
+      "expected_gap": "conflicting"
+    }
+  ]
+}

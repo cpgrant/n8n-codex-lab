@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 
 from ai_factory.artifacts import draft_checksum
@@ -10,6 +13,9 @@ from ai_factory.quality_service import QualityReportService
 from ai_factory.repository import RunRepository
 from ai_factory.schemas import QualityAssessment, QualityIssue, StrategyResponse
 from ai_factory.service import StrategyService
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
 def generated_run(tmp_path, brief, response_fixture):
@@ -165,21 +171,51 @@ def test_invalid_critic_output_does_not_persist_a_report(
     assert repository.get(run.run_id).quality_report is None
 
 
-def test_deterministic_review_flags_vague_objective_target(
-    brief, response_fixture
+@pytest.mark.parametrize(
+    "case",
+    json.loads(
+        (
+            REPOSITORY_ROOT
+            / "examples"
+            / "quality-objective-measure-cases.synthetic.json"
+        ).read_text(encoding="utf-8")
+    )["cases"],
+    ids=lambda case: case["id"],
+)
+def test_objective_measure_target_alignment_regressions(
+    brief, response_fixture, case
 ):
-    response_fixture["objectives"][0]["statement"] = (
-        "Increase conversion from 35% to a higher specific target."
-    )
+    response_fixture["objectives"][0]["statement"] = case[
+        "objective_statement"
+    ]
+    response_fixture["success_measures"][0]["measure"] = case["measure"]
+    response_fixture["success_measures"][0]["target"] = case["measure_target"]
     strategy = StrategyResponse.model_validate(response_fixture)
 
     assessment = DeterministicQualityReviewer().assess(brief, strategy)
+    objective_issues = [
+        issue
+        for issue in assessment.issues
+        if issue.section == "objectives.OBJ-1"
+    ]
 
-    assert assessment.checks.objective_quality == 6
+    if case["expected_gap"] is None:
+        assert objective_issues == []
+        assert assessment.checks.objective_quality == 10
+        assert assessment.checks.internal_consistency == 10
+        return
+
+    assert len(objective_issues) == 1
+    issue = objective_issues[0]
+    assert case["measure_target"] in issue.message
+    assert case["measure_target"] in issue.suggestion
     assert any(
-        issue.section == "objective_quality" for issue in assessment.issues
+        case["measure_target"] in question
+        for question in assessment.review_questions
     )
-    assert any(
-        "Objective target is vague" in item
-        for item in assessment.missing_considerations
-    )
+    if case["expected_gap"] == "conflicting":
+        assert issue.severity == "high"
+        assert assessment.checks.internal_consistency == 6
+    else:
+        assert issue.severity == "medium"
+        assert assessment.checks.objective_quality == 6
