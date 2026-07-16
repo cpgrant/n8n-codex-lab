@@ -543,6 +543,8 @@ checks. The terminal status changed from `awaiting_review` without a quality
 artifact to `artifact_created` with both expected Markdown paths. A long-command
 overflow found on the first completion rendering was corrected with wrap-safe
 markup, asserted by the automated verifier, and accepted by n8n on re-import.
+The same contract now requires the human-review JSON to use ordinary wrapping
+HTML line breaks rather than n8n's non-wrapping `pre` presentation.
 
 #### Stage 9.6 — Controlled synthetic client-demo verification
 

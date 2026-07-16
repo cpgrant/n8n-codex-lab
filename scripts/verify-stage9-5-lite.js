@@ -70,6 +70,9 @@ async function main() {
   const qualityNode = nodes['Quality Review Readiness'];
   const qualityHtml = qualityNode.parameters.formFields.values[0].html;
   const reviewCode = nodes['Add Review Recovery Details'].parameters.jsCode;
+  const reviewHtml = nodes['Human Review Form']
+    .parameters.formFields.values
+    .find((field) => field.fieldName === 'strategy_draft').html;
   const approvedMessage = nodes['Approved Completion'].parameters.completionMessage;
   const rejectedMessage = nodes['Rejected Completion'].parameters.completionMessage;
 
@@ -82,6 +85,10 @@ async function main() {
   assert.match(qualityHtml, /<wbr>/);
   assert.match(reviewCode, /artifacts\/quality-reports\//);
   assert.match(reviewCode, /scripts\/strategy-run-status\.sh/);
+  assert.match(reviewHtml, /replaceAll\('<pre>'/);
+  assert.match(reviewHtml, /replaceAll\('<\/pre>'/);
+  assert.ok(reviewHtml.includes("replaceAll('\\n', '<br>')"));
+  assert.doesNotMatch(reviewHtml, /white-space:pre/);
   assert.match(approvedMessage, /artifacts\//);
   assert.match(approvedMessage, /artifacts\/quality-reports\//);
   assert.match(approvedMessage, /overflow-wrap:anywhere/);

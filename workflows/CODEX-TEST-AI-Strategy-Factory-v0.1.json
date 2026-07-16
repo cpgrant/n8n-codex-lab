@@ -477,7 +477,7 @@
               "fieldLabel": "Strategy draft",
               "fieldName": "strategy_draft",
               "fieldType": "html",
-              "html": "={{ $json.review_html }}"
+              "html": "={{ '<div>' + $json.review_html.replaceAll('<pre>', '<div>').replaceAll('</pre>', '</div>').replaceAll('\\n', '<br>') + '</div>' }}"
             },
             {
               "fieldLabel": "Decision",

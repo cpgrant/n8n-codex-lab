@@ -94,6 +94,12 @@ and artifact paths, the automated verifier was strengthened to require those
 markers, and n8n accepted and re-exported the correction while remaining
 inactive and unavailable through MCP.
 
+A final no-model UI hardening pass converts the structured JSON block from
+non-wrapping `pre` rendering to ordinary wrapping HTML with explicit line
+breaks. This was necessary because n8n's form CSS overrode the attempted
+`pre-wrap` styling during the visual regression run. The stored JSON, API
+response, and Markdown artifacts remain unchanged.
+
 ## Completion gate
 
 Stage 9.5-lite is complete for the local synthetic Track B workflow. Full
