@@ -75,6 +75,8 @@ async function main() {
     .find((field) => field.fieldName === 'strategy_draft').html;
   const approvedMessage = nodes['Approved Completion'].parameters.completionMessage;
   const rejectedMessage = nodes['Rejected Completion'].parameters.completionMessage;
+  const standardWidthCss = ':root {\n  --container-width: min(720px, calc(100vw - 48px));\n}';
+  const reviewWidthCss = ':root {\n  --container-width: min(1000px, calc(100vw - 48px));\n}';
 
   assert.match(triggerDescription, /each take several minutes/);
   assert.match(generationHtml, /No run ID exists until generation finishes/);
@@ -89,6 +91,34 @@ async function main() {
   assert.match(reviewHtml, /replaceAll\('<\/pre>'/);
   assert.ok(reviewHtml.includes("replaceAll('\\n', '<br>')"));
   assert.doesNotMatch(reviewHtml, /white-space:pre/);
+  for (const nodeName of [
+    'Strategy Brief Form',
+    'Blank Manual Brief Form',
+    'JSON Upload Form',
+    'Generation Readiness',
+    'Quality Review Readiness',
+    'Approved Completion',
+    'Rejected Completion',
+  ]) {
+    assert.equal(
+      nodes[nodeName].parameters.options.customCss,
+      standardWidthCss,
+      `${nodeName} must retain the responsive standard form width`,
+    );
+  }
+  assert.equal(
+    nodes['Human Review Form'].parameters.options.customCss,
+    reviewWidthCss,
+  );
+  for (const node of workflow.nodes.filter(
+    (item) => !['n8n-nodes-base.form', 'n8n-nodes-base.formTrigger'].includes(item.type),
+  )) {
+    assert.equal(
+      node.parameters.options?.customCss,
+      undefined,
+      `${node.name} must not carry form-only CSS`,
+    );
+  }
   assert.match(approvedMessage, /artifacts\//);
   assert.match(approvedMessage, /artifacts\/quality-reports\//);
   assert.match(approvedMessage, /overflow-wrap:anywhere/);

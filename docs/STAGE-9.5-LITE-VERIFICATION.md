@@ -100,6 +100,18 @@ breaks. This was necessary because n8n's form CSS overrode the attempted
 `pre-wrap` styling during the visual regression run. The stored JSON, API
 response, and Markdown artifacts remain unchanged.
 
+The installed n8n Form nodes also expose the supported `--container-width` CSS
+variable. Stage 9.5-lite sets ordinary intake, readiness, and completion cards
+to a responsive maximum of `720px`, and the information-dense human-review card
+to a responsive maximum of `1000px`. Both retain a `48px` viewport margin and
+the wrapping safeguards for smaller screens.
+
+Responsive-width visual verification completed with synthetic run
+`d308a8b7-8ec7-40e6-a2ac-ea17c8c7db79`. The intake, generation-readiness,
+stored-draft, quality-review, and human-review pages rendered at the intended
+wider widths; long content remained contained. The explicitly approved run
+finished as `artifact_created` with both expected Markdown artifact paths.
+
 ## Completion gate
 
 Stage 9.5-lite is complete for the local synthetic Track B workflow. Full

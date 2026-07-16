@@ -34,7 +34,8 @@
         "options": {
           "buttonLabel": "Continue",
           "includeUserInOutput": true,
-          "path": "codex-test-ai-strategy-factory-v01"
+          "path": "codex-test-ai-strategy-factory-v01",
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.formTrigger",
@@ -226,7 +227,8 @@
           ]
         },
         "options": {
-          "buttonLabel": "Validate brief"
+          "buttonLabel": "Validate brief",
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -269,7 +271,8 @@
           ]
         },
         "options": {
-          "buttonLabel": "Validate brief"
+          "buttonLabel": "Validate brief",
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -336,7 +339,8 @@
           ]
         },
         "options": {
-          "buttonLabel": "Generate strategy"
+          "buttonLabel": "Generate strategy",
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -398,7 +402,8 @@
           ]
         },
         "options": {
-          "buttonLabel": "Generate quality report"
+          "buttonLabel": "Generate quality report",
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -503,7 +508,8 @@
           ]
         },
         "options": {
-          "buttonLabel": "Submit review decision"
+          "buttonLabel": "Submit review decision",
+          "customCss": ":root {\n  --container-width: min(1000px, calc(100vw - 48px));\n}"
         }
       },
       "type": "n8n-nodes-base.form",
@@ -620,7 +626,9 @@
         "operation": "completion",
         "completionTitle": "Strategy approved",
         "completionMessage": "={{ '<h2>Approved artifact created</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><strong>Approved strategy:</strong><br><code>artifacts/<wbr>' + $json.data.artifact.filename + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><strong>Advisory quality report:</strong><br><code>artifacts/quality-reports/<wbr>quality-report-' + $json.data.run_id + '.md</code></p><p>From the repository, verify the stored status and paths with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p>' }}",
-        "options": {}
+        "options": {
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
+        }
       },
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
@@ -637,7 +645,9 @@
         "operation": "completion",
         "completionTitle": "Strategy rejected",
         "completionMessage": "={{ '<h2>Strategy rejected</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p style=\"overflow-wrap:anywhere;word-break:break-word\">No approved strategy artifact was created. The advisory report remains available at<br><code>artifacts/quality-reports/<wbr>quality-report-' + $json.data.run_id + '.md</code>.</p><p>From the repository, verify the stored status with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p>' }}",
-        "options": {}
+        "options": {
+          "customCss": ":root {\n  --container-width: min(720px, calc(100vw - 48px));\n}"
+        }
       },
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,

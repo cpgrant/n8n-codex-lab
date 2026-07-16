@@ -545,6 +545,11 @@ overflow found on the first completion rendering was corrected with wrap-safe
 markup, asserted by the automated verifier, and accepted by n8n on re-import.
 The same contract now requires the human-review JSON to use ordinary wrapping
 HTML line breaks rather than n8n's non-wrapping `pre` presentation.
+The supported n8n `--container-width` form variable provides responsive
+`720px` standard cards and a `1000px` human-review card while preserving
+wrapping on narrower screens.
+Synthetic run `d308a8b7-8ec7-40e6-a2ac-ea17c8c7db79` visually verified the
+responsive pages and completed as `artifact_created`.
 
 #### Stage 9.6 — Controlled synthetic client-demo verification
 
