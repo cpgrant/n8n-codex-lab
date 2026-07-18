@@ -25,11 +25,14 @@ server on port `11888`:
 
 ```bash
 cd ~/Development/codex/n8n-codex-lab
-scripts/start.sh
-curl -fsS http://127.0.0.1:11888/api/tags | jq
+scripts/system-start.sh
 ```
 
-`scripts/start.sh` loads `.env`, validates both tokens, and passes them to n8n
+`scripts/system-start.sh` starts Docker Desktop when necessary, waits for the
+Docker engine, starts PostgreSQL, n8n, and Ollama, and finally runs FastAPI in
+the foreground. It is the normal post-P1.5 startup command.
+
+The underlying `scripts/start.sh` loads `.env`, validates both tokens, and passes them to n8n
 through the repository-owned `compose.n8n-auth.yml` override. It fails before
 starting services when authentication configuration is missing or invalid.
 Explicit environment values take precedence over matching `.env` entries.
@@ -38,6 +41,14 @@ It is safe to run `scripts/start.sh` again when Ollama is already healthy. The
 matching `scripts/stop.sh` stops only the Ollama PID started and recorded by
 this repository, then stops n8n. Logs and the PID file are stored under the
 Git-ignored `tmp/` directory.
+
+For manual startup, wait until Docker Desktop is ready and run:
+
+```bash
+scripts/postgres-start.sh
+scripts/start.sh
+scripts/agent-start.sh
+```
 
 ## Stage 1 agent service
 

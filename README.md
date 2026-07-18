@@ -95,3 +95,15 @@ file.
 After the P1.5 gate, normal `scripts/agent-start.sh` startup uses
 `AI_FACTORY_DEFAULT_DATABASE=postgresql` from the ignored `.env`. Set that
 value to `sqlite` for a controlled rollback; do not delete either database.
+
+For normal Mac startup, one command handles Docker Desktop readiness and the
+service order:
+
+```bash
+scripts/system-start.sh
+```
+
+It starts Docker Desktop if needed, PostgreSQL, n8n, Ollama, and then FastAPI.
+The manual equivalent is `open -a Docker`, followed by
+`scripts/postgres-start.sh`, `scripts/start.sh`, and
+`scripts/agent-start.sh` after Docker is ready.

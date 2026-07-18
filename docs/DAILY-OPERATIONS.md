@@ -4,14 +4,25 @@
 
 ```bash
 cd ~/Development/codex/n8n-codex-lab
+scripts/system-start.sh
+```
+
+The system wrapper opens Docker Desktop when necessary, waits for its engine,
+starts PostgreSQL, n8n, and Ollama, then starts FastAPI in the foreground. If
+FastAPI is already healthy, the wrapper exits successfully instead. The
+underlying startup scripts automatically load the ignored `.env`.
+
+The equivalent manual sequence is:
+
+```bash
+open -a Docker
+scripts/postgres-start.sh
 scripts/start.sh
 scripts/agent-start.sh
 ```
 
-Run `scripts/agent-start.sh` in its own terminal because FastAPI remains in the
-foreground. Both startup scripts automatically load the ignored `.env`.
-`scripts/start.sh` supplies the distinct Stage 9.1 tokens to n8n, and
-`scripts/agent-start.sh` supplies them to FastAPI. Missing, short, or identical
+Wait for Docker Desktop to report that its engine is running before executing
+the three repository scripts. Missing, short, or identical authentication
 tokens stop startup safely.
 
 In another terminal:
@@ -123,8 +134,9 @@ Stop FastAPI with `Ctrl-C` in its terminal, then:
 
 ```bash
 cd ~/Development/codex/n8n-codex-lab
-scripts/stop.sh
+scripts/system-stop.sh
 ```
 
-This stops the repository-managed Ollama process and local n8n stack. It does
-not delete SQLite data or artifacts.
+This stops the repository-managed Ollama process, local n8n stack, and
+PostgreSQL container without deleting their volumes. It does not delete the
+SQLite rollback file, artifacts, or backups.
