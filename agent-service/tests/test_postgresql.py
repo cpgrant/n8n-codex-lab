@@ -4,6 +4,7 @@ from threading import Barrier, Lock
 
 from fastapi.testclient import TestClient
 import pytest
+from sqlalchemy.exc import OperationalError
 
 from ai_factory.config import Settings
 from ai_factory.errors import FactoryError
@@ -126,3 +127,21 @@ def test_postgresql_competing_state_transitions_are_atomic(brief):
         outcomes = list(executor.map(lambda _: transition(), range(2)))
 
     assert sorted(outcomes) == ["concurrent_change_rejected", "generating"]
+
+
+def test_postgresql_unavailable_database_fails_startup_closed(tmp_path):
+    unavailable_url = (
+        "postgresql+psycopg://synthetic:synthetic@127.0.0.1:1/"
+        "unavailable?connect_timeout=1"
+    )
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        artifact_dir=tmp_path / "artifacts",
+        database_url=unavailable_url,
+        service_token=SERVICE_TOKEN,
+        review_token=REVIEW_TOKEN,
+    )
+
+    with pytest.raises(OperationalError):
+        with TestClient(create_app(settings)):
+            pytest.fail("application started with an unavailable database")

@@ -29,8 +29,9 @@ Current roadmap status:
   roadmap is now at a decision gate: local usability, housekeeping, and product
   quality are recommended next, while Stages 9.2-9.6 remain available as the
   pilot-gated operationalization track;
-- Platform P1.0-P1.2 PostgreSQL infrastructure, migrations, and portable
-  repositories are complete; the expanded dual-backend test matrix is next.
+- Platform P1.0-P1.3 PostgreSQL infrastructure, migrations, portable
+  repositories, and dual-backend verification are complete; dry-run migration,
+  backup/restore, and cutover rehearsal are next.
 
 See:
 

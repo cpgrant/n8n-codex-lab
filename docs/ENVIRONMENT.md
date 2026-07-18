@@ -34,9 +34,9 @@
   `codex_test_ai_factory_postgres_data`; health and stop/start persistence
   verified on 2026-07-18
 
-- PostgreSQL application status: P1.0-P1.2 infrastructure, Alembic schema, and
-  portable repositories verified; opt-in FastAPI backend available; primary
-  database empty; SQLite remains the default
+- PostgreSQL application status: P1.0-P1.3 infrastructure, Alembic schema,
+  portable repositories, and dual-backend matrix verified; opt-in FastAPI
+  backend available; primary database empty; SQLite remains the default
 
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 

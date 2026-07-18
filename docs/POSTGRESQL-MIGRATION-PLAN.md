@@ -88,12 +88,12 @@ one to three hours of elapsed time without adding equivalent engineering work.
 | P1.0 | Container, secret, health, and persistent-volume foundation | Complete |
 | P1.1 | Database URL, driver, common connection layer, and migration framework | Complete 2026-07-18 |
 | P1.2 | Portable repositories, transactions, state transitions, and idempotency | Complete 2026-07-18 |
-| P1.3 | Dual-backend schema, API, failure, and concurrency test matrix | 1-1.5 days |
+| P1.3 | Dual-backend schema, API, failure, and concurrency test matrix | Complete 2026-07-18 |
 | P1.4 | SQLite export/import, reconciliation, PostgreSQL backup, and restore | 0.75-1 day |
 | P1.5 | Synthetic cutover rehearsal, end-to-end verification, and documentation | 0.5-1 day |
 
-Remaining total: **2.25-3.5 focused engineering days**, approximately **16-25
-hours**. Allow **3-5 calendar days** when review, live local-model runs, and a
+Remaining total: **1.25-2 focused engineering days**, approximately **9-14
+hours**. Allow **2-3 calendar days** when review, live local-model runs, and a
 one-day contingency for backend-specific transaction behavior are included.
 
 ### P1.1 — Database foundation
@@ -145,9 +145,15 @@ Completion evidence:
 
 Completion evidence:
 
-- the complete SQLite suite remains green;
-- the PostgreSQL integration suite is repeatable from an empty database;
-- test teardown removes only databases or schemas created by the test run.
+- complete on 2026-07-18 with 103 passing default-suite tests and eight
+  opt-in integration skips;
+- 12 live matrix cases passed against a fresh isolated PostgreSQL database;
+- the matrix covers engine restart persistence, durable provider failure,
+  transaction rollback after a uniqueness violation, idempotency release and
+  retry, unavailable-database startup, and concurrent reservation and state
+  transition behavior;
+- test teardown removed the isolated database it created;
+- verification details are in `docs/POSTGRESQL-P1.3-VERIFICATION.md`.
 
 ### P1.4 — Migration, backup, and recovery
 

@@ -56,8 +56,10 @@ fi
 AI_FACTORY_TEST_POSTGRES_URL="$DATABASE_URL" \
 UV_CACHE_DIR="$REPOSITORY_ROOT/agent-service/.uv-cache" \
   uv run --project "$REPOSITORY_ROOT/agent-service" \
-  pytest -q "$REPOSITORY_ROOT/agent-service/tests/test_postgresql.py"
+  pytest -q \
+    "$REPOSITORY_ROOT/agent-service/tests/test_database_portability.py" \
+    "$REPOSITORY_ROOT/agent-service/tests/test_postgresql.py"
 
-echo "PostgreSQL P1.1-P1.2 verified on an isolated synthetic database."
+echo "PostgreSQL P1.1-P1.3 verified on an isolated synthetic database."
 echo "Alembic revision: $revision"
 echo "Public tables: $table_count"

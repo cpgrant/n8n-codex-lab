@@ -88,9 +88,10 @@ Stage 9.1 does not yet bind runs to owners or tenants.
 
 ## Optional PostgreSQL portability foundation
 
-Platform P1.0-P1.2 adds an isolated PostgreSQL container, portable engine and
-migrations, and portable run/idempotency repositories. SQLite remains the
-default persistence path:
+Platform P1.0-P1.3 adds an isolated PostgreSQL container, portable engine and
+migrations, portable run/idempotency repositories, and a dual-backend failure,
+rollback, restart, and concurrency matrix. SQLite remains the default
+persistence path:
 
 ```text
 FastAPI (macOS) -> SQLite (active backend)
