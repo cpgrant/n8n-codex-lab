@@ -29,9 +29,9 @@ Current roadmap status:
   roadmap is now at a decision gate: local usability, housekeeping, and product
   quality are recommended next, while Stages 9.2-9.6 remain available as the
   pilot-gated operationalization track;
-- Platform P1.0-P1.4 PostgreSQL infrastructure, portability verification,
-  dry-run migration, reconciliation, and backup/restore tooling are complete;
-  the synthetic cutover rehearsal is next.
+- Platform P1.0-P1.5 PostgreSQL portability and cutover are complete.
+  PostgreSQL is the active local FastAPI backend; the unchanged SQLite file is
+  retained as the verified rollback snapshot.
 
 See:
 
@@ -51,6 +51,7 @@ See:
 - `docs/POSTGRESQL-P1.2-VERIFICATION.md`
 - `docs/POSTGRESQL-P1.3-VERIFICATION.md`
 - `docs/POSTGRESQL-P1.4-VERIFICATION.md`
+- `docs/POSTGRESQL-P1.5-VERIFICATION.md`
 - `docs/POSTGRESQL-MIGRATION-RUNBOOK.md`
 - `agent-service/README.md`
 
@@ -90,3 +91,7 @@ startup. Review `docs/POSTGRESQL-MIGRATION-RUNBOOK.md` before using them. The
 dry run does not write application rows, an import requires an explicit
 `--confirm-empty-target`, and PostgreSQL backups never overwrite an existing
 file.
+
+After the P1.5 gate, normal `scripts/agent-start.sh` startup uses
+`AI_FACTORY_DEFAULT_DATABASE=postgresql` from the ignored `.env`. Set that
+value to `sqlite` for a controlled rollback; do not delete either database.

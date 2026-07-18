@@ -88,17 +88,17 @@ Stage 9.1 does not yet bind runs to owners or tenants.
 
 ## Optional PostgreSQL portability foundation
 
-Platform P1.0-P1.4 adds an isolated PostgreSQL container, portable engine and
+Platform P1.0-P1.5 adds an isolated PostgreSQL container, portable engine and
 migrations, portable run/idempotency repositories, and a dual-backend failure,
 rollback, restart, and concurrency matrix. It also provides an explicit
 single-transaction import, deterministic reconciliation, and PostgreSQL
-dump/restore tooling. SQLite remains the default persistence path:
+dump/restore tooling. PostgreSQL is now the default persistence path:
 
 ```text
-FastAPI (macOS) -> SQLite (active backend)
+FastAPI (macOS) -> PostgreSQL 18.4 (active local backend)
 
-PostgreSQL 18.4 (Docker, 127.0.0.1:5432)
-`-> available, migration-tested, and used only when explicitly configured
+SQLite (data/ai-strategy-factory.db)
+`-> unchanged P1.5 rollback snapshot
 ```
 
 The PostgreSQL service uses the Docker named volume
@@ -112,16 +112,16 @@ psycopg provide portable repositories, while Alembic revision
 One engine is shared by run and idempotency operations for the service
 lifetime. There is no dual-write or silent fallback between backends.
 
-The planned P1 target allows one configured FastAPI backend at a time:
+The completed P1 cutover allows one configured FastAPI backend at a time:
 
 ```text
-                         +-> SQLite (default and rollback)
+                         +-> SQLite (retained rollback snapshot)
 n8n -> FastAPI service --|
-                         +-> PostgreSQL (explicit opt-in)
+                         +-> PostgreSQL (active local default)
 ```
 
-The application does not dual-write. PostgreSQL becomes eligible as the local
-default only after the final synthetic cutover and rollback rehearsal passes.
+The application does not dual-write. The synthetic cutover and rollback gates
+passed on 2026-07-18, and PostgreSQL is now selected by normal local startup.
 See
 `docs/POSTGRESQL-MIGRATION-PLAN.md`.
 

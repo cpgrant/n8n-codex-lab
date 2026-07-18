@@ -89,21 +89,22 @@ does not restore over `ai_factory`.
 
 ## Select PostgreSQL
 
-Only after reconciliation and restore verification, set the ignored `.env`
-value below using the password already stored there:
+Only after reconciliation and restore verification, select PostgreSQL in the
+ignored `.env` without duplicating the password:
 
 ```text
-AI_FACTORY_DATABASE_URL=postgresql+psycopg://ai_factory:<password>@127.0.0.1:5432/ai_factory
+AI_FACTORY_DEFAULT_DATABASE=postgresql
 ```
 
-Then start FastAPI normally. P1.5 supplies the complete smoke and restart
-rehearsal before this becomes the recommended local default.
+The normal launcher constructs the URL in memory from the existing PostgreSQL
+component variables. An explicit `AI_FACTORY_DATABASE_URL` remains available
+as an advanced process-level override.
 
 ## Roll back to SQLite
 
-Stop FastAPI, remove or comment only `AI_FACTORY_DATABASE_URL` in the ignored
-`.env`, and start FastAPI again. With that setting absent, FastAPI uses the
-unchanged `data/ai-strategy-factory.db` and existing artifact directory.
+Stop FastAPI, set `AI_FACTORY_DEFAULT_DATABASE=sqlite` in the ignored `.env`,
+and start FastAPI again. FastAPI then uses the unchanged
+`data/ai-strategy-factory.db` and existing artifact directory.
 
 Do not delete the PostgreSQL database during rollback. Retain both database
 backups until the rehearsal and review period are complete.

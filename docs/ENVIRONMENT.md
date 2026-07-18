@@ -25,7 +25,9 @@
 
 - AI Factory URL from n8n Docker: http://host.docker.internal:8000
 
-- AI Factory persistence: local SQLite under `data/`
+- AI Factory active persistence: local PostgreSQL in Docker
+
+- AI Factory rollback persistence: unchanged SQLite under `data/`
 
 - Optional AI Factory PostgreSQL: `postgres:18.4-bookworm` in Docker, bound to
   `127.0.0.1:5432`, database/user `ai_factory`
@@ -34,9 +36,9 @@
   `codex_test_ai_factory_postgres_data`; health and stop/start persistence
   verified on 2026-07-18
 
-- PostgreSQL application status: P1.0-P1.4 portability, dry-run migration,
-  reconciliation, and dump/restore tooling verified; opt-in FastAPI backend
-  available; primary database empty; SQLite remains the default
+- PostgreSQL application status: P1.0-P1.5 complete; primary database contains
+  the migrated 31-run synthetic baseline plus cutover verification runs;
+  normal `scripts/agent-start.sh` startup selects PostgreSQL
 
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 

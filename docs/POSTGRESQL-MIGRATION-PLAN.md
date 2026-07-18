@@ -2,10 +2,10 @@
 
 ## Decision and current state
 
-PostgreSQL is accepted as an optional AI Factory database backend and as the
-preferred durable database before multiple FastAPI workers or multiple human
-users are introduced. SQLite remains the active and default backend until the
-application migration and verification gates in this plan pass.
+PostgreSQL is the active local AI Factory database and the preferred durable
+backend before multiple FastAPI workers or multiple human users are
+introduced. All P1 migration and verification gates passed on 2026-07-18. The
+unchanged SQLite database is retained as the verified rollback snapshot.
 
 Infrastructure checkpoint `debf6d4`, completed on 2026-07-18, provides:
 
@@ -16,17 +16,10 @@ Infrastructure checkpoint `debf6d4`, completed on 2026-07-18, provides:
 - separate start, status, and non-destructive stop scripts;
 - an ignored, environment-backed PostgreSQL password.
 
-The container was verified healthy and its synthetic persistence marker
-survived a stop/start before the marker was removed. The `ai_factory` database
-is currently empty. FastAPI still reads and writes
-`data/ai-strategy-factory.db`; n8n continues to use its own SQLite database.
-
-P1.1 is also complete. The service now recognizes validated SQLite and
-PostgreSQL URLs, the portable engine and Alembic foundation are installed, and
-a fresh isolated PostgreSQL database was migrated successfully. FastAPI now
-uses PostgreSQL when it is selected explicitly because P1.2 has ported both
-repositories. SQLite remains the default, and no existing data is migrated
-automatically.
+The primary `ai_factory` database contains the reconciled 31-run synthetic
+baseline and P1.5 verification runs. Normal repository startup selects it
+through `AI_FACTORY_DEFAULT_DATABASE=postgresql`. n8n continues to use its own
+SQLite database and was not migrated.
 
 ## Objective
 
@@ -64,17 +57,17 @@ Excluded from this checkpoint:
 
 ## Target architecture
 
-During portability verification:
+After the completed local cutover:
 
 ```text
-                         +-> SQLite (default and rollback backend)
+                         +-> SQLite (retained rollback snapshot)
 n8n -> FastAPI service --|
-                         +-> PostgreSQL (explicit opt-in backend)
+                         +-> PostgreSQL (active local backend)
 ```
 
 Only one backend is authoritative for a service process. The application must
-not dual-write to SQLite and PostgreSQL. A cutover changes configuration only
-after a stopped-service migration and reconciliation has passed.
+not dual-write to SQLite and PostgreSQL. The stopped-service migration and
+reconciliation passed before PostgreSQL became authoritative.
 
 ## Implementation plan and estimate
 
@@ -90,11 +83,9 @@ one to three hours of elapsed time without adding equivalent engineering work.
 | P1.2 | Portable repositories, transactions, state transitions, and idempotency | Complete 2026-07-18 |
 | P1.3 | Dual-backend schema, API, failure, and concurrency test matrix | Complete 2026-07-18 |
 | P1.4 | SQLite export/import, reconciliation, PostgreSQL backup, and restore | Complete 2026-07-18 |
-| P1.5 | Synthetic cutover rehearsal, end-to-end verification, and documentation | 0.5-1 day |
+| P1.5 | Synthetic cutover rehearsal, end-to-end verification, and documentation | Complete 2026-07-18 |
 
-Remaining total: **0.5-1 focused engineering day**, approximately **4-7
-hours**. Allow **1-2 calendar days** when review, live local-model runs, and a
-one-day contingency for backend-specific transaction behavior are included.
+Remaining total: **Complete.**
 
 ### P1.1 — Database foundation
 
@@ -195,10 +186,20 @@ Completion evidence:
 
 Completion evidence:
 
-- all API and workflow contracts behave identically on PostgreSQL;
-- the synthetic run survives service and PostgreSQL restarts;
-- backups and artifact checksums verify;
-- Git is clean and the roadmap records the final decision.
+- complete on 2026-07-18;
+- the primary import reconciled all six application tables and 29 physical
+  artifacts against the 31-run SQLite baseline;
+- deterministic API, explicit review, and artifact flows passed;
+- new records survived both FastAPI and PostgreSQL container restarts;
+- a live `gemma4:31b` strategy and separate pro-quality critique passed,
+  followed by explicit synthetic approval and artifact retrieval;
+- n8n reached the PostgreSQL-backed service while the workflow remained
+  inactive and unpublished;
+- rollback startup retrieved a pre-cutover SQLite record, did not expose the
+  PostgreSQL-only run, and preserved the SQLite SHA-256;
+- normal startup now selects PostgreSQL, and a 36-run post-cutover dump passed
+  isolated restore verification;
+- full evidence is in `docs/POSTGRESQL-P1.5-VERIFICATION.md`.
 
 ## Decision gates
 

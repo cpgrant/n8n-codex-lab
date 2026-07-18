@@ -26,7 +26,7 @@ history unless a separate operational-verification date is stated.
 | Stage | Milestone | Status | Completed |
 | --- | --- | --- | --- |
 | P0 | Platform vision and factory catalog | Complete | 2026-07-14 |
-| P1 | Optional PostgreSQL database portability | P1.0-P1.4 complete; cutover rehearsal next | P1.4 2026-07-18 |
+| P1 | PostgreSQL database portability and local cutover | Complete | 2026-07-18 |
 | 0 | Contracts and safety boundary | Complete | 2026-07-12 |
 | 1 | FastAPI and SQLite foundation | Complete | 2026-07-12 |
 | 2 | Deterministic strategy generation | Complete | 2026-07-12 |
@@ -64,13 +64,11 @@ expansion sequence.
 
 ## Platform P1 — Optional PostgreSQL database portability
 
-Status: **P1.0-P1.4 complete on 2026-07-18; cutover rehearsal next.**
+Status: **Complete on 2026-07-18.**
 
-PostgreSQL is accepted as an optional FastAPI persistence backend and as the
-preferred durable database before multiple API workers or multiple human users
-are introduced. SQLite remains the active default until dual-backend tests,
-migration reconciliation, backup/restore, synthetic cutover, and rollback
-verification pass.
+PostgreSQL is the active local FastAPI persistence backend and the preferred
+durable database before multiple API workers or multiple human users are
+introduced. The unchanged SQLite file is retained as a rollback snapshot.
 
 Infrastructure checkpoint `debf6d4` delivered:
 
@@ -131,13 +129,26 @@ P1.4 delivered:
 - rejection of a second import into the populated target and cleanup of every
   temporary PostgreSQL database.
 
-Remaining work:
+P1.5 delivered:
 
-- complete a synthetic end-to-end cutover rehearsal before changing any
-  default.
+- verified SQLite/artifact and PostgreSQL pre-cutover backups plus isolated
+  restore tests;
+- migration of the 31-run synthetic baseline into the primary PostgreSQL
+  database with exact count, fingerprint, and artifact reconciliation;
+- deterministic creation, explicit review, artifact retrieval, FastAPI
+  restart, and PostgreSQL container restart persistence checks;
+- one live `gemma4:31b` generation, separate pro-quality critique, idempotent
+  quality replay, explicit synthetic approval, and both artifact retrievals;
+- n8n-to-FastAPI connectivity while the `CODEX TEST` workflow remained
+  inactive, unavailable through MCP, and unpublished;
+- demonstrated rollback to the unchanged SQLite checksum, followed by normal
+  launcher selection of PostgreSQL as the active local backend;
+- a post-cutover PostgreSQL dump containing 36 synthetic runs and successful
+  isolated restore verification.
 
-Estimated remaining effort is **0.5-1 focused engineering day** or **1-2
-calendar days** including live Ollama verification and contingency.
+Platform P1 has no remaining implementation phases. Scaling beyond one API
+worker still requires a separate durable-jobs, leases, retry, and Ollama
+concurrency checkpoint.
 The detailed phases, completion evidence, risks, and decision gates are in
 `docs/POSTGRESQL-MIGRATION-PLAN.md`.
 
