@@ -304,7 +304,7 @@ def _settings_paths() -> tuple[Path, Path]:
     settings = Settings.from_env()
     if settings.database_backend != "sqlite":
         raise BackupError(
-            "PostgreSQL backup support is not implemented until Platform P1.4"
+            "Use scripts/postgres-backup.sh for a PostgreSQL pg_dump backup"
         )
     return settings.database_path, settings.artifact_dir
 

@@ -26,7 +26,7 @@ history unless a separate operational-verification date is stated.
 | Stage | Milestone | Status | Completed |
 | --- | --- | --- | --- |
 | P0 | Platform vision and factory catalog | Complete | 2026-07-14 |
-| P1 | Optional PostgreSQL database portability | P1.0-P1.3 complete; migration tooling next | P1.3 2026-07-18 |
+| P1 | Optional PostgreSQL database portability | P1.0-P1.4 complete; cutover rehearsal next | P1.4 2026-07-18 |
 | 0 | Contracts and safety boundary | Complete | 2026-07-12 |
 | 1 | FastAPI and SQLite foundation | Complete | 2026-07-12 |
 | 2 | Deterministic strategy generation | Complete | 2026-07-12 |
@@ -64,7 +64,7 @@ expansion sequence.
 
 ## Platform P1 — Optional PostgreSQL database portability
 
-Status: **P1.0-P1.3 complete on 2026-07-18; migration tooling next.**
+Status: **P1.0-P1.4 complete on 2026-07-18; cutover rehearsal next.**
 
 PostgreSQL is accepted as an optional FastAPI persistence backend and as the
 preferred durable database before multiple API workers or multiple human users
@@ -116,15 +116,28 @@ P1.3 delivered:
 - 12 passing isolated live-matrix cases against a freshly migrated PostgreSQL
   database, followed by automatic removal of that database.
 
+P1.4 delivered:
+
+- dry-run-first migration commands with an explicit empty-target confirmation
+  for writes and no automatic cutover;
+- one-transaction import of runs, reviews, quality reports, artifact metadata,
+  and idempotency records;
+- table count and deterministic row-fingerprint reconciliation plus physical
+  artifact checksum verification;
+- repository-owned PostgreSQL custom-format backup and isolated restore-test
+  commands;
+- a live 31-run synthetic migration, reconciliation, dump, restore, and second
+  reconciliation while the original SQLite checksum remained unchanged;
+- rejection of a second import into the populated target and cleanup of every
+  temporary PostgreSQL database.
+
 Remaining work:
 
-- add dry-run-first SQLite import, reconciliation, PostgreSQL backup, restore,
-  and rollback procedures;
 - complete a synthetic end-to-end cutover rehearsal before changing any
   default.
 
-Estimated remaining effort is **1.25-2 focused engineering days** or **2-3
-calendar days** including review, live Ollama verification, and contingency.
+Estimated remaining effort is **0.5-1 focused engineering day** or **1-2
+calendar days** including live Ollama verification and contingency.
 The detailed phases, completion evidence, risks, and decision gates are in
 `docs/POSTGRESQL-MIGRATION-PLAN.md`.
 

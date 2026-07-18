@@ -88,10 +88,11 @@ Stage 9.1 does not yet bind runs to owners or tenants.
 
 ## Optional PostgreSQL portability foundation
 
-Platform P1.0-P1.3 adds an isolated PostgreSQL container, portable engine and
+Platform P1.0-P1.4 adds an isolated PostgreSQL container, portable engine and
 migrations, portable run/idempotency repositories, and a dual-backend failure,
-rollback, restart, and concurrency matrix. SQLite remains the default
-persistence path:
+rollback, restart, and concurrency matrix. It also provides an explicit
+single-transaction import, deterministic reconciliation, and PostgreSQL
+dump/restore tooling. SQLite remains the default persistence path:
 
 ```text
 FastAPI (macOS) -> SQLite (active backend)
@@ -120,8 +121,8 @@ n8n -> FastAPI service --|
 ```
 
 The application does not dual-write. PostgreSQL becomes eligible as the local
-default only after the expanded dual-backend tests, migration reconciliation,
-backup/restore, cutover, and rollback verification pass. See
+default only after the final synthetic cutover and rollback rehearsal passes.
+See
 `docs/POSTGRESQL-MIGRATION-PLAN.md`.
 
 PostgreSQL availability does not add asynchronous jobs or increase Ollama

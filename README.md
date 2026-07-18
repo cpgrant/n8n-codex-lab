@@ -29,9 +29,9 @@ Current roadmap status:
   roadmap is now at a decision gate: local usability, housekeeping, and product
   quality are recommended next, while Stages 9.2-9.6 remain available as the
   pilot-gated operationalization track;
-- Platform P1.0-P1.3 PostgreSQL infrastructure, migrations, portable
-  repositories, and dual-backend verification are complete; dry-run migration,
-  backup/restore, and cutover rehearsal are next.
+- Platform P1.0-P1.4 PostgreSQL infrastructure, portability verification,
+  dry-run migration, reconciliation, and backup/restore tooling are complete;
+  the synthetic cutover rehearsal is next.
 
 See:
 
@@ -49,6 +49,9 @@ See:
 - `docs/POSTGRESQL-MIGRATION-PLAN.md`
 - `docs/POSTGRESQL-P1.1-VERIFICATION.md`
 - `docs/POSTGRESQL-P1.2-VERIFICATION.md`
+- `docs/POSTGRESQL-P1.3-VERIFICATION.md`
+- `docs/POSTGRESQL-P1.4-VERIFICATION.md`
+- `docs/POSTGRESQL-MIGRATION-RUNBOOK.md`
 - `agent-service/README.md`
 
 ## Optional local PostgreSQL container
@@ -81,3 +84,9 @@ The container listens only on `127.0.0.1:5432`, uses the pinned
 volume `codex_test_ai_factory_postgres_data`. Do not use Docker Compose with
 the `down --volumes` option for routine shutdown because that removes the
 database volume.
+
+Migration and recovery commands are intentionally separate from normal
+startup. Review `docs/POSTGRESQL-MIGRATION-RUNBOOK.md` before using them. The
+dry run does not write application rows, an import requires an explicit
+`--confirm-empty-target`, and PostgreSQL backups never overwrite an existing
+file.

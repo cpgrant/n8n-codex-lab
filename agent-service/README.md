@@ -24,12 +24,12 @@ scripts/agent-start.sh
 The service listens on `http://127.0.0.1:8000`. The n8n workflow, running inside
 Docker Desktop, uses `http://host.docker.internal:8000`.
 
-SQLite remains the active default database. Platform P1.1-P1.2 adds the
-portable SQLAlchemy repositories, psycopg driver, and Alembic migrations for
-SQLite and PostgreSQL. An explicit `AI_FACTORY_DATABASE_URL` can select a fresh
-PostgreSQL database. Existing SQLite data is not migrated automatically, and
-the backup command remains SQLite-only until P1.4. See
-`../docs/POSTGRESQL-MIGRATION-PLAN.md`.
+SQLite remains the active default database. Platform P1.1-P1.4 adds portable
+SQLAlchemy repositories, Alembic migrations, a dual-backend verification
+matrix, and dry-run-first migration/recovery tooling for PostgreSQL. An
+explicit `AI_FACTORY_DATABASE_URL` selects the active backend; startup never
+migrates existing SQLite data automatically. See
+`../docs/POSTGRESQL-MIGRATION-RUNBOOK.md`.
 
 Stage 9.1 requires two distinct environment-backed tokens of at least 32
 characters. Store them in the repository's ignored `.env`; the startup scripts

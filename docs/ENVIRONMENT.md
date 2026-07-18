@@ -34,9 +34,9 @@
   `codex_test_ai_factory_postgres_data`; health and stop/start persistence
   verified on 2026-07-18
 
-- PostgreSQL application status: P1.0-P1.3 infrastructure, Alembic schema,
-  portable repositories, and dual-backend matrix verified; opt-in FastAPI
-  backend available; primary database empty; SQLite remains the default
+- PostgreSQL application status: P1.0-P1.4 portability, dry-run migration,
+  reconciliation, and dump/restore tooling verified; opt-in FastAPI backend
+  available; primary database empty; SQLite remains the default
 
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 
@@ -53,6 +53,10 @@
 - Stage 9.3-lite factory backups: ignored local
   `backups/ai-strategy-factory/`, SHA-256 manifest, SQLite integrity check, and
   temporary restore test
+
+- PostgreSQL backups: custom-format `pg_dump` files created explicitly with
+  `scripts/postgres-backup.sh`; isolated restore test available through
+  `scripts/postgres-restore-test.sh`
 
 - Ollama host URL: http://127.0.0.1:11888
 

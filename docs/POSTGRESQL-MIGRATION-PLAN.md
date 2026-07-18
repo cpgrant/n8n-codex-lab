@@ -89,11 +89,11 @@ one to three hours of elapsed time without adding equivalent engineering work.
 | P1.1 | Database URL, driver, common connection layer, and migration framework | Complete 2026-07-18 |
 | P1.2 | Portable repositories, transactions, state transitions, and idempotency | Complete 2026-07-18 |
 | P1.3 | Dual-backend schema, API, failure, and concurrency test matrix | Complete 2026-07-18 |
-| P1.4 | SQLite export/import, reconciliation, PostgreSQL backup, and restore | 0.75-1 day |
+| P1.4 | SQLite export/import, reconciliation, PostgreSQL backup, and restore | Complete 2026-07-18 |
 | P1.5 | Synthetic cutover rehearsal, end-to-end verification, and documentation | 0.5-1 day |
 
-Remaining total: **1.25-2 focused engineering days**, approximately **9-14
-hours**. Allow **2-3 calendar days** when review, live local-model runs, and a
+Remaining total: **0.5-1 focused engineering day**, approximately **4-7
+hours**. Allow **1-2 calendar days** when review, live local-model runs, and a
 one-day contingency for backend-specific transaction behavior are included.
 
 ### P1.1 — Database foundation
@@ -168,10 +168,19 @@ Completion evidence:
 
 Completion evidence:
 
-- a synthetic copy migrates without changing source data;
-- reconciliation reports zero missing or unexpected records;
-- a PostgreSQL dump restores successfully into temporary storage;
-- switching configuration back to SQLite restores the prior service state.
+- complete on 2026-07-18 with 108 passing default-suite tests and eight opt-in
+  PostgreSQL integration skips;
+- an online copy of the 31-run synthetic SQLite database imported into a fresh
+  PostgreSQL target in one transaction;
+- all six application tables matched by count and deterministic fingerprint,
+  and all 29 recorded artifact files matched their SHA-256 metadata;
+- a second import was rejected because the target was non-empty;
+- a custom-format PostgreSQL dump restored into temporary storage and the
+  restored database reconciled exactly with the SQLite copy;
+- the original SQLite checksum remained unchanged, both temporary PostgreSQL
+  databases were removed, and the primary PostgreSQL database remained empty;
+- procedures are in `docs/POSTGRESQL-MIGRATION-RUNBOOK.md` and evidence is in
+  `docs/POSTGRESQL-P1.4-VERIFICATION.md`.
 
 ### P1.5 — Synthetic cutover rehearsal
 

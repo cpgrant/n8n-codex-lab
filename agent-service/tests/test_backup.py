@@ -145,4 +145,4 @@ def test_sqlite_backup_command_fails_closed_for_postgresql(monkeypatch, capsys):
         main(["create"])
 
     assert stopped.value.code == 1
-    assert "P1.4" in capsys.readouterr().err
+    assert "scripts/postgres-backup.sh" in capsys.readouterr().err
