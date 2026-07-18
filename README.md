@@ -44,3 +44,34 @@ See:
 - `docs/STAGE-9.1-VERIFICATION.md`
 - `docs/AUTHENTICATION-TOKENS.md`
 - `agent-service/README.md`
+
+## Optional local PostgreSQL container
+
+PostgreSQL can run as an isolated, optional database alongside the current
+SQLite-backed factory. Installing the container does not switch FastAPI away
+from SQLite and does not migrate n8n.
+
+1. Add a new, distinct secret to the ignored `.env`:
+
+   ```text
+   AI_FACTORY_POSTGRES_PASSWORD=<output of openssl rand -hex 32>
+   ```
+
+2. Start and verify PostgreSQL:
+
+   ```bash
+   scripts/postgres-start.sh
+   ```
+
+3. Inspect or stop it without deleting its data volume:
+
+   ```bash
+   scripts/postgres-status.sh
+   scripts/postgres-stop.sh
+   ```
+
+The container listens only on `127.0.0.1:5432`, uses the pinned
+`postgres:18.4-bookworm` image, and stores database files in the Docker named
+volume `codex_test_ai_factory_postgres_data`. Do not use Docker Compose with
+the `down --volumes` option for routine shutdown because that removes the
+database volume.

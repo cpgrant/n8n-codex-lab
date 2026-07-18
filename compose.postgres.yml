@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:18.4-bookworm
+    container_name: codex-test-ai-factory-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${AI_FACTORY_POSTGRES_DB:-ai_factory}
+      POSTGRES_USER: ${AI_FACTORY_POSTGRES_USER:-ai_factory}
+      POSTGRES_PASSWORD: ${AI_FACTORY_POSTGRES_PASSWORD:?AI_FACTORY_POSTGRES_PASSWORD is required}
+    ports:
+      - "127.0.0.1:${AI_FACTORY_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ai_factory_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  ai_factory_postgres_data:
+    name: codex_test_ai_factory_postgres_data
