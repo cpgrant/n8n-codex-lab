@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
+from sqlalchemy.engine import make_url
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -25,6 +27,7 @@ class Settings:
     ollama_timeout_seconds: float = 300.0
     data_dir: Path = REPOSITORY_ROOT / "data"
     artifact_dir: Path = REPOSITORY_ROOT / "artifacts"
+    database_url: str | None = None
     service_token: str | None = None
     review_token: str | None = None
     service_token_expires_at: datetime | None = None
@@ -53,10 +56,44 @@ class Settings:
                 value.tzinfo is None or value.utcoffset() is None
             ):
                 raise ValueError(f"{name} must include a timezone")
+        if self.database_url is not None:
+            scheme = urlparse(self.database_url).scheme.lower()
+            if scheme not in {"sqlite", "postgresql", "postgresql+psycopg"}:
+                raise ValueError(
+                    "AI_FACTORY_DATABASE_URL must use SQLite or PostgreSQL"
+                )
+            if scheme.startswith("postgresql"):
+                parsed = urlparse(self.database_url)
+                if not parsed.hostname or not parsed.path.strip("/"):
+                    raise ValueError(
+                        "AI_FACTORY_DATABASE_URL PostgreSQL URLs require a host "
+                        "and database name"
+                    )
 
     @property
     def database_path(self) -> Path:
+        if self.database_url is not None and self.database_backend == "sqlite":
+            database = make_url(self.resolved_database_url).database
+            if not database or database == ":memory:":
+                raise ValueError(
+                    "AI_FACTORY_DATABASE_URL must name a persistent SQLite file"
+                )
+            return Path(database)
         return self.data_dir / "ai-strategy-factory.db"
+
+    @property
+    def resolved_database_url(self) -> str:
+        if self.database_url is None:
+            return f"sqlite:///{self.database_path}"
+        if self.database_url.startswith("postgresql://"):
+            return self.database_url.replace(
+                "postgresql://", "postgresql+psycopg://", 1
+            )
+        return self.database_url
+
+    @property
+    def database_backend(self) -> str:
+        return urlparse(self.resolved_database_url).scheme.split("+", 1)[0]
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -159,6 +196,9 @@ class Settings:
                     "AI_FACTORY_ARTIFACT_DIR",
                     str(REPOSITORY_ROOT / "artifacts"),
                 )
+            ),
+            database_url=(
+                os.getenv("AI_FACTORY_DATABASE_URL", "").strip() or None
             ),
             service_token=service_token,
             review_token=review_token,

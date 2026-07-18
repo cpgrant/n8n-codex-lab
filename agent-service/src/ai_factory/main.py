@@ -13,13 +13,18 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from .artifacts import MarkdownArtifactStore, sha256_text
 from .auth import REVIEW_SCOPE, SERVICE_SCOPE, authenticate
 from .config import REPOSITORY_ROOT, Settings
-from .database import initialize_database
+from .database import (
+    check_database_connection,
+    create_database_engine,
+    initialize_database,
+)
 from .errors import FactoryError
 from .idempotency import (
     IdempotencyRepository,
     canonical_json_hash,
     validate_idempotency_key,
 )
+from .migrations import upgrade_database
 from .providers import (
     FakeStrategyProvider,
     OllamaQualityCritic,
@@ -175,10 +180,16 @@ def create_app(
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         resolved.data_dir.mkdir(parents=True, exist_ok=True)
         resolved.artifact_dir.mkdir(parents=True, exist_ok=True)
-        initialize_database(resolved.database_path)
+        if resolved.database_url is None:
+            initialize_database(resolved.database_path)
+        else:
+            upgrade_database(resolved.resolved_database_url)
+        database_engine = create_database_engine(resolved.resolved_database_url)
+        check_database_connection(database_engine)
         app.state.settings = resolved
-        app.state.repository = RunRepository(resolved.database_path)
-        app.state.idempotency = IdempotencyRepository(resolved.database_path)
+        app.state.database_engine = database_engine
+        app.state.repository = RunRepository(database_engine)
+        app.state.idempotency = IdempotencyRepository(database_engine)
         app.state.service = StrategyService(app.state.repository, resolved_provider)
         app.state.quality_artifact_store = QualityMarkdownArtifactStore(
             resolved.artifact_dir
@@ -193,7 +204,10 @@ def create_app(
         app.state.review_service = ReviewService(
             app.state.repository, app.state.artifact_store
         )
-        yield
+        try:
+            yield
+        finally:
+            database_engine.dispose()
 
     app = FastAPI(
         title="AI Strategy Factory",

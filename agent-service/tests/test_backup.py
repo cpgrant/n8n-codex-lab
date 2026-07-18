@@ -8,6 +8,7 @@ from ai_factory.backup import (
     BackupError,
     create_backup,
     expired_backups,
+    main,
     restore_test,
     verify_backup,
 )
@@ -132,3 +133,16 @@ def test_expired_backup_audit_never_deletes(
 
     assert expired == [backup]
     assert backup.is_dir()
+
+
+def test_sqlite_backup_command_fails_closed_for_postgresql(monkeypatch, capsys):
+    monkeypatch.setenv(
+        "AI_FACTORY_DATABASE_URL",
+        "postgresql+psycopg://ai_factory:synthetic@127.0.0.1:5432/ai_factory",
+    )
+
+    with pytest.raises(SystemExit) as stopped:
+        main(["create"])
+
+    assert stopped.value.code == 1
+    assert "P1.4" in capsys.readouterr().err

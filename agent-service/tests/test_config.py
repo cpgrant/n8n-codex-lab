@@ -14,6 +14,7 @@ def test_config_defaults(monkeypatch):
         "AI_FACTORY_PROVIDER",
         "AI_FACTORY_DATA_DIR",
         "AI_FACTORY_ARTIFACT_DIR",
+        "AI_FACTORY_DATABASE_URL",
         "AI_FACTORY_SERVICE_TOKEN",
         "AI_FACTORY_REVIEW_TOKEN",
         "AI_FACTORY_SERVICE_TOKEN_EXPIRES_AT",
@@ -39,6 +40,9 @@ def test_config_defaults(monkeypatch):
     assert settings.ollama_timeout_seconds == 300
     assert settings.data_dir.name == "data"
     assert settings.data_dir.parent.name == "n8n-codex-lab"
+    assert settings.database_url is None
+    assert settings.database_backend == "sqlite"
+    assert settings.resolved_database_url.startswith("sqlite:////")
     assert settings.service_token is None
     assert settings.review_token is None
     assert settings.service_token_expires_at is None
@@ -49,6 +53,33 @@ def test_invalid_port_is_rejected(monkeypatch):
     monkeypatch.setenv("AI_FACTORY_PORT", "not-a-port")
 
     with pytest.raises(ValueError, match="must be an integer"):
+        Settings.from_env()
+
+
+def test_postgresql_database_url_is_normalized(monkeypatch):
+    monkeypatch.setenv(
+        "AI_FACTORY_DATABASE_URL",
+        "postgresql://ai_factory:synthetic@127.0.0.1:5432/ai_factory",
+    )
+
+    settings = Settings.from_env()
+
+    assert settings.database_backend == "postgresql"
+    assert settings.resolved_database_url.startswith("postgresql+psycopg://")
+
+
+@pytest.mark.parametrize(
+    "database_url",
+    [
+        "mysql://localhost/ai_factory",
+        "postgresql://ai_factory:synthetic@/ai_factory",
+        "postgresql://ai_factory:synthetic@127.0.0.1",
+    ],
+)
+def test_invalid_database_url_is_rejected(monkeypatch, database_url):
+    monkeypatch.setenv("AI_FACTORY_DATABASE_URL", database_url)
+
+    with pytest.raises(ValueError, match="AI_FACTORY_DATABASE_URL"):
         Settings.from_env()
 
 

@@ -1,4 +1,4 @@
-"""SQLite-backed idempotency reservations and completed response replay."""
+"""SQLite/PostgreSQL-portable idempotency reservations and response replay."""
 
 from __future__ import annotations
 
@@ -6,11 +6,17 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Mapping
 from uuid import UUID
 
-from .database import connect
+from sqlalchemy import Engine, text
+from sqlalchemy.exc import IntegrityError
+
+from .database import engine_for_target, sqlite_path_for_target
 from .errors import FactoryError
 from .repository import utc_now
+
+DatabaseTarget = Path | str | Engine
 
 
 def canonical_json_hash(payload: dict[str, object]) -> str:
@@ -41,50 +47,89 @@ class IdempotencyReplay:
 
 
 class IdempotencyRepository:
-    def __init__(self, database_path: Path) -> None:
-        self.database_path = database_path
+    def __init__(self, database: DatabaseTarget) -> None:
+        self.engine = engine_for_target(database)
+        self.database_path = sqlite_path_for_target(self.engine)
+
+    @staticmethod
+    def _existing_result(
+        row: Mapping[str, Any], request_hash: str
+    ) -> IdempotencyReplay:
+        if row["request_hash"] != request_hash:
+            raise FactoryError(
+                409,
+                "IDEMPOTENCY_CONFLICT",
+                "The idempotency key was already used with different input.",
+            )
+        if row["state"] == "pending":
+            raise FactoryError(
+                409,
+                "IDEMPOTENCY_IN_PROGRESS",
+                "An operation with this idempotency key is still in progress.",
+                retryable=True,
+            )
+        return IdempotencyReplay(
+            status_code=int(row["response_status"]),
+            payload=json.loads(row["response_json"]),
+        )
+
+    def _get_existing(
+        self, operation: str, key: str
+    ) -> Mapping[str, Any] | None:
+        with self.engine.connect() as connection:
+            return connection.execute(
+                text(
+                    """
+                    SELECT * FROM idempotency_requests
+                    WHERE operation = :operation AND idempotency_key = :key
+                    """
+                ),
+                {"operation": operation, "key": key},
+            ).mappings().first()
 
     def reserve(
         self, operation: str, key: str, request_hash: str
     ) -> IdempotencyReplay | None:
-        timestamp = utc_now()
-        with connect(self.database_path) as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                """
-                SELECT * FROM idempotency_requests
-                WHERE operation = ? AND idempotency_key = ?
-                """,
-                (operation, key),
-            ).fetchone()
-            if row is None:
+        parameters = {"operation": operation, "key": key}
+        try:
+            with self.engine.begin() as connection:
+                row = connection.execute(
+                    text(
+                        """
+                        SELECT * FROM idempotency_requests
+                        WHERE operation = :operation AND idempotency_key = :key
+                        """
+                    ),
+                    parameters,
+                ).mappings().first()
+                if row is not None:
+                    return self._existing_result(row, request_hash)
+                timestamp = utc_now()
                 connection.execute(
-                    """
-                    INSERT INTO idempotency_requests (
-                        operation, idempotency_key, request_hash, state,
-                        created_at, updated_at
-                    ) VALUES (?, ?, ?, 'pending', ?, ?)
-                    """,
-                    (operation, key, request_hash, timestamp, timestamp),
+                    text(
+                        """
+                        INSERT INTO idempotency_requests (
+                            operation, idempotency_key, request_hash, state,
+                            created_at, updated_at
+                        ) VALUES (
+                            :operation, :key, :request_hash, 'pending',
+                            :created_at, :updated_at
+                        )
+                        """
+                    ),
+                    {
+                        **parameters,
+                        "request_hash": request_hash,
+                        "created_at": timestamp,
+                        "updated_at": timestamp,
+                    },
                 )
                 return None
-            if row["request_hash"] != request_hash:
-                raise FactoryError(
-                    409,
-                    "IDEMPOTENCY_CONFLICT",
-                    "The idempotency key was already used with different input.",
-                )
-            if row["state"] == "pending":
-                raise FactoryError(
-                    409,
-                    "IDEMPOTENCY_IN_PROGRESS",
-                    "An operation with this idempotency key is still in progress.",
-                    retryable=True,
-                )
-            return IdempotencyReplay(
-                status_code=int(row["response_status"]),
-                payload=json.loads(row["response_json"]),
-            )
+        except IntegrityError:
+            row = self._get_existing(operation, key)
+            if row is None:
+                raise RuntimeError("idempotency reservation conflict was lost")
+            return self._existing_result(row, request_hash)
 
     def complete(
         self,
@@ -95,38 +140,42 @@ class IdempotencyRepository:
         payload: dict[str, object],
         run_id: UUID | None,
     ) -> None:
-        timestamp = utc_now()
         response_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        with connect(self.database_path) as connection:
+        with self.engine.begin() as connection:
             result = connection.execute(
-                """
-                UPDATE idempotency_requests
-                SET state = 'completed', response_status = ?, response_json = ?,
-                    run_id = ?, updated_at = ?
-                WHERE operation = ? AND idempotency_key = ?
-                    AND request_hash = ? AND state = 'pending'
-                """,
-                (
-                    status_code,
-                    response_json,
-                    str(run_id) if run_id else None,
-                    timestamp,
-                    operation,
-                    key,
-                    request_hash,
+                text(
+                    """
+                    UPDATE idempotency_requests
+                    SET state = 'completed', response_status = :response_status,
+                        response_json = :response_json, run_id = :run_id,
+                        updated_at = :updated_at
+                    WHERE operation = :operation AND idempotency_key = :key
+                        AND request_hash = :request_hash AND state = 'pending'
+                    """
                 ),
+                {
+                    "response_status": status_code,
+                    "response_json": response_json,
+                    "run_id": str(run_id) if run_id else None,
+                    "updated_at": utc_now(),
+                    "operation": operation,
+                    "key": key,
+                    "request_hash": request_hash,
+                },
             )
             if result.rowcount != 1:
                 raise RuntimeError("idempotency reservation could not be completed")
 
     def release(self, operation: str, key: str, request_hash: str) -> None:
         """Release only an unfinished reservation so an exact retry may resume."""
-        with connect(self.database_path) as connection:
+        with self.engine.begin() as connection:
             connection.execute(
-                """
-                DELETE FROM idempotency_requests
-                WHERE operation = ? AND idempotency_key = ?
-                    AND request_hash = ? AND state = 'pending'
-                """,
-                (operation, key, request_hash),
+                text(
+                    """
+                    DELETE FROM idempotency_requests
+                    WHERE operation = :operation AND idempotency_key = :key
+                        AND request_hash = :request_hash AND state = 'pending'
+                    """
+                ),
+                {"operation": operation, "key": key, "request_hash": request_hash},
             )

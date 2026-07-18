@@ -26,6 +26,7 @@ history unless a separate operational-verification date is stated.
 | Stage | Milestone | Status | Completed |
 | --- | --- | --- | --- |
 | P0 | Platform vision and factory catalog | Complete | 2026-07-14 |
+| P1 | Optional PostgreSQL database portability | P1.0-P1.2 complete; test matrix next | P1.2 2026-07-18 |
 | 0 | Contracts and safety boundary | Complete | 2026-07-12 |
 | 1 | FastAPI and SQLite foundation | Complete | 2026-07-12 |
 | 2 | Deterministic strategy generation | Complete | 2026-07-12 |
@@ -60,6 +61,67 @@ The platform objective and portfolio are now explicit:
 
 See `docs/AI-FACTORY-PLATFORM.md` for scope, boundaries, and the recommended
 expansion sequence.
+
+## Platform P1 — Optional PostgreSQL database portability
+
+Status: **P1.0-P1.2 complete on 2026-07-18; dual-backend test matrix next.**
+
+PostgreSQL is accepted as an optional FastAPI persistence backend and as the
+preferred durable database before multiple API workers or multiple human users
+are introduced. SQLite remains the active default until dual-backend tests,
+migration reconciliation, backup/restore, synthetic cutover, and rollback
+verification pass.
+
+Infrastructure checkpoint `debf6d4` delivered:
+
+- a pinned ARM64-compatible PostgreSQL 18.4 Docker service;
+- a localhost-only port, persistent named volume, and health check;
+- environment-backed secret configuration;
+- repository-owned start, status, and non-destructive stop scripts;
+- a live health and stop/start persistence verification using synthetic data.
+
+P1.1 delivered:
+
+- an explicit, validated database URL with SQLite remaining the default;
+- a portable SQLAlchemy engine foundation and locked psycopg driver;
+- Alembic revision `0001_current_factory_schema` for fresh SQLite and
+  PostgreSQL databases;
+- fail-closed FastAPI startup when PostgreSQL is selected before repository
+  portability exists;
+- 98 passing automated tests;
+- a live isolated PostgreSQL migration to eight public tables, followed by
+  verified removal of the temporary database.
+
+P1.2 delivered:
+
+- portable SQLAlchemy implementations of `RunRepository` and
+  `IdempotencyRepository`;
+- shared FastAPI engine lifecycle and explicit PostgreSQL backend selection;
+- PostgreSQL row locking for reviewable parent records and conditional run
+  state updates;
+- uniqueness-backed concurrent idempotency reservation handling;
+- unchanged SQLite behavior across 99 passing tests;
+- three live PostgreSQL tests covering the complete basic API/artifact flow,
+  concurrent reservation, and competing state transitions;
+- verified removal of the isolated test database while the primary PostgreSQL
+  database remained empty.
+
+Remaining work:
+
+- expand the dual-backend failure, rollback, restart, and concurrency matrix;
+- add dry-run-first SQLite import, reconciliation, PostgreSQL backup, restore,
+  and rollback procedures;
+- complete a synthetic end-to-end cutover rehearsal before changing any
+  default.
+
+Estimated remaining effort is **2.25-3.5 focused engineering days** or **3-5
+calendar days** including review, live Ollama verification, and contingency.
+The detailed phases, completion evidence, risks, and decision gates are in
+`docs/POSTGRESQL-MIGRATION-PLAN.md`.
+
+P1 does not migrate n8n, add Redis, introduce multiple workers, complete Stage
+9.2 ownership/isolation, or authorize real data, workflow activation, or
+publication. Those remain separate decisions.
 
 ## Completed foundation
 

@@ -27,6 +27,17 @@
 
 - AI Factory persistence: local SQLite under `data/`
 
+- Optional AI Factory PostgreSQL: `postgres:18.4-bookworm` in Docker, bound to
+  `127.0.0.1:5432`, database/user `ai_factory`
+
+- PostgreSQL persistence: Docker named volume
+  `codex_test_ai_factory_postgres_data`; health and stop/start persistence
+  verified on 2026-07-18
+
+- PostgreSQL application status: P1.0-P1.2 infrastructure, Alembic schema, and
+  portable repositories verified; opt-in FastAPI backend available; primary
+  database empty; SQLite remains the default
+
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 
 - AI Strategy Factory workflow: 16-node Stage 8 export, inactive and unpublished

@@ -28,7 +28,9 @@ Current roadmap status:
 - Stages 9.0 and 9.1 complete the local synthetic-lab security baseline. The
   roadmap is now at a decision gate: local usability, housekeeping, and product
   quality are recommended next, while Stages 9.2-9.6 remain available as the
-  pilot-gated operationalization track.
+  pilot-gated operationalization track;
+- Platform P1.0-P1.2 PostgreSQL infrastructure, migrations, and portable
+  repositories are complete; the expanded dual-backend test matrix is next.
 
 See:
 
@@ -43,6 +45,9 @@ See:
 - `docs/STAGE-9.1-AUTH-DESIGN.md`
 - `docs/STAGE-9.1-VERIFICATION.md`
 - `docs/AUTHENTICATION-TOKENS.md`
+- `docs/POSTGRESQL-MIGRATION-PLAN.md`
+- `docs/POSTGRESQL-P1.1-VERIFICATION.md`
+- `docs/POSTGRESQL-P1.2-VERIFICATION.md`
 - `agent-service/README.md`
 
 ## Optional local PostgreSQL container

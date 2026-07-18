@@ -85,3 +85,44 @@ Tokens are injected into process environments and are absent from the workflow
 export. FastAPI fails closed when a required token is missing. The distinct
 review scope preserves approval/rejection as a separate authorized action.
 Stage 9.1 does not yet bind runs to owners or tenants.
+
+## Optional PostgreSQL portability foundation
+
+Platform P1.0-P1.2 adds an isolated PostgreSQL container, portable engine and
+migrations, and portable run/idempotency repositories. SQLite remains the
+default persistence path:
+
+```text
+FastAPI (macOS) -> SQLite (active backend)
+
+PostgreSQL 18.4 (Docker, 127.0.0.1:5432)
+`-> available, migration-tested, and used only when explicitly configured
+```
+
+The PostgreSQL service uses the Docker named volume
+`codex_test_ai_factory_postgres_data`. Its port is bound only to localhost and
+its password is loaded from the ignored repository `.env`. The stop script
+retains the named volume.
+
+FastAPI configuration recognizes SQLite and PostgreSQL URLs. SQLAlchemy and
+psycopg provide portable repositories, while Alembic revision
+`0001_current_factory_schema` creates the current schema on a fresh database.
+One engine is shared by run and idempotency operations for the service
+lifetime. There is no dual-write or silent fallback between backends.
+
+The planned P1 target allows one configured FastAPI backend at a time:
+
+```text
+                         +-> SQLite (default and rollback)
+n8n -> FastAPI service --|
+                         +-> PostgreSQL (explicit opt-in)
+```
+
+The application does not dual-write. PostgreSQL becomes eligible as the local
+default only after the expanded dual-backend tests, migration reconciliation,
+backup/restore, cutover, and rollback verification pass. See
+`docs/POSTGRESQL-MIGRATION-PLAN.md`.
+
+PostgreSQL availability does not add asynchronous jobs or increase Ollama
+capacity. Durable workers, Redis or another broker, and n8n queue mode remain
+separate architecture decisions.
