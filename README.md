@@ -31,6 +31,10 @@ Codex and GPT-5.6 were used to:
   before it was committed; and
 - write and maintain the setup, architecture, API, security, operations, and
   verification documentation, including the project infographic.
+- Codex also helped create the project presentation video by setting up the
+  Remotion project, structuring the scenes, generating animation and layout
+  code, refining the on-screen messaging, and preparing the video for
+  rendering.
 
 The collaboration remained human-controlled: Codex explained planned changes
 before applying them, used synthetic data only, preserved credentials, and did
