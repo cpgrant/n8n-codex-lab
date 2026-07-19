@@ -4,6 +4,44 @@ AI Strategy Factory is a local, synthetic-data strategy workflow built with
 Codex, n8n, MCP, FastAPI, PostgreSQL, Ollama, and Docker. The repository retains
 the technical name `n8n-codex-lab`.
 
+> **Public code repository:**
+> <https://github.com/cpgrant/n8n-codex-lab>
+
+## How Codex and GPT-5.6 were used
+
+**Codex powered by GPT-5.6 was the development collaborator for this project.**
+It worked directly against the repository and local development environment,
+while the human developer set the product direction, approved changes, made
+architecture and safety decisions, and performed the final workflow reviews.
+
+Codex and GPT-5.6 were used to:
+
+- turn the AI Strategy Factory concept into an incremental implementation plan
+  and maintain the project roadmap;
+- design, inspect, and safely export the inactive `CODEX TEST` n8n workflow;
+- implement and refactor the FastAPI service, schemas, lifecycle rules,
+  authentication boundaries, quality checks, artifacts, and provider adapters;
+- build the SQLite-to-PostgreSQL portability layer, Alembic migration,
+  reconciliation, backup, restore, and rollback tooling;
+- create repository-owned Docker Compose configuration and operational scripts
+  for n8n, PostgreSQL, Ollama, and FastAPI;
+- generate synthetic test fixtures and expand unit, API, integration,
+  idempotency, concurrency, workflow-contract, and recovery tests;
+- diagnose failures from local logs and test output, then verify each change
+  before it was committed; and
+- write and maintain the setup, architecture, API, security, operations, and
+  verification documentation, including the project infographic.
+
+The collaboration remained human-controlled: Codex explained planned changes
+before applying them, used synthetic data only, preserved credentials, and did
+not activate or publish the n8n workflow. The checked-in `AGENTS.md` records
+these operating constraints.
+
+GPT-5.6 is part of the **development process**, not a hidden runtime dependency.
+The submitted application runs locally and uses the configured Ollama model for
+strategy generation and optional critique; deterministic tests use the fake
+provider.
+
 The lab is evolving incrementally into a lightweight AI Factory Platform. AI
 Strategy Factory v0.1 is the first reference factory and now includes the
 Mac-local FastAPI service with PostgreSQL persistence, local Ollama generation, advisory quality
