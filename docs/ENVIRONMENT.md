@@ -13,7 +13,8 @@
 
 - MCP URL: http://localhost:5678/mcp-server/http
 
-- n8n Docker directory: ~/Development/docker/n8n
+- n8n Compose files: repository-owned `compose.n8n.yml` and
+  `compose.n8n-auth.yml`
 
 - Codex lab directory: ~/Development/codex/n8n-codex-lab
 
@@ -29,7 +30,7 @@
 
 - AI Factory rollback persistence: unchanged SQLite under `data/`
 
-- Optional AI Factory PostgreSQL: `postgres:18.4-bookworm` in Docker, bound to
+- AI Factory PostgreSQL: `postgres:18.4-bookworm` in Docker, bound to
   `127.0.0.1:5432`, database/user `ai_factory`
 
 - PostgreSQL persistence: Docker named volume

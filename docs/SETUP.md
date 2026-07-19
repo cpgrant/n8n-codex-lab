@@ -1,48 +1,150 @@
-# SETUP
+# AI Strategy Factory setup
 
-## Startup
+This is the canonical clean-machine setup for the local AI Strategy Factory on
+macOS. The supported boundary is a local synthetic-data lab. Do not use real or
+confidential client data, and keep the n8n workflow inactive and unpublished.
 
-Open the project:
+## What runs where
+
+| Component | Runtime | Address | Purpose |
+| --- | --- | --- | --- |
+| Docker Desktop | macOS | n/a | Runs n8n and PostgreSQL containers |
+| n8n 2.29.10 | Docker | http://127.0.0.1:5678 | Workflow orchestration and human review |
+| PostgreSQL 18.4 | Docker | `127.0.0.1:5432` | FastAPI application database |
+| Ollama | macOS | http://127.0.0.1:11888 | Optional local generation and critique |
+| FastAPI/Uvicorn | macOS | http://127.0.0.1:8000 | AI Strategy Factory API |
+
+n8n reaches FastAPI through `http://host.docker.internal:8000`. The repository
+owns both Compose definitions; no external n8n directory is required.
+
+## 1. Install prerequisites
+
+Install:
+
+- Git.
+- Docker Desktop for Mac: <https://docs.docker.com/desktop/setup/install/mac-install/>.
+- Ollama for macOS: <https://docs.ollama.com/macos>.
+- `uv`: <https://docs.astral.sh/uv/getting-started/installation/>.
+- `jq` (for health and verification scripts).
+
+With Homebrew already installed, the command-line prerequisites can be
+installed with:
 
 ```bash
-cd ~/Development/codex/n8n-codex-lab
-code .
-codex mcp list
+brew install git uv jq
 ```
 
-Keep secrets only in the ignored `.env`; never copy the real token into
-`.env.example`, documentation, or Git.
+Install Docker Desktop and Ollama from their official macOS installers, launch
+each once, and allow their command-line tools to be added to `PATH`.
 
-Stage 9.1 requires distinct `AI_FACTORY_SERVICE_TOKEN` and
-`AI_FACTORY_REVIEW_TOKEN` values of at least 32 characters. Put them in the
-ignored repository `.env`. Never place them in workflow JSON or n8n variables
-intended for non-secret data. Optional expiry variables are documented in
-`.env.example`. See `docs/AUTHENTICATION-TOKENS.md` for generation, expiration,
-startup, and rotation instructions.
-
-The repository startup script starts n8n and a repository-managed Ollama
-server on port `11888`:
+Verify the prerequisites:
 
 ```bash
-cd ~/Development/codex/n8n-codex-lab
+git --version
+docker compose version
+ollama --version
+uv --version
+jq --version
+openssl version
+curl --version
+```
+
+Docker Desktop must be installed, but it does not need to be running before the
+normal startup command; the startup wrapper opens it when necessary.
+
+## 2. Clone the repository
+
+```bash
+git clone https://github.com/cpgrant/n8n-codex-lab.git
+cd n8n-codex-lab
+```
+
+The repository is private, so GitHub authentication is required to clone it.
+
+## 3. Configure the local environment
+
+Create the ignored local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate three different secrets. Run this command three times:
+
+```bash
+openssl rand -hex 32
+```
+
+Edit `.env` and set:
+
+```text
+AI_FACTORY_POSTGRES_PASSWORD=<first generated value>
+AI_FACTORY_SERVICE_TOKEN=<second generated value>
+AI_FACTORY_REVIEW_TOKEN=<third generated value>
+AI_FACTORY_DEFAULT_DATABASE=postgresql
+```
+
+The service and review tokens must be different and at least 32 characters.
+Never commit `.env`, paste its values into workflow JSON, or store them in n8n
+fields intended for non-secret data. See `docs/AUTHENTICATION-TOKENS.md` for
+rotation and optional expiration.
+
+Leave `AI_FACTORY_PROVIDER=fake` and `AI_FACTORY_QUALITY_MODE=basic` for the
+fastest deterministic first run. Ollama is enabled explicitly later.
+
+## 4. Install the FastAPI environment
+
+```bash
+cd agent-service
+uv sync --extra dev
+cd ..
+```
+
+`uv` installs the project Python version when necessary and creates the local
+`.venv`. No global Python packages are required.
+
+## 5. Install the Ollama model
+
+The repository starts its own Ollama listener on port `11888`, separate from
+Ollama's conventional port. Download the configured model before the first live
+generation:
+
+```bash
+OLLAMA_HOST=127.0.0.1:11888 ollama serve
+```
+
+Keep that terminal open temporarily. In a second terminal, from the repository
+root, run:
+
+```bash
+OLLAMA_HOST=http://127.0.0.1:11888 ollama pull gemma4:31b
+```
+
+Stop the temporary server with `Ctrl-C`. Normal startup subsequently manages
+the repository listener. The model is large; confirm that the Mac has enough
+free disk space and memory. Deterministic `fake` mode does not require a model.
+
+## 6. Start the complete system
+
+From the repository root:
+
+```bash
 scripts/system-start.sh
 ```
 
-`scripts/system-start.sh` starts Docker Desktop when necessary, waits for the
-Docker engine, starts PostgreSQL, n8n, and Ollama, and finally runs FastAPI in
-the foreground. It is the normal post-P1.5 startup command.
+The command:
 
-The underlying `scripts/start.sh` loads `.env`, validates both tokens, and passes them to n8n
-through the repository-owned `compose.n8n-auth.yml` override. It fails before
-starting services when authentication configuration is missing or invalid.
-Explicit environment values take precedence over matching `.env` entries.
+1. opens Docker Desktop when necessary and waits for the engine;
+2. starts the repository-owned PostgreSQL container;
+3. builds and starts the repository-owned n8n container;
+4. starts the repository-managed Ollama listener; and
+5. starts FastAPI in the foreground.
 
-It is safe to run `scripts/start.sh` again when Ollama is already healthy. The
-matching `scripts/stop.sh` stops only the Ollama PID started and recorded by
-this repository, then stops n8n. Logs and the PID file are stored under the
-Git-ignored `tmp/` directory.
+The first run downloads Docker images and builds the pinned n8n image with
+FFmpeg, so it takes longer than later starts. Keep the terminal open while
+FastAPI is running.
 
-For manual startup, wait until Docker Desktop is ready and run:
+The equivalent manual sequence is:
 
 ```bash
 scripts/postgres-start.sh
@@ -50,177 +152,84 @@ scripts/start.sh
 scripts/agent-start.sh
 ```
 
-## Stage 1 agent service
+## 7. Complete the one-time n8n setup
 
-Install the isolated development environment:
+1. Open <http://127.0.0.1:5678>.
+2. Create the local n8n owner account when prompted. Use local test-account
+   information; do not use client credentials.
+3. Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json`.
+4. Confirm that its name begins with `CODEX TEST`.
+5. Keep it inactive and unpublished.
 
-```bash
-cd ~/Development/codex/n8n-codex-lab/agent-service
-uv sync --extra dev
-```
+Do not modify existing n8n credentials. The checked-in workflow obtains the
+two local FastAPI tokens from its container environment and must be used only
+with synthetic input.
 
-Start the service directly on the Mac:
+## 8. Verify all components
 
-```bash
-cd ~/Development/codex/n8n-codex-lab
-scripts/agent-start.sh
-```
-
-`scripts/agent-start.sh` loads the same ignored `.env` and validates both Stage
-9.1 tokens. Missing or invalid configuration stops startup instead of running a
-partially configured API. Explicit environment values take precedence over
-matching `.env` entries. The synthetic smoke scripts also require the tokens.
-
-In another terminal, verify it:
+Keep `scripts/system-start.sh` running and use a second terminal:
 
 ```bash
-cd ~/Development/codex/n8n-codex-lab
+cd n8n-codex-lab
+scripts/postgres-status.sh
+scripts/status.sh
 scripts/agent-check.sh
+curl -fsS http://127.0.0.1:11888/api/tags | jq '.models[].name'
 ```
 
-Run the tests:
+Expected results:
+
+- PostgreSQL reports healthy on `127.0.0.1:5432`.
+- n8n reports running and is reachable on port `5678`.
+- FastAPI returns an `ok` health status on port `8000`.
+- Ollama lists `gemma4:31b` when the live provider will be used.
+
+Run the automated local checks:
 
 ```bash
-cd ~/Development/codex/n8n-codex-lab/agent-service
-uv run pytest
+node scripts/verify-stage8-intake.js
+node scripts/verify-stage9-5-lite.js
+scripts/verify-stage9-3-lite.sh
+cd agent-service
+uv run pytest -q
 ```
 
-With the service running, verify the Stage 2 create/read path using only the
-checked-in synthetic brief:
+## 9. Run the first synthetic workflow test
+
+In n8n, open the imported inactive workflow and select **Execute workflow**.
+Use its temporary `/form-test/...` URL and choose **Load synthetic example**.
+Do not activate or publish the workflow to obtain a permanent URL.
+
+The default `fake` provider produces a deterministic strategy without calling
+Ollama. For live local generation, stop FastAPI with `Ctrl-C`, set these values
+in the ignored `.env`, and restart with `scripts/agent-start.sh`:
+
+```text
+AI_FACTORY_PROVIDER=ollama
+AI_FACTORY_QUALITY_MODE=pro
+OLLAMA_MODEL=gemma4:31b
+OLLAMA_QUALITY_MODEL=gemma4:31b
+```
+
+Run `scripts/agent-smoke-stage6-ollama.sh` or the synthetic n8n form again.
+The first live request may take several minutes while the model loads.
+
+## 10. Stop safely
+
+Stop FastAPI with `Ctrl-C`, then run:
 
 ```bash
-cd ~/Development/codex/n8n-codex-lab
-scripts/agent-smoke-stage2.sh
+scripts/system-stop.sh
 ```
 
-Verify Stage 3 approval, durable review state, Markdown generation, and artifact
-retrieval using only synthetic data:
+This stops the repository-managed Ollama process, n8n, and PostgreSQL without
+deleting their persistent volumes, the SQLite rollback file, artifacts, or
+backups. Never use `docker compose down --volumes` for routine shutdown.
 
-```bash
-cd ~/Development/codex/n8n-codex-lab
-scripts/agent-smoke-stage3.sh
-```
+## Troubleshooting and next steps
 
-## Stage 4 n8n workflow
-
-Start Docker Desktop and n8n, then keep the agent service running on the Mac.
-Verify both network paths:
-
-```bash
-cd ~/Development/codex/n8n-codex-lab
-scripts/verify-stage4.sh
-```
-
-Import `workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json` into n8n as an
-inactive workflow. Use the editor's test form URL for synthetic manual testing.
-Do not activate or publish the workflow without explicit approval.
-
-The Form Trigger requires a signed-in n8n user. `scripts/start.sh` supplies the
-Stage 9.1 token variables to n8n. Later form pages inherit n8n User Auth, and
-reviewer identity is taken from the authenticated user's opaque ID rather than
-an editable field.
-
-## Stage 5 operational verification
-
-With Docker Desktop, n8n, and the Mac-local agent service running, execute:
-
-```bash
-cd ~/Development/codex/n8n-codex-lab
-scripts/verify-stage5.sh
-```
-
-The script verifies Stage 4 safety/connectivity plus create and review
-idempotency, rejection semantics, durable retrieval, and the absence of an
-artifact for a rejected synthetic run. Follow the restart-persistence procedure
-in `docs/STAGE-5-VERIFICATION.md` to confirm the same run remains available
-after restarting FastAPI.
-
-The n8n `/form-test/...` URL is temporary. If it expires during manual entry,
-click **Execute workflow** again and use the newly opened form. Do not publish
-the workflow merely to avoid the test-listener timeout without making that
-separate operational decision explicitly.
-
-## Stage 6 Ollama strategy generation
-
-Ensure `scripts/start.sh` has made Ollama available at port `11888`. Stop the
-currently running fake-provider FastAPI process with `Ctrl-C`, then start it in
-Ollama mode:
-
-```bash
-cd ~/Development/codex/n8n-codex-lab
-AI_FACTORY_PROVIDER=ollama \
-OLLAMA_BASE_URL=http://127.0.0.1:11888 \
-OLLAMA_MODEL=gemma4:31b \
-OLLAMA_TIMEOUT_SECONDS=300 \
-scripts/agent-start.sh
-```
-
-In a second terminal:
-
-```bash
-scripts/agent-smoke-stage6-ollama.sh
-```
-
-The first `gemma4:31b` request may be slow while the model loads. To return to
-deterministic operation, restart FastAPI without `AI_FACTORY_PROVIDER=ollama`.
-The n8n workflow requires no modification and remains inactive/unpublished.
-
-Stage 8 replaces the formerly prefilled first page with an intake-mode chooser.
-Choose **Load synthetic example** for the fast path, **Enter a blank manual
-form** for synthetic manual entry, or **Upload structured JSON** for one
-synthetic `.json` object up to 64 KiB.
-
-## Stage 7 quality report
-
-`basic` mode is the default and requires no additional model call:
-
-```bash
-AI_FACTORY_QUALITY_MODE=basic scripts/agent-start.sh
-```
-
-For a separate Ollama critique after generation:
-
-```bash
-AI_FACTORY_PROVIDER=ollama \
-AI_FACTORY_QUALITY_MODE=pro \
-OLLAMA_BASE_URL=http://127.0.0.1:11888 \
-OLLAMA_MODEL=gemma4:31b \
-OLLAMA_QUALITY_MODEL=gemma4:31b \
-OLLAMA_TIMEOUT_SECONDS=300 \
-scripts/agent-start.sh
-```
-
-Run the synthetic verification in another terminal:
-
-```bash
-EXPECTED_QUALITY_MODE=pro scripts/agent-smoke-stage7.sh
-```
-
-The exported `CODEX TEST — AI Strategy Factory v0.1` workflow calls the quality
-endpoint and displays its advisory findings before the human decision. Keep the
-workflow inactive and unpublished.
-
-Stage 8 begins with an intake-mode page. The example branch is fastest; the
-manual branch is intentionally blank; and the JSON branch accepts one
-synthetic `.json` brief up to 64 KiB. Uploaded data must satisfy the same strict
-API schema and is not retained as a file by the workflow.
-
-For a customized synthetic brief, create an ignored working copy and select
-**Upload structured JSON**:
-
-```bash
-cp examples/strategy-brief.synthetic.json tmp/company-brief.synthetic.json
-code tmp/company-brief.synthetic.json
-```
-
-The built-in **Load synthetic example** payload is embedded in the workflow and
-does not change when the source example file is edited. Real or confidential
-data remains prohibited until Stage 9.
-
-Each quality call also writes an advisory Markdown copy to
-`artifacts/quality-reports/quality-report-<run_id>.md`. Retrieve it through
-`GET /v1/strategy-runs/<run_id>/quality-report/artifact`. It is not an approved
-strategy artifact and is created before the review decision.
-
-The host-side URL is `http://127.0.0.1:8000`. n8n uses
-`http://host.docker.internal:8000` because it runs in Docker Desktop.
+- Known startup and connectivity problems: `docs/TROUBLESHOOTING.md`.
+- Daily commands after installation: `docs/DAILY-OPERATIONS.md`.
+- PostgreSQL migration and rollback: `docs/POSTGRESQL-MIGRATION-RUNBOOK.md`.
+- Backup and recovery: `docs/BACKUP-AND-RECOVERY.md`.
+- Authentication tokens: `docs/AUTHENTICATION-TOKENS.md`.

@@ -80,8 +80,9 @@ workflows/
 
 Keep backups of:
 
-- `docker-compose.yml`
-- `Dockerfile`
+- `compose.n8n.yml`
+- `compose.n8n-auth.yml`
+- `Dockerfile.n8n`
 - `AGENTS.md`
 - exported workflow JSON files
 - repository documentation
@@ -139,8 +140,8 @@ history is excluded unless explicitly requested.
 Stop n8n:
 
 ```bash
-cd ~/Development/docker/n8n
-docker compose down
+cd ~/Development/codex/n8n-codex-lab
+scripts/stop.sh
 ```
 
 Restore the selected archive:
@@ -156,7 +157,7 @@ docker run --rm \
 Restart:
 
 ```bash
-docker compose up -d
+scripts/start.sh
 ```
 
 ## Recover after a failed image update
@@ -164,14 +165,17 @@ docker compose up -d
 If the previous custom image still exists:
 
 ```bash
-cd ~/Development/docker/n8n
-docker compose up -d --no-build
+cd ~/Development/codex/n8n-codex-lab
+docker compose --project-name n8n \
+  -f compose.n8n.yml \
+  -f compose.n8n-auth.yml \
+  up -d --no-build
 ```
 
 Verify:
 
 ```bash
-docker compose ps
+docker compose --project-name n8n -f compose.n8n.yml ps
 docker exec -it n8n n8n --version
 docker exec -it n8n ffmpeg -version
 ```

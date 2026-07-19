@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPOSITORY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 echo "Docker status:"
 docker compose \
-  -f "$HOME/Development/docker/n8n/docker-compose.yml" \
+  --project-name n8n \
+  -f "$REPOSITORY_ROOT/compose.n8n.yml" \
   ps
 
 echo
