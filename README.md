@@ -1,10 +1,12 @@
-# n8n Codex Lab
+# AI Strategy Factory
 
-Purpose: AI-assisted workflow engineering using Codex, n8n, MCP, Docker and Git.
+AI Strategy Factory is a local, synthetic-data strategy workflow built with
+Codex, n8n, MCP, FastAPI, PostgreSQL, Ollama, and Docker. The repository retains
+the technical name `n8n-codex-lab`.
 
 The lab is evolving incrementally into a lightweight AI Factory Platform. AI
 Strategy Factory v0.1 is the first reference factory and now includes the
-Mac-local FastAPI/SQLite service, local Ollama generation, advisory quality
+Mac-local FastAPI service with PostgreSQL persistence, local Ollama generation, advisory quality
 reports and Markdown copies, explicit human review, approved strategy
 artifacts, Stage 8 flexible synthetic intake, and Stage 9.1 human/service
 authentication.
@@ -35,6 +37,7 @@ Current roadmap status:
 
 See:
 
+- `docs/SETUP.md` — canonical clean-machine installation and verification
 - `docs/AI-FACTORY-PLATFORM.md`
 - `docs/ROADMAP.md`
 - `docs/Professional-n8n-Codex-Lab-Manual.md`
@@ -55,11 +58,11 @@ See:
 - `docs/POSTGRESQL-MIGRATION-RUNBOOK.md`
 - `agent-service/README.md`
 
-## Optional local PostgreSQL container
+## Local PostgreSQL database
 
-PostgreSQL can run as an isolated, optional database alongside the current
-SQLite-backed factory. Installing the container does not switch FastAPI away
-from SQLite and does not migrate n8n.
+PostgreSQL is the active local FastAPI database after the completed P1.5
+cutover. The unchanged SQLite database remains a verified rollback snapshot;
+n8n continues to use its own separate persistence.
 
 1. Add a new, distinct secret to the ignored `.env`:
 

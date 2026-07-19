@@ -86,7 +86,7 @@ export. FastAPI fails closed when a required token is missing. The distinct
 review scope preserves approval/rejection as a separate authorized action.
 Stage 9.1 does not yet bind runs to owners or tenants.
 
-## Optional PostgreSQL portability foundation
+## PostgreSQL portability foundation
 
 Platform P1.0-P1.5 adds an isolated PostgreSQL container, portable engine and
 migrations, portable run/idempotency repositories, and a dual-backend failure,

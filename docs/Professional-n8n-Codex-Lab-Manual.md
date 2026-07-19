@@ -1,7 +1,7 @@
-# Professional n8n Codex Lab Manual
+# AI Strategy Factory manual
 
-This is the navigation page for the maintained lab documentation. The project
-currently provides a complete local synthetic Strategy Factory vertical slice,
+This is the navigation page for the maintained AI Strategy Factory lab
+documentation. The project provides a complete local synthetic vertical slice,
 not a production-ready multi-factory service.
 
 ## Start here

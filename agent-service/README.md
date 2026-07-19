@@ -1,9 +1,9 @@
 # AI Strategy Factory service
 
-The local FastAPI and SQLite service exposes health, create/read runs,
-approval/rejection, and approved Markdown retrieval. Generation supports the
-deterministic fake provider and the opt-in local Ollama provider introduced in
-Stage 6.
+The local FastAPI service exposes health, create/read runs, approval/rejection,
+and approved Markdown retrieval. PostgreSQL is the active local database;
+SQLite is retained as the verified rollback path. Generation supports the
+deterministic fake provider and the opt-in local Ollama provider.
 
 ## Setup on macOS
 
