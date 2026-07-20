@@ -157,6 +157,109 @@ const EndScene = () => {
   );
 };
 
+const CodexCrewScene = () => {
+  const frame = useCurrentFrame();
+  const {fps, durationInFrames} = useVideoConfig();
+  const enter = spring({frame, fps, config: {damping: 20, stiffness: 85}});
+  const cards = [
+    ["VS Code", "Build · Refactor · Test · Debug"],
+    ["ChatGPT web", "Plan · Research · Review"],
+    ["ChatGPT on macOS", "Coordinate · Operate · Create video"],
+  ];
+
+  return (
+    <AbsoluteFill
+      className="scene codex-crew-scene"
+      style={{opacity: fade(frame, durationInFrames)}}
+    >
+      <div className="grid-lines" />
+      <div className="crew-heading" style={{opacity: enter}}>
+        <span className="eyebrow">How I built it</span>
+        <h2>One human-directed Codex crew.</h2>
+        <p>Codex worked across three surfaces, powered by GPT-5.6 for development.</p>
+      </div>
+      <div className="crew-cards">
+        {cards.map(([title, body], index) => {
+          const cardEnter = spring({
+            frame: frame - index * 7,
+            fps,
+            config: {damping: 18, stiffness: 90},
+          });
+          return (
+            <div
+              className="crew-card"
+              key={title}
+              style={{
+                opacity: cardEnter,
+                transform: `translateY(${interpolate(cardEnter, [0, 1], [36, 0])}px)`,
+              }}
+            >
+              <span className="crew-card-number">0{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </div>
+          );
+        })}
+      </div>
+      <div className="crew-outcome">
+        <span>Codex + GPT-5.6</span>
+        <div className="crew-line" />
+        <strong>Architecture · Python · n8n · MCP · Tests · Docs · GitHub · Video</strong>
+      </div>
+      <div className="chapter-number">07</div>
+    </AbsoluteFill>
+  );
+};
+
+const BuildScopeScene = () => {
+  const frame = useCurrentFrame();
+  const {fps, durationInFrames} = useVideoConfig();
+  const enter = spring({frame, fps, config: {damping: 20, stiffness: 85}});
+  const scopes = [
+    ["Product + architecture", "Idea · Roadmap · Stack · SQLite → PostgreSQL"],
+    ["Engineering + operations", "n8n · MCP · FastAPI · Docker · Tests"],
+    ["Documentation + delivery", "Docs · Licence research · GitHub · Video"],
+  ];
+
+  return (
+    <AbsoluteFill
+      className="scene build-scope-scene"
+      style={{opacity: fade(frame, durationInFrames)}}
+    >
+      <div className="grid-lines" />
+      <div className="scope-heading" style={{opacity: enter}}>
+        <span className="eyebrow">From idea to shipped product</span>
+        <h2>Codex accelerated the whole build.</h2>
+      </div>
+      <div className="scope-list">
+        {scopes.map(([title, body], index) => {
+          const rowEnter = spring({
+            frame: frame - index * 8,
+            fps,
+            config: {damping: 18, stiffness: 90},
+          });
+          return (
+            <div
+              className="scope-row"
+              key={title}
+              style={{
+                opacity: rowEnter,
+                transform: `translateX(${interpolate(rowEnter, [0, 1], [65, 0])}px)`,
+              }}
+            >
+              <span>0{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </div>
+          );
+        })}
+      </div>
+      <div className="scope-control">Human direction, review and final approval throughout</div>
+      <div className="chapter-number">08</div>
+    </AbsoluteFill>
+  );
+};
+
 export const StrategyFactoryVideo = () => (
   <AbsoluteFill className="video-root">
     <Sequence durationInFrames={seconds(5)}><TitleScene /></Sequence>
@@ -215,7 +318,9 @@ export const StrategyFactoryVideo = () => (
         zoom={1.03}
       />
     </Sequence>
-    <Sequence from={seconds(55)} durationInFrames={seconds(5)}><EndScene /></Sequence>
+    <Sequence from={seconds(55)} durationInFrames={seconds(15)}><CodexCrewScene /></Sequence>
+    <Sequence from={seconds(70)} durationInFrames={seconds(15)}><BuildScopeScene /></Sequence>
+    <Sequence from={seconds(85)} durationInFrames={seconds(5)}><EndScene /></Sequence>
   </AbsoluteFill>
 );
 
@@ -223,7 +328,7 @@ export const MyComposition = () => (
   <Composition
     id="AI-Strategy-Factory"
     component={StrategyFactoryVideo}
-    durationInFrames={seconds(60)}
+    durationInFrames={seconds(90)}
     fps={FPS}
     width={1920}
     height={1080}

@@ -5,7 +5,7 @@
 - Authored canvas: 1920x1080 at 30 fps
 - Review export: native scale, H.264, CRF 18
 - Final export: 2x scale (3840x2160), H.264, CRF 18
-- Duration: 60 seconds
+- Duration: 90 seconds
 - Audio: intentionally silent
 - Source recording: `recordings/n8n-codex.mov` (1920x1200)
 - Source infographic: `recordings/ai-strategy-factory-infographic-v3.png` (1920x1080)

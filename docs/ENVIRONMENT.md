@@ -9,7 +9,7 @@
 
 - FFmpeg 7.1
 
-- Codex CLI 0.139.0
+- Codex CLI 0.144.6
 
 - MCP URL: http://localhost:5678/mcp-server/http
 
@@ -43,7 +43,9 @@
 
 - n8n-to-Mac agent URL: http://host.docker.internal:8000
 
-- AI Strategy Factory workflow: 16-node Stage 8 export, inactive and unpublished
+- AI Strategy Factory workflow: current 20-node export, inactive and
+  unpublished; the dated Stage 8 verification records the earlier 16-node
+  checkpoint
 
 - Workflow MCP availability: disabled
 

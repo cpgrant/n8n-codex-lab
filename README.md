@@ -1,11 +1,107 @@
 # AI Strategy Factory
 
-AI Strategy Factory is a local, synthetic-data strategy workflow built with
-Codex, n8n, MCP, FastAPI, PostgreSQL, Ollama, and Docker. The repository retains
-the technical name `n8n-codex-lab`.
+**From structured brief to human-approved strategy artifact—locally,
+repeatably, and with a visible audit trail.**
 
-> **Public code repository:**
-> <https://github.com/cpgrant/n8n-codex-lab>
+AI Strategy Factory is a working, local-first product for independent strategy
+consultants and small internal teams. It turns a structured brief into an
+AI-generated strategy draft, evaluates the draft, pauses for an explicit human
+decision, and creates a checksummed Markdown artifact only after approval.
+
+It addresses a practical gap between unstructured AI chat, which is difficult
+to reproduce and govern, and heavyweight enterprise strategy systems, which can
+be expensive and slow to adopt. The current repository is a synthetic-data
+demonstration—not a production system approved for confidential client data.
+
+## Judge quick start
+
+- **Watch:** [90-second narrated product demonstration][demo-video]
+- **Evaluate:** [judge guide with a five-minute verification path](docs/JUDGE-GUIDE.md)
+- **Measure:** [existing technical and benchmark metrics](docs/METRICS-SUMMARY.md)
+- **Install:** [clean-machine setup and verification](docs/SETUP.md)
+- **Inspect:** [public source repository](https://github.com/cpgrant/n8n-codex-lab)
+
+[demo-video]: https://www.youtube.com/watch?v=QKJJM996nmI
+
+## Problem, audience, and differentiation
+
+### The problem
+
+Strategy work rarely ends with generating text. A usable strategy must connect
+evidence to choices, make trade-offs visible, assign ownership, survive review,
+and leave behind an artifact that others can revisit. General AI chat can help
+with drafting, but its conversational output does not by itself provide a
+repeatable intake contract, durable run state, an approval boundary, or a
+traceable final deliverable.
+
+For a small practice, assembling those controls from enterprise platforms is
+often disproportionate to the task. This creates a practical gap: AI can make
+drafting faster, but the surrounding strategy process can remain informal,
+opaque, and difficult to reproduce.
+
+### The initial audience
+
+The primary audience is **independent strategy consultants and small internal
+strategy teams** conducting bounded strategy engagements. Their immediate job
+is to convert a client or organizational brief into a consistent first draft
+without surrendering professional judgment or losing the review trail.
+
+The system is especially relevant when the team wants:
+
+- a reusable intake structure instead of starting every engagement in chat;
+- local model inference as an option;
+- a clear distinction between AI advice and human authorization;
+- reproducible outputs that can be inspected after the workflow completes; and
+- lightweight infrastructure that can be run and understood by a small team.
+
+The current version proves this workflow with fictional inputs. Moving from a
+synthetic lab to real client use would require the pilot-gated privacy,
+security, operations, and governance work identified in the roadmap.
+
+### How the product differs
+
+| Approach | Useful for | Missing for this use case | AI Strategy Factory |
+| --- | --- | --- | --- |
+| General AI chat | Fast exploration and drafting | Structured intake, durable state, enforced review, reproducible artifact creation | Wraps generation in an explicit strategy lifecycle |
+| Basic workflow demo | Showing that tools can be connected | Domain contract, state invariants, recovery, tests, and approval semantics | Implements and verifies the full brief-to-artifact path |
+| Cloud-only AI workflow | Convenient hosted inference | A local inference option and a clear local processing boundary | Supports Ollama locally behind a provider interface |
+| Fully autonomous agent | Reducing human intervention | Appropriate decision authority for consequential strategy choices | Keeps approval exclusively human-controlled |
+
+The novelty is not a claim that AI can replace a strategist. It is the opposite:
+AI Strategy Factory makes the boundary between machine contribution and human
+accountability explicit and executable. Generation, quality advice, review,
+state transition, and artifact creation are separate concerns rather than one
+opaque model response.
+
+### Why this is more than a prompt wrapper
+
+1. The strategy brief is structured and validated before generation.
+2. The model can draft and advise, but it cannot approve its own work.
+3. Quality checks do not silently change workflow state.
+4. An authenticated human reviewer must approve or reject the draft.
+5. PostgreSQL preserves run state and review history.
+6. Only an approved draft becomes a durable, checksummed artifact.
+
+The runnable implementation combines an inactive n8n workflow, a typed
+FastAPI service, PostgreSQL persistence, optional local Ollama inference,
+Docker-managed infrastructure, authentication boundaries, synthetic fixtures,
+and automated verification. Deterministic evaluation can use the fake provider
+without requiring an external AI API.
+
+For the intended audience, the potential impact is a shorter and more
+consistent path to a review-ready first draft, with less process reinvention
+between engagements and clearer evidence of who approved the result. The
+repository demonstrates the mechanism and its safeguards; it does not yet make
+a measured claim about time saved or strategy quality in real engagements.
+
+```text
+Structured brief → validation → AI draft → quality advice
+                                              ↓
+Approved Markdown artifact ← human review ← review-ready draft
+```
+
+The repository retains the technical name `n8n-codex-lab`; presentation-facing
+material uses the product name **AI Strategy Factory**.
 
 ## What I built, and how I used Codex and GPT-5.6
 
@@ -22,6 +118,27 @@ entire repository**. I supplied the product intent, constraints, priorities,
 approval decisions, and final review. Codex used GPT-5.6 to reason about the
 repository, propose scoped changes, write and edit files, run commands and
 tests, inspect failures, compare results, and iteratively improve the solution.
+
+### Codex contribution evidence
+
+The following evidence is checked into the repository so the use of Codex can
+be assessed from working artifacts, not only from this description.
+
+| Contribution | What Codex helped produce or improve | Inspectable evidence | How a judge can verify it |
+| --- | --- | --- | --- |
+| Product architecture and staged planning | Converted the product concept into bounded stages, explicit component responsibilities, and decision gates | [`docs/ROADMAP.md`](docs/ROADMAP.md), [`docs/AI-FACTORY-PLATFORM.md`](docs/AI-FACTORY-PLATFORM.md) | Compare completed stages with the corresponding code, workflow, and verification records |
+| FastAPI application engineering | Implemented typed contracts, API routes, run-state behavior, provider boundaries, review decisions, artifacts, and error handling | [`agent-service/src/ai_factory/`](agent-service/src/ai_factory/), [`docs/API.md`](docs/API.md) | Run `cd agent-service && uv run pytest -q` and inspect the generated FastAPI API surface |
+| n8n workflow orchestration | Built and iterated the inactive intake-to-review workflow while preserving the `CODEX TEST` safety boundary | [`workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json`](workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.json), [`workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.md`](workflows/CODEX-TEST-AI-Strategy-Factory-v0.1.md) | Import the workflow into local n8n or run `node scripts/verify-stage8-intake.js` |
+| PostgreSQL migration and persistence | Evolved the initial SQLite slice into a portable PostgreSQL-backed service with schema migration, reconciliation, backup, and rollback paths | [`docs/POSTGRESQL-MIGRATION-PLAN.md`](docs/POSTGRESQL-MIGRATION-PLAN.md), [`agent-service/migrations/`](agent-service/migrations/), [`agent-service/tests/test_postgresql.py`](agent-service/tests/test_postgresql.py) | Run the database verification scripts documented in the migration plan |
+| Test and failure-driven iteration | Added tests for APIs, schemas, state transitions, providers, idempotency, review, artifacts, backup, workflow export, and database portability | [`agent-service/tests/`](agent-service/tests/), [`scripts/verify-stage4.sh`](scripts/verify-stage4.sh), [`scripts/verify-stage9-5-lite.js`](scripts/verify-stage9-5-lite.js) | Run the test suite and lightweight milestone checks from the [judge guide](docs/JUDGE-GUIDE.md) |
+| Safety and authentication | Made synthetic-only operation, inactive workflow handling, human approval, token boundaries, and fail-closed behavior explicit and testable | [`AGENTS.md`](AGENTS.md), [`docs/SECURITY.md`](docs/SECURITY.md), [`docs/STAGE-9.1-VERIFICATION.md`](docs/STAGE-9.1-VERIFICATION.md) | Inspect the durable agent rules and run `scripts/verify-stage9-1-auth.sh` on a configured system |
+| Local operations and reproducibility | Created coordinated startup, health, status, shutdown, and recovery paths for the multi-service system | [`scripts/system-start.sh`](scripts/system-start.sh), [`scripts/agent-check.sh`](scripts/agent-check.sh), [`docs/DAILY-OPERATIONS.md`](docs/DAILY-OPERATIONS.md) | Follow the five-minute configured-machine path in the [judge guide](docs/JUDGE-GUIDE.md) |
+| Demonstration and communication | Helped turn the implementation into a narrated Remotion video and supporting visual explanation | [`ai-strategy-factory-video/src/Composition.tsx`](ai-strategy-factory-video/src/Composition.tsx), [`docs/ai-strategy-factory-infographic-v3.png`](docs/ai-strategy-factory-infographic-v3.png) | Watch the [90-second demonstration][demo-video] and compare its flow with the checked-in workflow |
+
+This evidence shows the breadth of the collaboration, but not autonomous
+authorship. The human supplied the product direction and constraints, approved
+scope and architecture, reviewed results, and retained control over workflow
+activation, publication, and acceptance.
 
 Rather than using Codex as a single assistant in a single chat, I used a
 **coordinated virtual engineering crew across multiple Codex surfaces**:
@@ -165,7 +282,10 @@ Current roadmap status:
 
 See:
 
+- `docs/JUDGE-GUIDE.md` — judge-oriented demonstration and verification path
+- `docs/METRICS-SUMMARY.md` — existing results and measurement gaps
 - `docs/SETUP.md` — canonical clean-machine installation and verification
+- `docs/DOCUMENTATION-AUDIT.md` — current documentation-freshness findings
 - `docs/AI-FACTORY-PLATFORM.md`
 - `docs/ROADMAP.md`
 - `docs/Professional-n8n-Codex-Lab-Manual.md`

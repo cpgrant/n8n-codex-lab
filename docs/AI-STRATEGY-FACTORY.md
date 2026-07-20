@@ -2,15 +2,22 @@
 
 The completed and planned development stages are tracked in `docs/ROADMAP.md`.
 
+> **Document status:** This began as the v0.1 design contract and retains
+> historical stage descriptions where they explain how the implementation was
+> developed. For current installation and operation, use `docs/SETUP.md` and
+> `docs/DAILY-OPERATIONS.md`. PostgreSQL is now the active local backend and the
+> Ollama provider is implemented; statements explicitly tied to earlier stages
+> describe those checkpoints rather than the current system.
+
 ## Purpose
 
 AI Strategy Factory v0.1 is a thin, human-reviewed workflow for turning a
 synthetic strategy brief into a structured draft and, after explicit approval,
 an approved Markdown artifact.
 
-n8n remains the orchestration and review surface. A later lightweight Python
-service will own validation, generation, durable run state, review decisions,
-and artifact rendering.
+n8n is the orchestration and review surface. The implemented Python/FastAPI
+service owns validation, generation, durable run state, review decisions, and
+artifact rendering.
 
 ```text
 Human -> n8n (Docker) -> agent service (macOS) -> strategy provider
@@ -19,18 +26,21 @@ Human -> n8n (Docker) -> agent service (macOS) -> strategy provider
                          approved Markdown artifact
 ```
 
-Stage 4 connects the Stage 3 service to the inactive
+At the historical Stage 4 checkpoint, the Stage 3 service was connected to the inactive
 `CODEX TEST — AI Strategy Factory v0.1` n8n form workflow. The workflow accepts
 a synthetic brief, shows the deterministic structured draft for explicit human
 review, records approval or rejection, and reports approved artifact metadata.
-It remains unpublished, is unavailable through MCP, and performs no real model
-calls.
+It remains unpublished and unavailable through MCP. The current workflow can
+use either deterministic fake generation or the implemented local Ollama
+provider, selected by service configuration rather than by workflow input.
 
-Stage 5 is the operational-verification checkpoint. It verifies safety flags,
+Stage 5 was the operational-verification checkpoint. It verified safety flags,
 host/container connectivity, idempotent create and review requests, terminal
 rejection without artifact creation, durable SQLite retrieval, and restart
 persistence. The procedure is documented in `docs/STAGE-5-VERIFICATION.md`.
-Stage 5 does not publish the workflow or introduce a model provider.
+That historical checkpoint did not publish the workflow or introduce a model
+provider; later completed stages added Ollama and PostgreSQL without changing
+the publication boundary.
 
 ## Example files
 
@@ -83,7 +93,7 @@ The response is a reviewable draft, not an approved strategy. It contains:
 | `success_measures` | array | Objects with `id`, `measure`, `target`, and `review_frequency` |
 | `next_steps` | array | Ordered objects with `order`, `action`, and `owner_role` |
 | `generated_at` | string | ISO 8601 UTC timestamp |
-| `provider` | string | Provider identifier, initially `fake` |
+| `provider` | string | Provider identifier, currently `fake` or `ollama` |
 
 IDs are stable within a run and use readable prefixes such as `OBJ-1`, `CHO-1`,
 `INIT-1`, and `MET-1`. Text generated from the brief must be treated as
@@ -92,7 +102,7 @@ credential value.
 
 ## Provider interface
 
-The first implementation will use a deliberately small provider abstraction:
+The implementation uses a deliberately small provider abstraction:
 
 ```text
 generate_strategy(brief) -> structured strategy content
@@ -105,7 +115,8 @@ Providers:
 - `OllamaStrategyProvider`: Stage 6 opt-in implementation; calls a local Ollama
   server with a JSON schema, validates the returned eight-section strategy,
   and requires no API key.
-- `OpenAIStrategyProvider`: later implementation behind the same interface.
+- `OpenAIStrategyProvider`: possible future implementation; not present in the
+  current runtime.
 
 Providers return strategy content only. They do not assign run IDs, change run
 status, approve drafts, write artifacts, or access n8n. The service validates
@@ -174,8 +185,7 @@ Rules:
 ## Idempotency rules
 
 - Every mutating API request requires an `Idempotency-Key` header.
-- Keys are scoped to the operation and authenticated caller when authentication
-  is introduced.
+- Keys are scoped to the operation and authenticated caller.
 - A repeated key with byte-equivalent normalized input returns the original
   status code and response without repeating generation, review, or rendering.
 - Reusing a key with different normalized input returns `409
@@ -193,11 +203,12 @@ Rules:
 | `AI_FACTORY_PORT` | `8000` | Service port |
 | `AI_FACTORY_HOST_URL` | `http://127.0.0.1:8000` | URL used by host-side checks |
 | `AI_FACTORY_N8N_URL` | `http://host.docker.internal:8000` | URL used by n8n inside Docker Desktop |
-| `AI_FACTORY_PROVIDER` | `fake` | Provider selection; v0.1 starts with `fake` |
+| `AI_FACTORY_PROVIDER` | `fake` | Provider selection: `fake` or `ollama` |
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11888` | Host-side local Ollama API URL |
 | `OLLAMA_MODEL` | `gemma4:31b` | Local model selected for Stage 6 |
 | `OLLAMA_TIMEOUT_SECONDS` | `300` | Synchronous local generation timeout |
-| `AI_FACTORY_DATA_DIR` | repository `data/` | Local SQLite directory |
+| `AI_FACTORY_DEFAULT_DATABASE` | `postgresql` in local `.env` | Selects normal PostgreSQL startup; `sqlite` is the controlled rollback option |
+| `AI_FACTORY_DATA_DIR` | repository `data/` | Retained SQLite rollback-data directory |
 | `AI_FACTORY_ARTIFACT_DIR` | repository `artifacts/` | Generated approved artifact directory |
 | `AI_FACTORY_SERVICE_TOKEN` | required secret | Authenticates normal n8n-to-FastAPI calls |
 | `AI_FACTORY_REVIEW_TOKEN` | required distinct secret | Authorizes explicit review calls only |
@@ -228,11 +239,15 @@ and generation time without executing template expressions. Rendering rules:
 - never create an artifact for `awaiting_review`, `rejected`, or unapproved
   failed runs.
 
-## v0.1 non-goals
+## Current boundaries and original v0.1 non-goals
+
+PostgreSQL was excluded from the original thin v0.1 slice but was subsequently
+implemented through Platform P1.0-P1.5 and is now the active local backend.
+The remaining boundaries are:
 
 - Production use or production data
 - Live n8n workflow creation, activation, or publication during Stages 0-3
-- PostgreSQL, Redis, vector databases, embeddings, or retrieval-augmented generation
+- Redis, vector databases, embeddings, or retrieval-augmented generation
 - LangChain, LangGraph, or the OpenAI Agents SDK
 - Multi-agent orchestration or autonomous tool use
 - Fine-tuning, evaluation platforms, or prompt optimization systems
@@ -303,7 +318,9 @@ automatic approval.
 
 Each stored quality report is also rendered atomically to
 `artifacts/quality-reports/quality-report-<run_id>.md`. Its metadata and
-SHA-256 checksum are stored in SQLite, and API retrieval verifies integrity.
+SHA-256 checksum are stored through the active database repository, and API
+retrieval verifies integrity. PostgreSQL is the normal local backend; the
+retained SQLite database is the rollback snapshot.
 The filename shares the strategy run ID for traceability while its directory
 and `quality-report-` prefix distinguish it from the approved
 `strategy-<run_id>.md` artifact.
