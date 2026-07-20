@@ -238,3 +238,18 @@ It starts Docker Desktop if needed, PostgreSQL, n8n, Ollama, and then FastAPI.
 The manual equivalent is `open -a Docker`, followed by
 `scripts/postgres-start.sh`, `scripts/start.sh`, and
 `scripts/agent-start.sh` after Docker is ready.
+
+## License
+
+Original AI Strategy Factory source code, scripts, workflow definitions, tests,
+templates, and technical documentation are licensed under the
+[Apache License 2.0](LICENSE).
+
+The Remotion video project, rendered videos, captured clips, screenshots,
+infographics, and other presentation or promotional media are excluded from
+the Apache License 2.0 and remain all rights reserved. See
+[ASSET-LICENSE.md](ASSET-LICENSE.md).
+
+Third-party software, models, container images, and services retain their
+respective licenses and terms. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE](NOTICE).
