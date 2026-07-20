@@ -1,0 +1,26 @@
+{
+  "composition": "AI-Strategy-Factory",
+  "duration_seconds": 60.053333,
+  "fps": 30,
+  "audio": "silent AAC track",
+  "exports": [
+    {
+      "role": "review",
+      "path": "out/review/ai-strategy-factory-1080p.mp4",
+      "width": 1920,
+      "height": 1080,
+      "codec": "h264",
+      "bytes": 37725109,
+      "sha256": "387316e738fe74ada4d8a2cdb0ff8b1a837a5ecad89622cbe1053d1feb0ee87d"
+    },
+    {
+      "role": "final",
+      "path": "out/final/ai-strategy-factory-4k.mp4",
+      "width": 3840,
+      "height": 2160,
+      "codec": "h264",
+      "bytes": 66590004,
+      "sha256": "c452de581562c0b89100389db5038cb5ac1c200d9282e491dfdc6086f98e6fe9"
+    }
+  ]
+}
