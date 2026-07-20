@@ -63,7 +63,9 @@ stored brief + immutable draft
                                                         human review
 ```
 
-The service binds the report to the draft checksum and stores it in SQLite.
+The service binds the report to the draft checksum and stores it through the
+active database repository. PostgreSQL is the normal local backend; SQLite is
+the retained rollback path.
 The quality critic receives no review decision and cannot mutate the draft.
 Stage 7.0.1 also renders that stored report under
 `artifacts/quality-reports/quality-report-<run_id>.md`. Its metadata is stored

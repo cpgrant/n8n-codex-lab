@@ -4,18 +4,86 @@ This is the canonical clean-machine setup for the local AI Strategy Factory on
 macOS. The supported boundary is a local synthetic-data lab. Do not use real or
 confidential client data, and keep the n8n workflow inactive and unpublished.
 
+This guide covers installation, configuration, startup, verification, the first
+synthetic workflow run, and safe shutdown. If the machine is already configured,
+use the daily commands below.
+
+## Daily start, status, and stop
+
+From the repository root, start the complete system with:
+
+```bash
+scripts/system-start.sh
+```
+
+The command starts Docker Desktop when required, then PostgreSQL, n8n, Ollama,
+and FastAPI in dependency order. FastAPI remains in the foreground, so keep that
+terminal open.
+
+In a second terminal, check the system with:
+
+```bash
+scripts/postgres-status.sh
+scripts/status.sh
+scripts/agent-check.sh
+curl -fsS http://127.0.0.1:11888/api/tags | jq '.models[].name'
+```
+
+Stop FastAPI with `Ctrl-C` in its terminal, then stop the remaining services
+without deleting persistent data:
+
+```bash
+scripts/system-stop.sh
+```
+
 ## What runs where
 
-| Component | Runtime | Address | Purpose |
-| --- | --- | --- | --- |
-| Docker Desktop | macOS | n/a | Runs n8n and PostgreSQL containers |
-| n8n 2.29.10 | Docker | http://127.0.0.1:5678 | Workflow orchestration and human review |
-| PostgreSQL 18.4 | Docker | `127.0.0.1:5432` | FastAPI application database |
-| Ollama | macOS | http://127.0.0.1:11888 | Optional local generation and critique |
-| FastAPI/Uvicorn | macOS | http://127.0.0.1:8000 | AI Strategy Factory API |
+| Component | Version source | Runtime | Address | Purpose |
+| --- | --- | --- | --- | --- |
+| Docker Desktop | Locally installed | macOS | n/a | Runs n8n and PostgreSQL containers |
+| n8n 2.29.10 | Pinned in `Dockerfile.n8n` | Docker | http://127.0.0.1:5678 | Workflow orchestration and human review |
+| PostgreSQL 18.4 | Pinned in `compose.postgres.yml` | Docker | `127.0.0.1:5432` | Authoritative application database |
+| Ollama | Locally installed | macOS | http://127.0.0.1:11888 | Optional local generation and critique |
+| FastAPI 0.139.0 / Uvicorn 0.51.0 | Locked in `agent-service/uv.lock` | macOS | http://127.0.0.1:8000 | AI Strategy Factory API |
 
 n8n reaches FastAPI through `http://host.docker.internal:8000`. The repository
 owns both Compose definitions; no external n8n directory is required.
+
+## Version inventory
+
+The following versions define or describe the verified development environment
+as of 20 July 2026. Pinned and locked versions are reproducible project inputs.
+Observed versions document the machine used for verification; they are not all
+minimum requirements.
+
+### Repository-pinned and locked versions
+
+| Component | Version | Source |
+| --- | --- | --- |
+| n8n | 2.29.10 | `Dockerfile.n8n` and `compose.n8n.yml` |
+| PostgreSQL | 18.4 (`bookworm`) | `compose.postgres.yml` |
+| Python | Requires 3.11 or newer; project environment resolved to 3.12.11 | `agent-service/pyproject.toml` and `uv.lock` |
+| FastAPI | 0.139.0 | `agent-service/uv.lock` |
+| Uvicorn | 0.51.0 | `agent-service/uv.lock` |
+| Ollama model | `gemma4:31b` | `.env.example` and setup commands |
+
+### Observed local tool versions
+
+| Tool | Verified version |
+| --- | --- |
+| macOS | 26.5.2 |
+| Git | 2.53.0 |
+| Docker CLI | 29.6.1 |
+| Docker Compose | 5.3.0 |
+| Ollama client | 0.32.1 |
+| `uv` | 0.10.4 |
+| `jq` | 1.7.1 |
+| OpenSSL | 3.6.1 |
+| Codex CLI (optional development tool) | 0.144.6 |
+
+Codex was used to develop and verify the repository, but it is not a runtime
+dependency of the submitted application. The default deterministic provider
+also does not require the Ollama model.
 
 ## 1. Install prerequisites
 
@@ -26,6 +94,9 @@ Install:
 - Ollama for macOS: <https://docs.ollama.com/macos>.
 - `uv`: <https://docs.astral.sh/uv/getting-started/installation/>.
 - `jq` (for health and verification scripts).
+
+The Codex CLI is optional and is needed only for Codex-assisted development or
+MCP inspection; the application runs without it.
 
 With Homebrew already installed, the command-line prerequisites can be
 installed with:
@@ -47,6 +118,8 @@ uv --version
 jq --version
 openssl version
 curl --version
+# Optional development tool:
+codex --version
 ```
 
 Docker Desktop must be installed, but it does not need to be running before the
@@ -59,7 +132,8 @@ git clone https://github.com/cpgrant/n8n-codex-lab.git
 cd n8n-codex-lab
 ```
 
-The repository is private, so GitHub authentication is required to clone it.
+The repository is public and can be cloned without GitHub authentication:
+<https://github.com/cpgrant/n8n-codex-lab>.
 
 ## 3. Configure the local environment
 
@@ -101,7 +175,15 @@ cd ..
 ```
 
 `uv` installs the project Python version when necessary and creates the local
-`.venv`. No global Python packages are required.
+`.venv`. No global Python packages are required. Confirm the resolved runtime
+and locked framework versions with:
+
+```bash
+cd agent-service
+uv run python --version
+uv run python -c 'import fastapi, uvicorn; print(f"FastAPI {fastapi.__version__}"); print(f"Uvicorn {uvicorn.__version__}")'
+cd ..
+```
 
 ## 5. Install the Ollama model
 
@@ -126,7 +208,7 @@ free disk space and memory. Deterministic `fake` mode does not require a model.
 
 ## 6. Start the complete system
 
-From the repository root:
+From the repository root, use the same daily startup command described above:
 
 ```bash
 scripts/system-start.sh
@@ -183,6 +265,16 @@ Expected results:
 - n8n reports running and is reachable on port `5678`.
 - FastAPI returns an `ok` health status on port `8000`.
 - Ollama lists `gemma4:31b` when the live provider will be used.
+
+To inspect the installed runtime versions directly:
+
+```bash
+docker exec n8n n8n --version
+docker exec codex-test-ai-factory-postgres postgres --version
+ollama --version
+uv --version
+jq --version
+```
 
 Run the automated local checks:
 
