@@ -21,7 +21,7 @@ terms, notices, and version-specific dependency metadata.
 | [PostgreSQL](https://www.postgresql.org/about/licence/) | PostgreSQL License | Separate database server and container image |
 | [Docker Engine](https://docs.docker.com/engine/) | Apache-2.0 | Container engine used by the local environment |
 | [Docker Desktop](https://docs.docker.com/subscription/) | Docker Subscription Service Agreement | macOS development environment; commercial eligibility depends on Docker's current terms |
-| [FFmpeg](https://ffmpeg.org/legal.html) | LGPL/GPL depending on build configuration | Static `ffmpeg` and `ffprobe` binaries copied into the repository-built n8n image |
+| [FFmpeg](https://ffmpeg.org/legal.html) | GPL-3.0-or-later for the selected static build | Static `ffmpeg` and `ffprobe` binaries copied into the repository-built n8n image; the build enables GPLv3 components including x264 and x265 |
 | [Remotion](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md) | Remotion License | Video-production dependency with eligibility-based free and company licensing |
 | [React](https://github.com/facebook/react/blob/main/LICENSE) | MIT | Video-project dependency |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE) | MIT | Video-project styling dependency |

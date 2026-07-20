@@ -253,3 +253,30 @@ the Apache License 2.0 and remain all rights reserved. See
 Third-party software, models, container images, and services retain their
 respective licenses and terms. See
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE](NOTICE).
+
+## OpenAI Build Week submission
+
+This repository supports the **Work and Productivity** submission for OpenAI
+Build Week. It contains synthetic examples, setup and verification commands,
+the inactive `CODEX TEST` workflow export, and evidence of how Codex powered by
+GPT-5.6 accelerated product, engineering, testing, documentation, operations,
+and presentation work.
+
+The hackathon permits either of these repository-access options:
+
+- keep the repository public with the included licensing; or
+- keep it private and grant repository access to `testing@devpost.com` and
+  `build-week-event@openai.com`.
+
+Access to the working project must remain free and unrestricted for testing
+through the judging period. For this submission, retain judge access until the
+winners have been announced before making a public repository private or
+removing private collaborators. A public repository cannot be made
+retroactively confidential: forks and clones created while it was public may
+remain available.
+
+Submission-specific items that are not stored as credentials in this
+repository must be supplied in Devpost: a public YouTube demonstration of less
+than three minutes with a clear demo and audio explaining what was built and
+how Codex and GPT-5.6 were used; the primary `/feedback` Codex Session ID; the
+repository URL; and any concise testing instructions needed by the judges.

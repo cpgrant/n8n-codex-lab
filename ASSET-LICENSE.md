@@ -15,7 +15,7 @@ The following material is excluded from the Apache License 2.0:
   exports; and
 - generated media artifacts unless a specific file states otherwise.
 
-Copyright 2026 CG. All rights reserved.
+Copyright 2026 AI Strategy Factory contributors. All rights reserved.
 
 No permission is granted to reproduce, redistribute, modify, publish, or use
 the excluded assets commercially without prior written permission, except as

@@ -1,0 +1,21 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Local source recordings and generated agent/editor integrations.
+recordings/
+.agents/
+.claude/
+.cline/
+.codex/
+.cursor/
+.gemini/
+.github/
+.windsurf/
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Superseded lower-quality clip exports; the composition uses clips-hq/.
+public/clips/
