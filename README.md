@@ -81,6 +81,12 @@ That collaboration covered:
   status, health-check, shutdown, persistence, and recovery flows for Docker,
   Ollama, FastAPI, and the database.
 
+- **Infrastructure startup and live operations:** using Codex powered by
+  GPT-5.6 to start the complete local stack, monitor startup output, diagnose
+  service-process issues, and verify PostgreSQL, n8n, FastAPI, Ollama,
+  authentication, installed models, and health endpoints through repository
+  CLI commands.
+
 - **Safety and security:** defining synthetic-data-only rules, secret handling,
   separate service and review tokens, fail-closed authentication, artifact
   integrity checks, workflow restrictions, retention policy, trust boundaries,
