@@ -7,44 +7,124 @@ the technical name `n8n-codex-lab`.
 > **Public code repository:**
 > <https://github.com/cpgrant/n8n-codex-lab>
 
-## How Codex and GPT-5.6 were used
+## What I built, and how I used Codex and GPT-5.6
 
-**Codex powered by GPT-5.6 was the development collaborator for this project.**
-It worked directly against the repository and local development environment,
-while the human developer set the product direction, approved changes, made
-architecture and safety decisions, and performed the final workflow reviews.
+I built **AI Strategy Factory**, a local-first, human-in-the-loop system that
+turns a structured strategy brief into an AI-generated draft, evaluates its
+quality, presents it for explicit human review, and creates an immutable
+Markdown artifact only after approval. The solution combines an inactive n8n
+workflow, a Python/FastAPI application service, PostgreSQL persistence, local
+Ollama inference, Docker-managed infrastructure, authentication boundaries,
+and a reproducible test and operations layer.
 
-Codex and GPT-5.6 were used to:
+I used **Codex powered by GPT-5.6 as the development collaborator across the
+entire repository**. I supplied the product intent, constraints, priorities,
+approval decisions, and final review. Codex used GPT-5.6 to reason about the
+repository, propose scoped changes, write and edit files, run commands and
+tests, inspect failures, compare results, and iteratively improve the solution.
 
-- turn the AI Strategy Factory concept into an incremental implementation plan
-  and maintain the project roadmap;
-- design, inspect, and safely export the inactive `CODEX TEST` n8n workflow;
-- implement and refactor the FastAPI service, schemas, lifecycle rules,
-  authentication boundaries, quality checks, artifacts, and provider adapters;
-- build the SQLite-to-PostgreSQL portability layer, Alembic migration,
-  reconciliation, backup, restore, and rollback tooling;
-- create repository-owned Docker Compose configuration and operational scripts
-  for n8n, PostgreSQL, Ollama, and FastAPI;
-- generate synthetic test fixtures and expand unit, API, integration,
-  idempotency, concurrency, workflow-contract, and recovery tests;
-- diagnose failures from local logs and test output, then verify each change
-  before it was committed; and
-- write and maintain the setup, architecture, API, security, operations, and
-  verification documentation, including the project infographic.
-- Codex also helped create the project presentation video by setting up the
-  Remotion project, structuring the scenes, generating animation and layout
-  code, refining the on-screen messaging, and preparing the video for
-  rendering.
+Rather than using Codex as a single assistant in a single chat, I used a
+**coordinated virtual engineering crew across multiple Codex surfaces**:
 
-The collaboration remained human-controlled: Codex explained planned changes
-before applying them, used synthetic data only, preserved credentials, and did
-not activate or publish the n8n workflow. The checked-in `AGENTS.md` records
-these operating constraints.
+- **Codex in the VS Code IDE extension** worked closest to the source code for
+  repository inspection, implementation, refactoring, testing, and debugging.
+- **Codex in ChatGPT on the web** supported longer-running planning, research,
+  review, and parallel work away from the local editor.
+- **Codex in the ChatGPT desktop app on macOS** provided a workspace-oriented
+  environment for coordinating repository work, reviewing changes, operating
+  local tools, and producing supporting assets such as the summary video.
 
-GPT-5.6 is part of the **development process**, not a hidden runtime dependency.
-The submitted application runs locally and uses the configured Ollama model for
-strategy generation and optional critique; deterministic tests use the fake
-provider.
+These were different working surfaces for the same human-directed development
+effort. I coordinated their tasks, supplied repository context and durable
+instructions, reviewed their output, and decided what entered the codebase.
+They should be understood as a virtual crew of Codex collaborators, not as
+independent human contributors or an autonomous software team.
+
+That collaboration covered:
+
+- **Product and architecture:** turning the initial idea into staged delivery,
+  defining the platform boundary, recording architecture decisions, and
+  maintaining the roadmap from the first MCP sandbox through the PostgreSQL
+  cutover and wider multi-factory vision.
+
+- **Workflow-engine selection and orchestration:** evaluating the needs of a
+  visual, human-reviewable workflow and using n8n for form intake,
+  orchestration, review, recovery, and result presentation. Codex helped build,
+  inspect, test, and export the `CODEX TEST` workflows while keeping them
+  inactive, unpublished, credential-free, and unavailable through MCP.
+
+- **Application-service selection:** choosing FastAPI with Uvicorn for a small,
+  typed local HTTP service with validation and generated API documentation,
+  then implementing its endpoints, configuration, dependency boundaries, and
+  startup tooling.
+
+- **Python engineering:** implementing Pydantic contracts, the run-state
+  machine, provider adapters, idempotency, review and artifact services,
+  quality checks, error handling, authentication, repositories, migrations,
+  evaluation utilities, and backup support.
+
+- **Database evolution:** starting with SQLite for the smallest deterministic
+  vertical slice, evaluating the durability and portability needs, and then
+  selecting PostgreSQL for the active backend. Codex helped build the
+  SQLAlchemy portability layer, Alembic schema, transactional import,
+  reconciliation, concurrency verification, backup/restore, cutover, and
+  rollback procedures.
+
+- **Local-model selection:** integrating Ollama behind a provider interface and
+  evaluating `gemma4:12b`, `gemma4:26b`, and `gemma4:31b` on synthetic strategy
+  tasks. The current baseline remains `gemma4:31b`; the repository records
+  latency, schema validity, quality results, and the still-pending blind human
+  preference step rather than claiming a broader benchmark result.
+
+- **Container and environment management:** creating Docker Compose definitions
+  and operational scripts for n8n and PostgreSQL, plus coordinated startup,
+  status, health-check, shutdown, persistence, and recovery flows for Docker,
+  Ollama, FastAPI, and the database.
+
+- **Safety and security:** defining synthetic-data-only rules, secret handling,
+  separate service and review tokens, fail-closed authentication, artifact
+  integrity checks, workflow restrictions, retention policy, trust boundaries,
+  and explicit human approval semantics.
+
+- **Testing and evaluation:** creating synthetic fixtures and unit, API,
+  integration, workflow-contract, dual-database, idempotency, concurrency,
+  restart, migration, backup, restore, and local-model evaluation checks. Codex
+  repeatedly used test output and service logs to diagnose and correct issues.
+
+- **Documentation and communication:** writing the setup guide, architecture,
+  API reference, security model, operating procedures, troubleshooting,
+  verification records, migration runbooks, roadmap, diagrams, and project
+  infographic.
+
+- **Presentation production:** creating the Remotion-based project video,
+  including its TypeScript/React structure, scenes, animation, layout,
+  messaging, captured clips, provenance, and render preparation.
+
+- **Git and GitHub delivery:** organizing the work into reviewable changes,
+  checking diffs, preserving unrelated work, writing meaningful commits,
+  managing branches, pushing to GitHub, and preparing and merging the project
+  pull request.
+
+The three AI roles are deliberately separate:
+
+1. **Codex** was the coding agent that interacted with the repository and local
+   tools during development.
+
+2. **GPT-5.6** was the reasoning model powering that Codex collaboration; it is
+   part of how the solution was designed and built.
+
+3. **Ollama with Gemma 4** is the application's local runtime inference path for
+   strategy generation and optional critique. Deterministic tests use the fake
+   provider instead.
+
+GPT-5.6 is therefore **not a hidden production dependency** of AI Strategy
+Factory. The running application does not call GPT-5.6, and no OpenAI API key
+is required for its implemented local path.
+
+The work remained human-controlled throughout. Codex explained planned changes
+before applying them; I retained authority over scope, architecture, safety,
+workflow activation, publication, and final acceptance. The checked-in
+`AGENTS.md` makes those operating constraints durable for repository work.
 
 The lab is evolving incrementally into a lightweight AI Factory Platform. AI
 Strategy Factory v0.1 is the first reference factory and now includes the
