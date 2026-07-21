@@ -397,7 +397,7 @@
               "fieldLabel": "Run recovery details",
               "fieldName": "quality_guidance",
               "fieldType": "html",
-              "html": "={{ '<h2>Draft created</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p>The draft is stored in SQLite. The next step runs the separate advisory quality critic and can take several more minutes. Keep this tab open after selecting <strong>Generate quality report</strong>.</p><p>If this page or the next request fails, do not create another run automatically. From the repository, check the stored run with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p><p>The quality report is advisory and cannot approve the strategy.</p>' }}"
+              "html": "={{ '<h2>Draft created</h2><p><strong>Run ID:</strong> <code>' + $json.data.run_id + '</code></p><p>The draft is stored in the configured persistent database. The next step runs the separate advisory quality critic and can take several more minutes. Keep this tab open after selecting <strong>Generate quality report</strong>.</p><p>If this page or the next request fails, do not create another run automatically. From the repository, check the stored run with:</p><p style=\"overflow-wrap:anywhere;word-break:break-word\"><code>scripts/strategy-run-status.sh <wbr>' + $json.data.run_id + '</code></p><p>The quality report is advisory and cannot approve the strategy.</p>' }}"
             }
           ]
         },
