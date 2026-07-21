@@ -740,6 +740,66 @@ requiring approved data policy, operational ownership, and a documented pilot
 scope. Until then, earlier stages remain suitable only for local synthetic
 demonstrations, workshops, and internal experimentation.
 
+## Candidate product and commercial-readiness requests
+
+Status: **Unscheduled; no implementation commitment.**
+
+These requests were identified after the local Strategy Factory demonstration.
+They should be converted into scoped GitHub issues with acceptance criteria
+before implementation. They do not change the completion status of the stages
+above.
+
+### Brief and artifact experience
+
+- show the normalized brief after validation and allow correction before model
+  generation starts;
+- provide a printable or downloadable PDF of the validated brief;
+- provide a draft-strategy PDF clearly watermarked `Draft — not approved` and
+  containing the run ID, timestamp, provider/model, checksum, and approval
+  status;
+- provide an approved-strategy PDF alongside the existing Markdown artifact,
+  including approval metadata, quality score, checksum, and run details.
+
+### Standalone Strategy Factory application
+
+- replace n8n orchestration with a focused Python workflow/state coordinator
+  for intake, validation, generation, advisory quality review, explicit human
+  approval or rejection, and artifact creation;
+- preserve PostgreSQL state, transition rules, idempotency, auditability,
+  retries, recovery, and the rule that only human approval can authorize a
+  final artifact;
+- replace n8n forms with a small standalone web experience for intake,
+  progress, draft and quality review, approval or rejection, and artifact
+  download;
+- move long-running local-model calls to background execution with safe
+  progress, timeout, cancellation, and resume behavior, extending the existing
+  Stage 9.5-lite recovery foundation;
+- treat the current n8n workflow as a prototype and optional adapter rather
+  than recreating a general-purpose visual automation platform.
+
+### Runtime and model portability
+
+- add tested Podman support for local containers, Compose compatibility,
+  volumes, health checks, and host networking, without claiming that Podman
+  resolves unrelated n8n, FFmpeg, Remotion, or model licensing obligations;
+- make the generation and review providers configurable through a controlled
+  allow-list rather than arbitrary client-supplied model names;
+- record the exact model identifier, version, checksum, source, and license for
+  each approved model, with Granite, Gemma, and OLMo as evaluation candidates;
+- compare candidate models against the existing strategy contract and quality
+  rubric before changing the default.
+
+### Distribution and license hygiene
+
+- decide whether production distribution requires FFmpeg and remove the
+  GPL-enabled build when it is not needed;
+- generate a version-specific software bill of materials and complete
+  third-party notices for every distributed application or container;
+- keep Remotion as internal video-production tooling unless its commercial
+  license has been reviewed for the operating entity;
+- document separately the obligations for internal use, hosted service use,
+  and redistribution of containers, binaries, and model weights.
+
 ### Stage 10 — OpenAI provider and professional routing
 
 Status: **Planned** after the quality rubric and client-data controls exist.

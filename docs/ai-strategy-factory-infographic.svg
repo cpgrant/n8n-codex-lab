@@ -1,0 +1,224 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Local-First AI Strategy Factory</title>
+  <desc id="desc">Printer-friendly architecture infographic showing a synthetic brief flowing through n8n, FastAPI and Uvicorn, Ollama, quality assessment, human review, and approved Markdown output, with PostgreSQL as the authoritative application database.</desc>
+  <defs>
+    <style>
+      text { font-family: Inter, "Avenir Next", Arial, sans-serif; fill: #17233b; }
+      .title { font-size: 42px; font-weight: 750; letter-spacing: -0.5px; }
+      .subtitle { font-size: 20px; fill: #526078; }
+      .section { font-size: 22px; font-weight: 750; }
+      .card-title { font-size: 18px; font-weight: 750; }
+      .card-copy { font-size: 14px; fill: #526078; }
+      .number { font-size: 16px; font-weight: 800; fill: #ffffff; text-anchor: middle; dominant-baseline: central; }
+      .store-title { font-size: 21px; font-weight: 750; }
+      .store-subtitle { font-size: 15px; font-weight: 650; }
+      .body { font-size: 14px; fill: #45536a; }
+      .small { font-size: 12.5px; fill: #526078; }
+      .tiny { font-size: 11.5px; fill: #667085; }
+      .mono { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; }
+      .outline { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .line-icon { fill: none; stroke: #246b78; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowTeal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#247b86"/>
+    </marker>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#ffffff"/>
+
+  <!-- Header -->
+  <text x="60" y="72" class="title">Local-First AI Strategy Factory</text>
+  <text x="60" y="108" class="subtitle">From synthetic business brief to reviewed strategy and durable artifact</text>
+  <rect x="1280" y="42" width="580" height="66" rx="12" fill="#f8fafc" stroke="#9aa9bc" stroke-width="1.5"/>
+  <circle cx="1310" cy="75" r="12" fill="#ffffff" stroke="#6b7f96" stroke-width="2"/>
+  <path d="M1305 75l4 4 7-9" fill="none" stroke="#247b86" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1334" y="68" class="small" style="font-weight:700">CURRENT BOUNDARY</text>
+  <text x="1334" y="90" class="small">Local · authenticated · synthetic data only · inactive and unpublished</text>
+
+  <text x="60" y="163" class="section">How a strategy moves through the system</text>
+
+  <!-- Workflow arrows -->
+  <g stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M292 305 H312"/>
+    <path d="M554 305 H574"/>
+    <path d="M816 305 H836"/>
+    <path d="M1078 305 H1098"/>
+    <path d="M1340 305 H1360"/>
+    <path d="M1602 305 H1622"/>
+  </g>
+
+  <!-- Workflow cards -->
+  <g>
+    <rect x="54" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="82" cy="218" r="17" fill="#247b86"/><text x="82" y="218" class="number">1</text>
+    <g transform="translate(149 220)" class="line-icon">
+      <rect x="-27" y="-22" width="38" height="46" rx="4"/><path d="M-19-12H3M-19-3H3M-19 6H-7"/>
+      <path d="M19-12h23v36H19zM25-3h11M25 5h11M25 13h7"/>
+    </g>
+    <text x="173" y="284" class="card-title" text-anchor="middle">Synthetic Input</text>
+    <text x="173" y="316" class="card-copy" text-anchor="middle">
+      <tspan x="173">Structured brief submitted</tspan><tspan x="173" dy="20">through n8n</tspan>
+    </text>
+    <rect x="85" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="173" y="385" class="small" text-anchor="middle">Form or JSON document</text>
+
+    <rect x="316" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="344" cy="218" r="17" fill="#247b86"/><text x="344" y="218" class="number">2</text>
+    <g transform="translate(435 220)" class="line-icon">
+      <circle cx="-29" cy="0" r="8"/><circle cx="0" cy="-20" r="8"/><circle cx="29" cy="0" r="8"/><circle cx="0" cy="22" r="8"/>
+      <path d="M-21-4l13-11M8-15L21-4M23 7L7 17M-7 17L-23 7"/>
+    </g>
+    <text x="435" y="284" class="card-title" text-anchor="middle">n8n Orchestration</text>
+    <text x="435" y="316" class="card-copy" text-anchor="middle">
+      <tspan x="435">Validates input and</tspan><tspan x="435" dy="20">coordinates the process</tspan>
+    </text>
+    <rect x="347" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="435" y="385" class="small" text-anchor="middle">Workflow coordination</text>
+
+    <rect x="578" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="606" cy="218" r="17" fill="#247b86"/><text x="606" y="218" class="number">3</text>
+    <g transform="translate(697 220)" class="line-icon">
+      <rect x="-36" y="-20" width="72" height="42" rx="8"/><path d="M-24-7h48M-24 5h26"/><circle cx="24" cy="6" r="4"/>
+    </g>
+    <text x="697" y="284" class="card-title" text-anchor="middle">FastAPI + Uvicorn</text>
+    <text x="697" y="316" class="card-copy" text-anchor="middle">
+      <tspan x="697">Runs the Strategy Factory</tspan><tspan x="697" dy="20">application</tspan>
+    </text>
+    <rect x="609" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="697" y="385" class="small" text-anchor="middle">Authenticated API</text>
+
+    <rect x="840" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="868" cy="218" r="17" fill="#247b86"/><text x="868" y="218" class="number">4</text>
+    <g transform="translate(959 220)" class="line-icon">
+      <rect x="-37" y="-24" width="74" height="48" rx="7"/><path d="M-22 32h44M0 24v8"/>
+      <path d="M-17 3c7-14 27-14 34 0M-10 5c4-7 16-7 20 0"/>
+    </g>
+    <text x="959" y="284" class="card-title" text-anchor="middle">Ollama</text>
+    <text x="959" y="316" class="card-copy" text-anchor="middle">
+      <tspan x="959">Generates the structured</tspan><tspan x="959" dy="20">strategy locally</tspan>
+    </text>
+    <rect x="871" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="959" y="385" class="small" text-anchor="middle">Local AI model</text>
+
+    <rect x="1102" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="1130" cy="218" r="17" fill="#247b86"/><text x="1130" y="218" class="number">5</text>
+    <g transform="translate(1221 220)" class="line-icon">
+      <rect x="-30" y="-25" width="60" height="52" rx="5"/><path d="M-18-10l5 5 9-11M4-10h14M-18 6l5 5 9-11M4 6h14"/>
+    </g>
+    <text x="1221" y="284" class="card-title" text-anchor="middle">Quality Assessment</text>
+    <text x="1221" y="312" class="card-copy" text-anchor="middle">
+      <tspan x="1221">Checks alignment, evidence,</tspan><tspan x="1221" dy="20">risks, and consistency</tspan>
+    </text>
+    <rect x="1133" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="1221" y="385" class="small" text-anchor="middle">Advisory scorecard</text>
+
+    <rect x="1364" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="1392" cy="218" r="17" fill="#247b86"/><text x="1392" y="218" class="number">6</text>
+    <g transform="translate(1483 220)" class="line-icon">
+      <circle cx="0" cy="-13" r="12"/><path d="M-23 25c2-17 44-17 46 0M20-14l7 7 13-16"/>
+    </g>
+    <text x="1483" y="284" class="card-title" text-anchor="middle">Human Review</text>
+    <text x="1483" y="316" class="card-copy" text-anchor="middle">
+      <tspan x="1483">Explicit approval</tspan><tspan x="1483" dy="20">or rejection</tspan>
+    </text>
+    <rect x="1395" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="1483" y="385" class="small" text-anchor="middle">Required decision gate</text>
+
+    <rect x="1626" y="190" width="238" height="230" rx="16" class="outline"/>
+    <circle cx="1654" cy="218" r="17" fill="#247b86"/><text x="1654" y="218" class="number">7</text>
+    <g transform="translate(1745 220)" class="line-icon">
+      <path d="M-29-25h42l16 16v36h-58zM13-25v16h16"/><path d="M-16 5l9 9L14-8"/>
+    </g>
+    <text x="1745" y="284" class="card-title" text-anchor="middle">Approved Strategy</text>
+    <text x="1745" y="312" class="card-copy" text-anchor="middle">
+      <tspan x="1745">Produces the final</tspan><tspan x="1745" dy="20">human-readable deliverable</tspan>
+    </text>
+    <rect x="1657" y="365" width="176" height="30" rx="15" fill="#f1f5f9"/>
+    <text x="1745" y="385" class="small" text-anchor="middle">Markdown artifact</text>
+  </g>
+
+  <!-- Runtime relationship -->
+  <rect x="408" y="448" width="1104" height="46" rx="23" fill="#f8fafc" stroke="#d5dde7"/>
+  <text x="960" y="477" class="store-subtitle" text-anchor="middle">
+    Primary runtime:  n8n  →  FastAPI/Uvicorn  →  PostgreSQL    ·    Ollama connects to FastAPI for local generation
+  </text>
+
+  <!-- Storage heading -->
+  <text x="60" y="545" class="section">Data and Storage</text>
+
+  <!-- Relationship lines to stores -->
+  <g fill="none" stroke="#247b86" stroke-width="2" marker-end="url(#arrowTeal)">
+    <path d="M697 420 V530 H410 V575"/>
+    <path d="M1745 420 V530 H960 V575"/>
+    <path d="M435 420 V545 H1500 V575" stroke="#7c6aa6" marker-end="url(#arrow)"/>
+  </g>
+  <text x="435" y="524" class="tiny" text-anchor="middle">application records</text>
+  <text x="960" y="565" class="tiny" text-anchor="middle">created only after approval</text>
+  <text x="1500" y="565" class="tiny" text-anchor="middle">orchestration records</text>
+
+  <!-- Storage cards -->
+  <g>
+    <rect x="60" y="580" width="650" height="238" rx="16" fill="#ffffff" stroke="#247b86" stroke-width="2.5"/>
+    <rect x="60" y="580" width="8" height="238" rx="4" fill="#247b86"/>
+    <ellipse cx="111" cy="621" rx="25" ry="9" fill="none" stroke="#247b86" stroke-width="2"/>
+    <path d="M86 621v27c0 5 11 9 25 9s25-4 25-9v-27M86 635c0 5 11 9 25 9s25-4 25-9" fill="none" stroke="#247b86" stroke-width="2"/>
+    <text x="154" y="620" class="store-title">PostgreSQL</text>
+    <text x="154" y="644" class="store-subtitle" fill="#247b86">Authoritative Strategy Factory records</text>
+    <text x="92" y="686" class="body">
+      <tspan x="92">• business briefs</tspan><tspan x="92" dy="25">• structured strategies</tspan><tspan x="92" dy="25">• run status</tspan>
+    </text>
+    <text x="380" y="686" class="body">
+      <tspan x="380">• quality reports</tspan><tspan x="380" dy="25">• review decisions</tspan><tspan x="380" dy="25">• artifact metadata</tspan>
+    </text>
+    <rect x="92" y="776" width="586" height="26" rx="13" fill="#eef7f7"/>
+    <text x="385" y="794" class="small" text-anchor="middle" style="font-weight:650">Active application database</text>
+
+    <rect x="735" y="580" width="450" height="238" rx="16" fill="#ffffff" stroke="#5b67a5" stroke-width="2"/>
+    <path d="M775 602h43l15 15v43h-58zM818 602v15h15" fill="none" stroke="#5b67a5" stroke-width="2.3"/>
+    <text x="856" y="620" class="store-title">Markdown Files</text>
+    <text x="856" y="644" class="store-subtitle" fill="#5b67a5">Approved readable strategy artifacts</text>
+    <text x="768" y="700" class="body">Human-readable deliverable created after approval</text>
+    <rect x="768" y="723" width="384" height="40" rx="8" fill="#f6f7fb" stroke="#d8dcef"/>
+    <text x="960" y="748" class="mono" text-anchor="middle">strategy-{run-id}.md</text>
+    <text x="960" y="795" class="small" text-anchor="middle">Stored on local macOS</text>
+
+    <rect x="1210" y="580" width="650" height="238" rx="16" fill="#ffffff" stroke="#7c6aa6" stroke-width="2"/>
+    <ellipse cx="1261" cy="621" rx="25" ry="9" fill="none" stroke="#7c6aa6" stroke-width="2"/>
+    <path d="M1236 621v27c0 5 11 9 25 9s25-4 25-9v-27M1236 635c0 5 11 9 25 9s25-4 25-9" fill="none" stroke="#7c6aa6" stroke-width="2"/>
+    <text x="1304" y="620" class="store-title">n8n Internal Database</text>
+    <text x="1304" y="644" class="store-subtitle" fill="#7c6aa6">n8n workflow operations only</text>
+    <text x="1242" y="686" class="body">
+      <tspan x="1242">• workflow definitions</tspan><tspan x="1242" dy="25">• executions</tspan>
+    </text>
+    <text x="1510" y="686" class="body">
+      <tspan x="1510">• users</tspan><tspan x="1510" dy="25">• n8n configuration</tspan>
+    </text>
+    <rect x="1242" y="762" width="586" height="40" rx="10" fill="#f7f5fa"/>
+    <text x="1535" y="787" class="small" text-anchor="middle" style="font-weight:700">Not the authoritative strategy database</text>
+  </g>
+
+  <!-- Rollback note -->
+  <rect x="606" y="838" width="708" height="34" rx="17" fill="#ffffff" stroke="#aab5c4" stroke-dasharray="5 4"/>
+  <text x="960" y="860" class="small" text-anchor="middle">Retained Factory SQLite file: verified rollback snapshot only — not the active application database</text>
+
+  <!-- Infrastructure foundation -->
+  <text x="60" y="916" class="section">Infrastructure foundation</text>
+  <rect x="60" y="938" width="880" height="92" rx="14" fill="#fafafa" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="980" y="938" width="880" height="92" rx="14" fill="#fafafa" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="92" y="972" class="store-title">Docker Desktop</text>
+  <text x="92" y="1003" class="body">n8n</text>
+  <line x1="145" y1="992" x2="145" y2="1007" stroke="#cbd5e1"/>
+  <text x="166" y="1003" class="body">PostgreSQL</text>
+  <text x="1012" y="972" class="store-title">Local macOS</text>
+  <text x="1012" y="1003" class="body">FastAPI/Uvicorn</text>
+  <line x1="1156" y1="992" x2="1156" y2="1007" stroke="#cbd5e1"/>
+  <text x="1177" y="1003" class="body">Ollama</text>
+  <line x1="1238" y1="992" x2="1238" y2="1007" stroke="#cbd5e1"/>
+  <text x="1259" y="1003" class="body">Markdown artifact storage</text>
+
+  <text x="60" y="1060" class="tiny">AI Strategy Factory v0.1 · Local synthetic lab architecture · Printer-friendly reference</text>
+  <text x="1860" y="1060" class="tiny" text-anchor="end">PostgreSQL is authoritative for Factory application data</text>
+</svg>
