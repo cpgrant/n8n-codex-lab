@@ -18,10 +18,36 @@ demonstration—not a production system approved for confidential client data.
 - **Watch:** [90-second narrated product demonstration][demo-video]
 - **Evaluate:** [judge guide with a five-minute verification path](docs/JUDGE-GUIDE.md)
 - **Measure:** [existing technical and benchmark metrics](docs/METRICS-SUMMARY.md)
+- **Eligibility evidence:** [prior work and submission-period development](docs/SUBMISSION-PERIOD-EVIDENCE.md)
 - **Install:** [clean-machine setup and verification](docs/SETUP.md)
 - **Inspect:** [public source repository](https://github.com/cpgrant/n8n-codex-lab)
 
 [demo-video]: https://www.youtube.com/watch?v=QKJJM996nmI
+
+## Prior Work and Submission-Period Development
+
+AI Strategy Factory existed before the OpenAI Build Week submission period, so
+judges should evaluate only the meaningful extensions made after the official
+cutoff: **2026-07-13 09:00 PDT (16:00 UTC / 18:00 CEST)**.
+
+At the cutoff, the repository already contained its safety and MCP lab
+foundation, an early FastAPI strategy pipeline, an inactive n8n workflow,
+local Ollama generation, structured intake, initial quality evaluation, and a
+synthetic-data policy. After the cutoff, Codex powered by GPT-5.6 was used to
+extend that baseline with authenticated service and review boundaries,
+workflow recovery and responsive review forms, stronger quality contracts,
+retention and backup controls, PostgreSQL portability and cutover tooling,
+coordinated system operations, reproducible setup, demonstration assets, and
+judge-facing verification material.
+
+As of the public audit head
+[`87ace2b`](https://github.com/cpgrant/n8n-codex-lab/commit/87ace2b4a681facf8e69a0a37310fa72484a4b9d),
+the `main` history contains **38 commits after the cutoff**, compared with **21
+commits at or before the baseline**. The eligible change set spans 136 files,
+with 15,907 insertions and 529 deletions relative to cutoff commit
+[`698badc`](https://github.com/cpgrant/n8n-codex-lab/commit/698badc443889556e179fad7d7445430fd12dd77).
+See the [dated submission-period evidence table](docs/SUBMISSION-PERIOD-EVIDENCE.md)
+and the [public comparison from the cutoff baseline to the audit head](https://github.com/cpgrant/n8n-codex-lab/compare/698badc443889556e179fad7d7445430fd12dd77...87ace2b4a681facf8e69a0a37310fa72484a4b9d).
 
 ## Problem, audience, and differentiation
 

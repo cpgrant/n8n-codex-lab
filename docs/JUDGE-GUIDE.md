@@ -11,6 +11,7 @@ state, and Ollama provides local model inference.
 - **90-second product demonstration:** [AI Strategy Factory demonstration][demo-video]
 - **Public repository:** [cpgrant/n8n-codex-lab](https://github.com/cpgrant/n8n-codex-lab)
 - **Existing results:** [technical, benchmark, and migration metrics](METRICS-SUMMARY.md)
+- **Eligibility:** [prior work and submission-period evidence](SUBMISSION-PERIOD-EVIDENCE.md)
 - **Clean-machine installation:** [SETUP.md](SETUP.md)
 - **Architecture and implementation detail:** [README.md](../README.md)
 
@@ -19,6 +20,17 @@ state, and Ollama provides local model inference.
 The short verification path below assumes the repository has already been set
 up. A first installation takes longer because Docker images, Python packages,
 and the local Ollama model must be downloaded.
+
+## Submission-period scope
+
+This is a pre-existing project. The eligible work begins at the official
+submission-period cutoff, **2026-07-13 09:00 PDT (16:00 UTC / 18:00 CEST)**.
+The [submission-period evidence record](SUBMISSION-PERIOD-EVIDENCE.md)
+separates the prior baseline from the 38 subsequent commits through public
+audit head `87ace2b` and maps the major Codex/GPT-5.6-assisted extensions to
+dated commits, files, and verification commands. Timestamped Codex session
+records are retained privately, and the official `/feedback` Session ID was
+submitted through Devpost.
 
 ## The problem and audience
 
@@ -133,7 +145,7 @@ Detailed operating instructions are in
 
 | Criterion | What to assess | Repository evidence |
 | --- | --- | --- |
-| **Technological Implementation** | A non-trivial, integrated implementation with durable state, tests, local inference, and explicit workflow invariants | [`agent-service/`](../agent-service/), [`workflows/`](../workflows/), [`scripts/`](../scripts/), [`docker-compose.yml`](../docker-compose.yml), and [`README.md`](../README.md) |
+| **Technological Implementation** | A non-trivial, integrated implementation with durable state, tests, local inference, and explicit workflow invariants | [`agent-service/`](../agent-service/), [`workflows/`](../workflows/), [`scripts/`](../scripts/), [`compose.n8n.yml`](../compose.n8n.yml), [`compose.postgres.yml`](../compose.postgres.yml), and [`README.md`](../README.md) |
 | **Design** | A coherent journey from intake through readiness, generation, quality advice, review, and artifact delivery | The importable n8n workflow, the [90-second demonstration][demo-video], and [`docs/DAILY-OPERATIONS.md`](DAILY-OPERATIONS.md) |
 | **Potential Impact** | A credible workflow for consultants and small teams that need repeatability, reviewability, and a local-processing option | The human approval boundary, PostgreSQL audit trail, artifact checksum, and problem framing in [`README.md`](../README.md) |
 | **Quality of the Idea** | A strategy factory in which AI drafts and advises, while humans retain decision authority and approved outputs become durable artifacts | The separation of generation, advisory quality checks, review state, and artifact creation in the workflow and service code |
